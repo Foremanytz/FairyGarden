@@ -244,3 +244,18 @@ test('存檔讀檔後模擬結果一致', () => {
   run(s, 20); run(s2, 20);
   assert.equal(FG.save(s), FG.save(s2));
 });
+
+test('設備產量上限剛好停在上限值；保留原料不被加工', () => {
+  const s = FG.newGame(1);
+  isolate(s);
+  const t = central(s);
+  const dev = t.devices.find(d => d && d.type === 'brewer');
+  dev.keep = 0; dev.limit = 2;
+  t.storage['法力花'] = 20; t.storage['花蜜'] = 0;
+  run(s, 30);
+  assert.equal(t.storage['花蜜'], 2);
+  dev.keep = 10; dev.limit = 99;
+  t.storage['法力花'] = 11;
+  run(s, 30);
+  assert.equal(t.storage['法力花'], 11);
+});

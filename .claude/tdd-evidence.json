@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "stages": {
+    "stage-1": {
+      "recorded_at_utc": "2026-10-14T12:52:40+00:00",
+      "forced_rerecord": true,
+      "mode": "pre-impl",
+      "tests": {
+        "tests/core.test.mjs": "bc4e50fa70ae63ebd28999e6c1b1d38381d3c849ccd8bd29c8a7fa545acaaa9c",
+        "tests/load-core.mjs": "cdfea6864d2a303dfd137d5ee820fce55b6d2910281a78c9e86900432bd1d679"
+      },
+      "impl": {
+        "index.html": "ABSENT"
+      }
+    },
+    "stage-1-spot": {
+      "recorded_at_utc": "2026-10-14T13:08:23+00:00",
+      "forced_rerecord": true,
+      "mode": "test-only",
+      "tests": {
+        "tests/core.test.mjs": "5bcb7596782169d94e9ff9cb768c84f44b84a5d097b259d260611c7846e54171",
+        "tests/load-core.mjs": "cdfea6864d2a303dfd137d5ee820fce55b6d2910281a78c9e86900432bd1d679"
+      },
+      "impl": {
+        "index.html": "62034d883f353221a064ce0b34176bd2558c8b8a445aa7381e373b9b95b35ed9"
+      }
+    }
+  }
+}

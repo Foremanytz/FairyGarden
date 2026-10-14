@@ -1,0 +1,1570 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fairy Garden</title>
+<style>
+:root { --panel: rgba(18, 24, 38, .88); --line: rgba(255,255,255,.12); --text: #eef0f8; --dim: #a8b0c8; --accent: #c9a7ff; --gold: #ffd98a; --ok: #8ff0b0; --bad: #ff8f8f; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #0d1a20; color: var(--text);
+  font-family: 'Noto Sans TC', 'Microsoft JhengHei', 'PingFang TC', system-ui, sans-serif; font-size: 15px; user-select: none; }
+canvas#cv { position: fixed; inset: 0; display: block; }
+.hidden { display: none !important; }
+button { font: inherit; color: var(--text); background: rgba(255,255,255,.08); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+button:hover { background: rgba(201,167,255,.22); border-color: var(--accent); }
+button.on, button.primary { background: rgba(201,167,255,.35); border-color: var(--accent); }
+button:disabled { opacity: .45; cursor: default; }
+select, input { font: inherit; color: var(--text); background: #1d2438; border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; }
+input[type=number] { width: 64px; }
+h2 { margin: 0 0 6px; font-size: 20px; } h3 { margin: 14px 0 6px; font-size: 15px; color: var(--gold); }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; backdrop-filter: blur(6px); box-shadow: 0 8px 30px rgba(0,0,0,.35); }
+#top { position: fixed; top: 0; left: 0; right: 0; height: 52px; display: flex; align-items: center; gap: 18px; padding: 0 16px;
+  background: linear-gradient(rgba(12,16,28,.92), rgba(12,16,28,.7)); border-bottom: 1px solid var(--line); }
+#lvTitle { font-size: 18px; font-weight: 700; color: var(--gold); min-width: 280px; }
+#top .grp { display: flex; gap: 4px; align-items: center; } #top .grp span { color: var(--dim); margin-right: 4px; }
+#clock { margin-left: auto; color: var(--dim); font-variant-numeric: tabular-nums; }
+#goals { position: fixed; top: 64px; left: 12px; width: 350px; padding: 12px 14px; }
+.goal { display: grid; grid-template-columns: 20px 1fr auto; gap: 6px; align-items: center; padding: 5px 0; border-bottom: 1px dashed var(--line); }
+.goal:last-child { border-bottom: 0; } .goal.done { color: var(--dim); } .goal.done .chk { color: var(--ok); }
+.goal .prog { color: var(--dim); font-size: 13px; font-variant-numeric: tabular-nums; } .goal button { padding: 2px 10px; grid-column: 2 / 4; justify-self: start; }
+#tools { position: fixed; left: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 6px; padding: 10px; width: 200px; }
+#tools button { display: grid; grid-template-columns: 32px 1fr; text-align: left; align-items: center; padding: 6px 8px; }
+#tools button .ic { font-size: 22px; } #tools button small { display: block; color: var(--dim); font-size: 12px; }
+#side { position: fixed; top: 64px; right: 12px; width: 430px; max-height: calc(100vh - 150px); overflow: auto; padding: 14px 16px; }
+#side .sub { color: var(--dim); font-size: 13px; } #side p { color: var(--dim); line-height: 1.6; margin: 6px 0; }
+.inv { display: flex; flex-wrap: wrap; gap: 6px; } .it { background: rgba(255,255,255,.06); border-radius: 8px; padding: 3px 8px; font-size: 14px; }
+.it b { color: var(--gold); margin-left: 4px; }
+.slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dev { background: rgba(201,167,255,.08); border: 1px solid rgba(201,167,255,.3); border-radius: 10px; padding: 8px; font-size: 13px; display: flex; flex-direction: column; gap: 5px; }
+.dev.empty { background: rgba(255,255,255,.03); border-style: dashed; border-color: var(--line); color: var(--dim); }
+.dev .devh { display: flex; justify-content: space-between; font-weight: 700; color: var(--text); } .dev .devh button { padding: 0 6px; }
+.dev select { width: 100%; font-size: 12px; } .dev button small { color: var(--dim); }
+.bar { height: 8px; background: rgba(255,255,255,.1); border-radius: 4px; overflow: hidden; } .bar i { display: block; height: 100%; background: linear-gradient(90deg, #a98bff, #ff9df0); }
+.bar.en i { background: linear-gradient(90deg, #ffc94a, #8ff0b0); }
+.st { color: var(--dim); } .warn { color: var(--bad); }
+.row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.kv { display: grid; grid-template-columns: 90px 1fr; gap: 4px 8px; margin: 6px 0; } .kv span:nth-child(odd) { color: var(--dim); }
+#hint { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); max-width: 820px; padding: 10px 18px; color: #fff7dc; line-height: 1.6; }
+#hint:empty { display: none; }
+#toasts { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none; }
+.toast { background: rgba(20,26,40,.94); border: 1px solid var(--accent); border-radius: 10px; padding: 8px 16px; animation: tf 3.2s forwards; }
+.toast.bad { border-color: var(--bad); } .toast.good { border-color: var(--ok); }
+@keyframes tf { 0% { opacity: 0; transform: translateY(-6px); } 8% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; } }
+#tip { position: fixed; pointer-events: none; background: rgba(10,14,24,.9); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; font-size: 13px; color: var(--dim); }
+#tip:empty { display: none; }
+.modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(5,8,16,.6); }
+#menu { background: radial-gradient(ellipse at 50% 30%, #2a3d55 0%, #101828 60%, #070b14 100%); flex-direction: column; }
+#menu h1 { font-size: 84px; margin: 0; letter-spacing: 4px; background: linear-gradient(90deg, #ffd98a, #ff9df0, #c9a7ff, #7fd8ff); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 40px rgba(201,167,255,.25); }
+#menu .tag { color: var(--dim); margin: 6px 0 36px; font-size: 18px; letter-spacing: 2px; }
+.cards { display: flex; gap: 22px; }
+.card { width: 400px; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; }
+.card h2 { color: var(--gold); } .card p { color: var(--dim); line-height: 1.6; margin: 0; flex: 1; font-size: 14px; } .card .meta { color: var(--accent); font-size: 13px; }
+.card.locked { opacity: .5; }
+.help { margin-top: 30px; color: var(--dim); font-size: 14px; line-height: 1.8; text-align: center; }
+.dlg { width: 640px; padding: 26px 30px; } .dlg p { white-space: pre-line; line-height: 1.8; color: #dfe3f2; }
+#editor .edwin { position: fixed; inset: 50px 120px; display: flex; flex-direction: column; padding: 16px 20px; }
+.edhead { display: flex; gap: 10px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.edhead h2 { margin: 0 auto 0 0; } .edhead label { color: var(--dim); }
+.edbody { flex: 1; display: grid; grid-template-columns: 300px 1fr; gap: 16px; min-height: 0; margin-top: 12px; }
+.palette { overflow: auto; padding-right: 6px; } .palette h3 { margin: 10px 0 6px; }
+.pblock { padding: 7px 12px; border-radius: 8px; margin: 4px 0; cursor: grab; font-weight: 600; color: #10131c; }
+.program { position: relative; overflow: auto; background: rgba(0,0,0,.25); border-radius: 12px; padding: 14px 14px 80px; }
+.list { min-height: 34px; padding: 4px 0 4px 0; border-radius: 8px; }
+.list > .ph { color: var(--dim); font-size: 13px; padding: 6px 10px; border: 1px dashed var(--line); border-radius: 8px; }
+.list.over { background: rgba(255,255,255,.06); }
+.blk { margin: 5px 0; border-radius: 9px; padding: 6px 8px 6px 10px; color: #10131c; font-weight: 600; cursor: grab; border-left: 6px solid rgba(0,0,0,.25); }
+.blk .bh { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.blk .bh select, .blk .bh input { color: #10131c; background: rgba(255,255,255,.75); border-color: rgba(0,0,0,.2); font-weight: 400; }
+.blk .bh .x { margin-left: auto; padding: 0 7px; background: rgba(0,0,0,.15); color: #10131c; border: 0; }
+.blk > .list { margin-left: 18px; background: rgba(0,0,0,.12); padding: 4px 8px; }
+.blk .else { margin: 4px 0 2px 2px; }
+.blk.running { outline: 3px solid #fff6a8; box-shadow: 0 0 16px #fff6a8; }
+.c-flow { background: #f0b25a; } .c-move { background: #6cb8f0; } .c-act { background: #7fd48a; }
+.marker { height: 4px; background: #fff6a8; border-radius: 2px; margin: 2px 0; }
+.trash { position: absolute; right: 14px; bottom: 14px; padding: 14px 22px; border: 2px dashed var(--bad); border-radius: 12px; color: var(--bad); }
+.trash.over { background: rgba(255,143,143,.2); }
+.edfoot { color: var(--dim); font-size: 13px; padding-top: 8px; line-height: 1.6; }
+
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="hud" class="hidden">
+  <div id="top">
+    <div id="lvTitle"></div>
+    <div class="grp" id="speed"><span>速度</span><button data-speed="0">⏸</button><button data-speed="1">1×</button><button data-speed="2">2×</button><button data-speed="4">4×</button></div>
+    <div class="grp" id="layers"><span>圖層</span><button data-layer="all">全部</button><button data-layer="ground">地面</button><button data-layer="sky">流動通道</button></div>
+    <div class="grp"><button id="btnSave">存檔</button><button id="btnMenu">選單</button></div>
+    <div id="clock"></div>
+  </div>
+  <div id="goals" class="panel"></div>
+  <div id="tools" class="panel"></div>
+  <div id="side" class="panel"></div>
+  <div id="hint" class="panel"></div>
+  <div id="toasts"></div>
+</div>
+<div id="tip"></div>
+<div id="menu" class="modal"></div>
+<div id="dialog" class="modal hidden"></div>
+<div id="editor" class="modal hidden"></div>
+
+<script id="fg-core">
+// ===== Fairy Garden 核心邏輯：純資料與模擬，不碰 DOM（tests/ 會單獨載入這段）=====
+(function () {
+'use strict';
+const SQ3 = Math.sqrt(3);
+
+// ---------- 六角格（pointy-top、axial 座標）----------
+const hex = {
+  DIRS: [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]],
+  key: (q, r) => q + ',' + r,
+  parse(k) { const [q, r] = k.split(',').map(Number); return { q, r }; },
+  dist(a, b) { const dq = a.q - b.q, dr = a.r - b.r; return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2; },
+  neighbors(h) { return hex.DIRS.map(([dq, dr]) => ({ q: h.q + dq, r: h.r + dr })); },
+  round(fq, fr) {
+    const fs = -fq - fr;
+    let q = Math.round(fq), r = Math.round(fr); const s = Math.round(fs);
+    const dq = Math.abs(q - fq), dr = Math.abs(r - fr), ds = Math.abs(s - fs);
+    if (dq > dr && dq > ds) q = -r - s; else if (dr > ds) r = -q - s;
+    return { q: q + 0, r: r + 0 };
+  },
+  line(a, b) {
+    const n = hex.dist(a, b), out = [];
+    for (let i = 0; i <= n; i++) {
+      const t = n === 0 ? 0 : i / n;
+      out.push(hex.round(a.q + (b.q - a.q) * t + 1e-6, a.r + (b.r - a.r) * t + 1e-6));
+    }
+    return out;
+  },
+  toXY(q, r) { return { x: SQ3 * (q + r / 2), y: 1.5 * r }; },
+  fromXY(x, y) { const fr = y / 1.5; return hex.round(x / SQ3 - fr / 2, fr); },
+};
+
+// ---------- 資料表 ----------
+const ITEMS = {
+  '法力花': { icon: '🌸', color: '#ff8fc8', desc: '農田的作物，也是種子' },
+  '花蜜':   { icon: '🍯', color: '#ffc94a', desc: '精靈的食物，回復活力' },
+  '木枝':   { icon: '🪵', color: '#c08a55', desc: '在森林採集的建材' },
+  '月石':   { icon: '🪨', color: '#c4c8e8', desc: '在岩地採集的建材' },
+  '露水':   { icon: '💧', color: '#6fd3ff', desc: '在水邊採集的元素' },
+  '陽光':   { icon: '☀️', color: '#ffe066', desc: '草地或花海上的結界收集' },
+  '風語':   { icon: '🍃', color: '#8ff0b0', desc: '岩地上的結界收集' },
+  '土息':   { icon: '🌰', color: '#e0a868', desc: '森林裡的結界收集' },
+  '滋養露': { icon: '🧪', color: '#7dffb0', desc: '維護農田的養分' },
+  '結界晶': { icon: '💎', color: '#b49bff', desc: '結界的能源，也是高級建材' },
+  '星塵':   { icon: '✨', color: '#fff3b0', desc: '高級轉化產物' },
+  '虹晶':   { icon: '🌈', color: '#ff9df0', desc: '最珍貴的魔法結晶' },
+};
+const RECIPES = {
+  nectar:   { name: '花蜜',   in: { '法力花': 2 }, out: { '花蜜': 1 }, time: 4 },
+  nourish:  { name: '滋養露', in: { '露水': 1, '土息': 1 }, out: { '滋養露': 2 }, time: 5 },
+  crystal:  { name: '結界晶', in: { '月石': 1, '陽光': 2 }, out: { '結界晶': 1 }, time: 6 },
+  stardust: { name: '星塵',   in: { '陽光': 1, '風語': 1, '花蜜': 1 }, out: { '星塵': 1 }, time: 8 },
+  prism:    { name: '虹晶',   in: { '星塵': 2, '露水': 2, '結界晶': 1 }, out: { '虹晶': 1 }, time: 12 },
+};
+const DEVICES = {
+  brewer:     { name: '花蜜釀造台', cost: { '木枝': 3, '法力花': 2 }, recipes: ['nectar'], limit: 5, keep: 4 },
+  transmuter: { name: '元素轉化器', cost: { '月石': 3, '木枝': 3 }, recipes: null, limit: 10, keep: 0 },
+};
+const BUILDS = {
+  farm:    { name: '農田',         icon: '🌱', cost: { '木枝': 2 }, terrain: ['grass', 'meadow'] },
+  barrier: { name: '魔力收集結界', icon: '🔮', cost: { '月石': 3, '木枝': 2 }, terrain: ['grass', 'meadow', 'rock', 'forest'] },
+  tower:   { name: '魔法塔',       icon: '🗼', cost: { '木枝': 10, '月石': 10, '結界晶': 2 }, terrain: ['grass', 'meadow'] },
+  anchor:  { name: '光之錨',       icon: '🕯️', cost: { '月石': 2, '結界晶': 1 }, terrain: ['grass', 'meadow', 'rock', 'forest'] },
+};
+const TERRAIN = {
+  grass:  { name: '草地' }, meadow: { name: '花海' }, forest: { name: '森林', res: '木枝' },
+  rock:   { name: '岩地', res: '月石' }, water: { name: '水域', res: '露水' },
+};
+const BARRIER_ELEM = { grass: '陽光', meadow: '陽光', rock: '風語', forest: '土息' };
+const CAP = 5;            // 精靈一次能拿的數量
+const SPEED = 3.5;        // 精靈飛行速度（單位/秒，相鄰格距 √3）
+const GROW_TIME = 30;     // 農田生長秒數
+const FERT_MAX = 6;
+const CH_HOP = 7;         // 通道相鄰節點最遠格數
+const CH_SPEED = 4;       // 通道光點速度
+const CH_INTERVAL = 1.5;  // 通道每隔幾秒送出一個
+const SUMMON_COST = { '花蜜': 3, '法力花': 4 };
+const FAIRY_NAMES = ['鈴蘭', '薄荷', '露珠', '星點', '苜蓿', '蒲公英', '楓糖', '晨曦', '月桂', '雛菊', '琥珀', '青苔', '柳絮', '螢火', '雲雀', '杏仁'];
+const TOWER_COLORS = ['#c9a7ff', '#7fd8ff', '#ffb37f', '#9cffb0'];
+
+// 目標選擇器：前往「最近的 X」
+const NEAREST = {
+  forest: '森林', rock: '岩地', water: '水邊', tower: '任一魔法塔',
+  farmEmpty: '空的農田', farmRipe: '成熟的農田', farmNeedNourish: '缺滋養的農田',
+  barrierReady: '有產出的結界', barrierNeedCrystal: '缺結界晶的結界', blueprint: '需要材料的藍圖',
+};
+const CLAIMABLE = { farmEmpty: 1, farmRipe: 1, farmNeedNourish: 1, barrierReady: 1, barrierNeedCrystal: 1 };
+
+// ---------- 範本腳本 ----------
+const B = {
+  forever: body => ({ op: 'forever', body }),
+  iff: (cond, body, els) => ({ op: 'if', cond, body, else: els || [] }),
+  go: what => ({ op: 'goto', target: what === 'home' ? { kind: 'home' } : { kind: 'nearest', what } }),
+  op: (op, extra) => Object.assign({ op }, extra || {}),
+};
+const DUMP_HAND = B.iff({ kind: 'handEmpty', not: true }, [B.go('home'), B.op('drop')]);
+const TEMPLATES = [
+  { name: '採集木枝', min: 1, prog: [B.forever([B.go('forest'), B.op('gather'), B.go('home'), B.op('drop')])] },
+  { name: '搬木枝去蓋藍圖', min: 1, prog: [B.forever([DUMP_HAND, B.go('home'), B.op('take', { item: '木枝', n: 5 }),
+      B.go('blueprint'), B.op('drop')])] },
+  { name: '種花與採收', min: 1, prog: [B.forever([DUMP_HAND,
+      B.iff({ kind: 'exists', what: 'farmRipe' }, [B.go('farmRipe'), B.op('harvest'), B.go('home'), B.op('drop')], [
+        B.iff({ kind: 'exists', what: 'farmEmpty' }, [B.go('home'), B.op('take', { item: '法力花', n: 1 }), B.go('farmEmpty'), B.op('plant')],
+          [B.op('wait', { s: 2 })])])])] },
+  { name: '採集露水', min: 2, prog: [B.forever([B.go('water'), B.op('gather'), B.go('home'), B.op('drop')])] },
+  { name: '採集月石', min: 2, prog: [B.forever([B.go('rock'), B.op('gather'), B.go('home'), B.op('drop')])] },
+  { name: '收取結界元素', min: 2, prog: [B.forever([B.go('barrierReady'), B.op('collect'), B.go('home'), B.op('drop')])] },
+  { name: '替農田補滋養露', min: 2, prog: [B.forever([DUMP_HAND,
+      B.iff({ kind: 'exists', what: 'farmNeedNourish' }, [B.go('home'), B.op('take', { item: '滋養露', n: 1 }), B.go('farmNeedNourish'), B.op('drop')],
+        [B.op('wait', { s: 3 })])])] },
+  { name: '替結界補結界晶', min: 2, prog: [B.forever([DUMP_HAND,
+      B.iff({ kind: 'exists', what: 'barrierNeedCrystal' }, [B.go('home'), B.op('take', { item: '結界晶', n: 1 }), B.go('barrierNeedCrystal'), B.op('drop')],
+        [B.op('wait', { s: 3 })])])] },
+];
+const tpl = name => JSON.parse(JSON.stringify(TEMPLATES.find(t => t.name === name).prog));
+
+// ---------- 關卡 ----------
+const LEVELS = {
+  1: {
+    title: '第一章　中央魔法塔', minutes: '約 10 分鐘', seed: 11,
+    intro: '德魯伊在森林深處喚醒了沉睡的中央魔法塔。兩隻精靈從塔中醒來，等著你寫下第一份工作腳本。\n\n本章學習：擺放藍圖讓精靈搬材料建造、種植與採收法力花、在塔內釀造花蜜（精靈的食物），以及用積木編寫精靈腳本。',
+    features: { fert: false }, unlocked: ['farm'], recipes: ['nectar'],
+    terrain: [['forest', 5, -2, 2], ['forest', -5, 5, 2], ['forest', -6, -1, 1], ['water', -2, -5, 2], ['rock', 7, 2, 1], ['meadow', 8, -7, 2], ['water', 10, 3, 2]],
+    towers: [{ q: 0, r: 0, central: true, slots: 2, storage: { '法力花': 6, '花蜜': 4, '木枝': 4 }, devices: [['brewer', 'nectar']] }],
+    fairies: [{ home: 0, prog: [] }, { home: 0, prog: [] }],
+    goals: [
+      { kind: 'build', type: 'farm', n: 3, text: '建造 3 塊農田', hint: '左側選「農田」，點塔附近的草地放藍圖。再點一隻精靈 →「編輯腳本」→ 範本「搬木枝去蓋藍圖」→ 套用。' },
+      { kind: 'produce', item: '法力花', n: 15, text: '採收 15 朵法力花', hint: '給一隻精靈套用範本「種花與採收」。花需要 30 秒長成；播種會用掉 1 朵花、採收得 3 朵。' },
+      { kind: 'produce', item: '花蜜', n: 6, text: '釀造 6 份花蜜', hint: '點中央魔法塔，塔內的「花蜜釀造台」會自動用 2 朵法力花釀 1 份花蜜。調高它的產量上限；「保留原料」讓它留下法力花當種子。' },
+      { kind: 'fairies', n: 4, text: '精靈數量達到 4 隻', hint: '點中央魔法塔 →「召喚精靈」（花蜜 3、法力花 4）。精靈累了會回塔吃花蜜。' },
+      { kind: 'order', item: '花蜜', n: 8, who: '森林旅人', text: '訂單：森林旅人想要 8 份花蜜', hint: '塔內花蜜足夠時，在目標面板按「交付」。' },
+    ],
+  },
+  2: {
+    title: '第二章　擴充與維護', minutes: '約 15–20 分鐘', seed: 22,
+    intro: '花園開始運轉，但土地會疲乏、精靈需要更多種類的魔法。\n\n本章學習：擴充塔內空間、安裝可選配方的元素轉化器、建造魔力收集結界（依地形產出陽光／風語／土息）、維護塔外設施（農田要滋養露、結界要結界晶），以及在湖邊建造第二座魔法塔。',
+    features: { fert: true }, unlocked: ['farm', 'barrier', 'tower', 'expand', 'transmuter', 'brewer'], recipes: ['nectar', 'nourish', 'crystal'],
+    terrain: [['forest', -5, 1, 2], ['forest', 4, 3, 2], ['rock', -2, -5, 2], ['rock', 6, -1, 1], ['water', 9, -7, 2], ['water', -7, 8, 1], ['meadow', -9, 3, 2]],
+    towers: [{ q: 0, r: 0, central: true, slots: 3, storage: { '法力花': 10, '花蜜': 8, '木枝': 12, '月石': 8 }, devices: [['brewer', 'nectar', 8]] }],
+    farms: [[2, -1], [1, -2], [3, -2]],
+    fairies: [{ home: 0, prog: 'tpl:種花與採收' }, { home: 0, prog: 'tpl:採集木枝' }, { home: 0, prog: [] }, { home: 0, prog: [] }],
+    goals: [
+      { kind: 'expand', n: 1, text: '擴充塔內空間 1 次', hint: '點中央魔法塔 →「擴充塔內空間」。塔內每一格可以安裝一台設備。' },
+      { kind: 'device', dev: 'transmuter', n: 1, text: '在塔內安裝元素轉化器', hint: '在塔內空格按「安裝元素轉化器」，再選擇配方。' },
+      { kind: 'build', type: 'barrier', n: 3, text: '建造 3 座魔力收集結界', hint: '結界依所在地形產出：草地→陽光、岩地→風語、森林→土息。需要月石，記得派精靈採集月石。' },
+      { kind: 'produce', item: '結界晶', n: 6, text: '轉化 6 顆結界晶', hint: '結界晶 = 月石 1 + 陽光 2。用範本「收取結界元素」把陽光帶回塔。' },
+      { kind: 'produce', item: '滋養露', n: 10, text: '轉化 10 瓶滋養露', hint: '滋養露 = 露水 1 + 土息 1。農田缺滋養時生長變慢，用範本「替農田補滋養露」。' },
+      { kind: 'buildNear', type: 'tower', near: 'water', range: 3, n: 1, text: '在水邊建造第二座魔法塔', hint: '魔法塔藍圖要放在離水域 3 格內的草地。可在精靈面板把牠的「家」改成新塔。' },
+      { kind: 'order', item: '滋養露', n: 6, who: '河畔村', text: '訂單：河畔村想要 6 瓶滋養露', hint: '在目標面板按「交付」，會從所有塔的庫存扣除。' },
+    ],
+  },
+  3: {
+    title: '第三章　流動通道', minutes: '約 20–30 分鐘', seed: 33,
+    intro: '魔法塔之間的距離越來越遠，精靈來回搬運已經不夠快。在五層樓高的天空中，可以架起讓魔法元素自行流動的光之通道。\n\n本章學習：建造光之錨、從結界或塔架設流動通道到另一座塔、在花海旁建第三座塔，並組出星塵與虹晶的多段加工鏈。',
+    features: { fert: true }, unlocked: ['farm', 'barrier', 'tower', 'anchor', 'channel', 'expand', 'transmuter', 'brewer'],
+    recipes: ['nectar', 'nourish', 'crystal', 'stardust', 'prism'],
+    terrain: [['forest', -4, 2, 2], ['rock', 3, 4, 2], ['rock', 12, -2, 1], ['water', 10, -6, 2], ['meadow', -8, 9, 3], ['forest', 6, -9, 2], ['meadow', -11, 1, 1]],
+    towers: [
+      { q: 0, r: 0, central: true, slots: 4, storage: { '法力花': 12, '花蜜': 10, '木枝': 14, '月石': 14, '結界晶': 3, '滋養露': 4 },
+        devices: [['brewer', 'nectar', 8], ['transmuter', 'nourish']] },
+      { q: 9, r: -4, slots: 2, storage: { '花蜜': 4 }, devices: [['transmuter', 'crystal']] },
+    ],
+    farms: [[2, -1], [1, -2], [-1, -1]],
+    barriers: [[3, 4], [11, -4], [-3, 3]],
+    fairies: [{ home: 0, prog: 'tpl:種花與採收' }, { home: 0, prog: 'tpl:採集木枝' }, { home: 0, prog: 'tpl:採集月石' },
+      { home: 1, prog: 'tpl:採集露水' }, { home: 1, prog: [] }],
+    goals: [
+      { kind: 'build', type: 'anchor', n: 3, text: '建造 3 座光之錨', hint: '光之錨是通道的中繼點，相鄰節點不能超過 7 格。' },
+      { kind: 'channels', n: 2, text: '架設 2 條流動通道', hint: '左側選「流動通道」：依序點起點（結界或塔）→ 光之錨 → 終點的塔。' },
+      { kind: 'buildNear', type: 'tower', near: 'meadow', range: 2, n: 1, text: '在花海旁建造第三座魔法塔', hint: '花海上的結界產陽光的速度比草地快。' },
+      { kind: 'produce', item: '星塵', n: 6, text: '轉化 6 份星塵', hint: '星塵 = 陽光 1 + 風語 1 + 花蜜 1。用通道把各地的元素匯集到同一座塔。' },
+      { kind: 'order', item: '虹晶', n: 2, who: '星辰商隊', text: '訂單：星辰商隊想要 2 顆虹晶', hint: '虹晶 = 星塵 2 + 露水 2 + 結界晶 1。' },
+    ],
+  },
+};
+
+// ---------- 工具 ----------
+function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const has = (st, need) => Object.entries(need).every(([k, n]) => (st[k] || 0) >= n);
+function pay(st, cost) { if (!has(st, cost)) return false; for (const [k, n] of Object.entries(cost)) st[k] -= n; return true; }
+const costText = cost => Object.entries(cost).map(([k, n]) => k + '×' + n).join('、');
+const towers = s => Object.values(s.ents).filter(e => e.type === 'tower');
+const centralOf = s => towers(s).find(t => t.central);
+const entAt = (s, q, r) => { const t = s.tiles[hex.key(q, r)]; return t && t.e ? s.ents[t.e] : null; };
+const posOf = e => hex.toXY(e.q, e.r);
+const addStat = (s, item, n) => { s.stats.produced[item] = (s.stats.produced[item] || 0) + n; };
+const fx = [];
+const emit = (type, x, y, extra) => { if (fx.length < 200) fx.push(Object.assign({ type, x, y }, extra || {})); };
+
+// ---------- 建立關卡 ----------
+const RADIUS = 16;
+function newGame(level) {
+  const L = LEVELS[level];
+  const R = rng(L.seed);
+  const s = {
+    v: 1, level, time: 0, nextId: 1, tiles: {}, ents: {}, fairies: {}, channels: {}, claims: {},
+    features: Object.assign({}, L.features), unlocked: L.unlocked.slice(), recipes: L.recipes.slice(),
+    stats: { built: {}, produced: {}, expanded: 0, orders: 0 },
+    goals: L.goals.map((g, i) => Object.assign({ id: 'g' + i, done: false }, g)), complete: false, completeAt: null,
+  };
+  for (let q = -RADIUS; q <= RADIUS; q++) for (let r = -RADIUS; r <= RADIUS; r++) {
+    if (hex.dist({ q: 0, r: 0 }, { q, r }) > RADIUS) continue;
+    let t = 'grass';
+    const d = hex.dist({ q: 0, r: 0 }, { q, r });
+    if (d > 3) { const x = R(); if (x < 0.05) t = 'forest'; else if (x < 0.075) t = 'rock'; else if (x < 0.09) t = 'meadow'; }
+    s.tiles[hex.key(q, r)] = { q, r, t, v: R() };
+  }
+  for (const [t, cq, cr, rad] of L.terrain) {
+    for (const k in s.tiles) {
+      const tile = s.tiles[k], d = hex.dist(tile, { q: cq, r: cr });
+      if (d <= rad && (d < rad || R() < 0.6)) tile.t = t;
+    }
+  }
+  for (const k in s.tiles) if (hex.dist(s.tiles[k], { q: 0, r: 0 }) <= 2) s.tiles[k].t = 'grass';
+  const tids = L.towers.map(T => {
+    const tile = s.tiles[hex.key(T.q, T.r)]; tile.t = 'grass';
+    const id = spawnBuilding(s, 'tower', T.q, T.r, { central: !!T.central, slots: T.slots, storage: Object.assign({}, T.storage) });
+    T.devices.forEach(([type, rec, limit], i) => {
+      const t = s.ents[id];
+      t.devices[i] = newDevice(type); t.devices[i].recipe = rec; if (limit) t.devices[i].limit = limit;
+    });
+    return id;
+  });
+  for (const [q, r] of L.farms || []) { s.tiles[hex.key(q, r)].t = 'grass'; const id = spawnBuilding(s, 'farm', q, r); s.ents[id].fert = 2; }
+  for (const [q, r] of L.barriers || []) spawnBuilding(s, 'barrier', q, r);
+  for (const F of L.fairies) {
+    const f = newFairy(s, tids[F.home]);
+    f.prog = typeof F.prog === 'string' ? tpl(F.prog.slice(4)) : F.prog.slice();
+  }
+  return s;
+}
+
+function spawnBuilding(s, type, q, r, opts) {
+  opts = opts || {};
+  const id = opts.id || ('e' + s.nextId++);
+  const tile = s.tiles[hex.key(q, r)];
+  const e = { id, type, q, r };
+  if (type === 'tower') {
+    const n = towers(s).length;
+    Object.assign(e, { central: !!opts.central, name: opts.central ? '中央魔法塔' : ['', '湖畔之塔', '花海之塔', '星光之塔'][Math.min(n, 3)] || ('第' + (n + 1) + '座塔'),
+      color: TOWER_COLORS[n % TOWER_COLORS.length], storage: opts.storage || {}, slots: opts.slots || 2, devices: [] });
+    while (e.devices.length < e.slots) e.devices.push(null);
+  } else if (type === 'farm') Object.assign(e, { planted: false, growth: 0, fert: FERT_MAX / 2 });
+  else if (type === 'barrier') Object.assign(e, { elem: BARRIER_ELEM[tile.t] || '陽光', buf: 0, charge: 2, t: 0, fast: tile.t === 'meadow' });
+  s.ents[id] = e;
+  tile.e = id;
+  return id;
+}
+
+function newDevice(type) { return { type, recipe: DEVICES[type].recipes ? DEVICES[type].recipes[0] : null, prog: 0, limit: DEVICES[type].limit, keep: DEVICES[type].keep, state: 'idle' }; }
+
+function newFairy(s, towerId) {
+  const t = s.ents[towerId], p = posOf(t);
+  const n = Object.keys(s.fairies).length;
+  const id = 'f' + s.nextId++;
+  s.fairies[id] = { id, name: FAIRY_NAMES[n % FAIRY_NAMES.length], home: towerId, x: p.x, y: p.y, atKey: hex.key(t.q, t.r),
+    hold: null, energy: 100, prog: [], frames: [], ended: false, act: null, bubble: '', msg: '', claim: null };
+  return s.fairies[id];
+}
+
+// ---------- 設施操作 ----------
+const ops = {
+  plant(s, farm) { if (farm.type !== 'farm' || farm.planted) return false; farm.planted = true; farm.growth = 0; return true; },
+  harvest(s, farm) {
+    if (farm.type !== 'farm' || !farm.planted || farm.growth < 1) return 0;
+    farm.planted = false; farm.growth = 0;
+    if (s.features.fert) farm.fert = Math.max(0, farm.fert - 1);
+    addStat(s, '法力花', 3);
+    const p = posOf(farm); emit('burst', p.x, p.y, { color: ITEMS['法力花'].color });
+    return 3;
+  },
+  // 把物品交給設施，回傳實際收下的數量
+  deliver(s, id, item, n) {
+    const e = s.ents[id]; if (!e || n <= 0) return 0;
+    if (e.type === 'tower') { e.storage[item] = (e.storage[item] || 0) + n; return n; }
+    if (e.type === 'blueprint') {
+      const want = (e.need[item] || 0) - (e.have[item] || 0); const k = Math.max(0, Math.min(want, n));
+      if (k > 0) { e.have[item] = (e.have[item] || 0) + k; if (has(e.have, e.need)) completeBlueprint(s, e); }
+      return k;
+    }
+    if (e.type === 'farm' && item === '滋養露' && s.features.fert) {
+      const k = Math.max(0, Math.min(n, Math.ceil((FERT_MAX - e.fert) / 2))); e.fert = Math.min(FERT_MAX, e.fert + 2 * k); return k;
+    }
+    if (e.type === 'barrier' && item === '結界晶') {
+      const k = Math.max(0, Math.min(n, 5 - Math.floor(e.charge))); e.charge = Math.min(5, e.charge + k); return k;
+    }
+    return 0;
+  },
+};
+
+function completeBlueprint(s, bp) {
+  const { id, q, r, target } = bp;
+  delete s.ents[id]; delete s.tiles[hex.key(q, r)].e;
+  spawnBuilding(s, target, q, r, { id });
+  s.ents[id].built = true;
+  s.stats.built[target] = (s.stats.built[target] || 0) + 1;
+  const p = hex.toXY(q, r); emit('build', p.x, p.y);
+}
+
+// ---------- 指令（玩家操作）----------
+const ok = extra => Object.assign({ ok: true }, extra || {});
+const no = reason => ({ ok: false, reason });
+const cmd = {
+  canPlace(s, type, q, r) {
+    const B0 = BUILDS[type]; const tile = s.tiles[hex.key(q, r)];
+    if (!B0 || !s.unlocked.includes(type)) return no('尚未解鎖');
+    if (!tile) return no('超出地圖');
+    if (tile.e) return no('這格已經有東西了');
+    if (!B0.terrain.includes(tile.t)) return no(B0.name + '不能蓋在' + TERRAIN[tile.t].name + '上');
+    if (type === 'tower' && towers(s).some(t => hex.dist(t, tile) < 4)) return no('魔法塔之間至少相隔 4 格');
+    return ok();
+  },
+  placeBlueprint(s, type, q, r) {
+    const c = cmd.canPlace(s, type, q, r); if (!c.ok) return c;
+    const id = 'e' + s.nextId++;
+    s.ents[id] = { id, type: 'blueprint', target: type, q, r, need: Object.assign({}, BUILDS[type].cost), have: {} };
+    s.tiles[hex.key(q, r)].e = id;
+    return ok({ id });
+  },
+  // 拆除：藍圖退回已搬入的材料；建築退回一半建造成本；都放回中央塔
+  demolish(s, id) {
+    const e = s.ents[id]; if (!e) return no('不存在');
+    if (e.type === 'tower') return no('魔法塔不能拆除');
+    const back = e.type === 'blueprint' ? e.have : Object.fromEntries(Object.entries(BUILDS[e.type].cost).map(([k, n]) => [k, Math.floor(n / 2)]));
+    const c = centralOf(s); for (const [k, n] of Object.entries(back)) if (n) c.storage[k] = (c.storage[k] || 0) + n;
+    for (const ch of Object.values(s.channels)) if (ch.nodes.includes(id)) delete s.channels[ch.id];
+    delete s.ents[id]; delete s.tiles[hex.key(e.q, e.r)].e; delete s.claims[id];
+    return ok();
+  },
+  setScript(s, fid, prog) {
+    const f = s.fairies[fid];
+    releaseClaim(s, f);
+    f.prog = JSON.parse(JSON.stringify(prog)); f.frames = []; f.ended = false; f.act = null; f.bubble = ''; f.msg = '';
+    return ok();
+  },
+  summonFairy(s, tid) {
+    const t = s.ents[tid];
+    if (Object.keys(s.fairies).length >= 16) return no('精靈已達上限 16 隻');
+    if (!pay(t.storage, SUMMON_COST)) return no('需要 ' + costText(SUMMON_COST));
+    const f = newFairy(s, tid); emit('burst', f.x, f.y, { color: '#fff6c0' });
+    return ok({ id: f.id });
+  },
+  expandCost(t) { return { '月石': 2 * t.slots, '法力花': 2 * t.slots }; },
+  expandTower(s, tid) {
+    const t = s.ents[tid];
+    if (!s.unlocked.includes('expand')) return no('尚未解鎖');
+    if (t.slots >= 9) return no('已達上限 9 格');
+    const cost = cmd.expandCost(t);
+    if (!pay(t.storage, cost)) return no('需要 ' + costText(cost));
+    t.slots++; t.devices.push(null); s.stats.expanded++;
+    return ok();
+  },
+  addDevice(s, tid, slot, type) {
+    const t = s.ents[tid], D = DEVICES[type];
+    if (!D || !s.unlocked.includes(type)) return no('尚未解鎖');
+    if (slot < 0 || slot >= t.slots || t.devices[slot]) return no('這一格不能安裝');
+    if (!pay(t.storage, D.cost)) return no('需要 ' + costText(D.cost));
+    t.devices[slot] = newDevice(type);
+    return ok();
+  },
+  removeDevice(s, tid, slot) {
+    const t = s.ents[tid], d = t.devices[slot]; if (!d) return no('空格');
+    for (const [k, n] of Object.entries(DEVICES[d.type].cost)) t.storage[k] = (t.storage[k] || 0) + n;
+    t.devices[slot] = null; return ok();
+  },
+  setRecipe(s, tid, slot, rid) {
+    const d = s.ents[tid].devices[slot];
+    if (!d || !RECIPES[rid] || !s.recipes.includes(rid)) return no('無法使用這個配方');
+    const allow = DEVICES[d.type].recipes; if (allow && !allow.includes(rid)) return no('這台設備不能做這個配方');
+    d.recipe = rid; d.prog = 0; return ok();
+  },
+  setLimit(s, tid, slot, n) { const d = s.ents[tid].devices[slot]; if (!d) return no('空格'); d.limit = Math.max(0, Math.min(999, n | 0)); return ok(); },
+  setKeep(s, tid, slot, n) { const d = s.ents[tid].devices[slot]; if (!d) return no('空格'); d.keep = Math.max(0, Math.min(999, n | 0)); return ok(); },
+  assignHome(s, fid, tid) { const f = s.fairies[fid]; if (!s.ents[tid] || s.ents[tid].type !== 'tower') return no('不是魔法塔'); f.home = tid; return ok(); },
+  buildChannel(s, nodes, item) {
+    if (!s.unlocked.includes('channel')) return no('尚未解鎖');
+    if (nodes.length < 2) return no('至少需要起點與終點');
+    const es = nodes.map(id => s.ents[id]);
+    if (es.some(e => !e)) return no('節點不存在');
+    const a = es[0], z = es[es.length - 1];
+    if (!['barrier', 'tower'].includes(a.type)) return no('起點必須是結界或魔法塔');
+    if (z.type !== 'tower' || z === a) return no('終點必須是另一座魔法塔');
+    if (es.slice(1, -1).some(e => e.type !== 'anchor')) return no('中繼點必須是光之錨');
+    if (new Set(nodes).size !== nodes.length) return no('節點不能重複');
+    for (let i = 1; i < es.length; i++) if (hex.dist(es[i - 1], es[i]) > CH_HOP) return no('相鄰節點距離超過 ' + CH_HOP + ' 格');
+    if (a.type === 'tower' && !ITEMS[item]) return no('從塔出發的通道要指定運送的物品');
+    const id = 'c' + s.nextId++;
+    s.channels[id] = { id, nodes: nodes.slice(), item: a.type === 'tower' ? item : null, timer: 0, transit: [] };
+    return ok({ id });
+  },
+  removeChannel(s, id) { delete s.channels[id]; return ok(); },
+  fulfillOrder(s, gid) {
+    const g = s.goals.find(x => x.id === gid);
+    if (!g || g.kind !== 'order' || g.done) return no('沒有這張訂單');
+    const all = towers(s).sort((a, b) => (b.central ? 1 : 0) - (a.central ? 1 : 0));
+    const total = all.reduce((n, t) => n + (t.storage[g.item] || 0), 0);
+    if (total < g.n) return no(g.item + ' 不足（共 ' + total + '/' + g.n + '）');
+    let left = g.n;
+    for (const t of all) { const k = Math.min(left, t.storage[g.item] || 0); t.storage[g.item] -= k; left -= k; }
+    g.done = true; s.stats.orders++;
+    return ok();
+  },
+};
+
+// ---------- 精靈腳本直譯器 ----------
+function listAt(f, path) { let L = f.prog; for (let i = 0; i < path.length; i += 2) L = L[path[i]][path[i + 1]]; return L; }
+
+function releaseClaim(s, f) { if (f.claim && s.claims[f.claim] && s.claims[f.claim].f === f.id) delete s.claims[f.claim]; f.claim = null; }
+const claimedByOther = (s, f, id) => { const c = s.claims[id]; return c && c.f !== f.id && c.until > s.time; };
+
+function matches(s, e, what, f) {
+  switch (what) {
+    case 'tower': return e.type === 'tower';
+    case 'farmEmpty': return e.type === 'farm' && !e.planted;
+    case 'farmRipe': return e.type === 'farm' && e.planted && e.growth >= 1;
+    case 'farmNeedNourish': return e.type === 'farm' && s.features.fert && e.fert <= FERT_MAX - 2;
+    case 'barrierReady': return e.type === 'barrier' && e.buf >= 1;
+    case 'barrierNeedCrystal': return e.type === 'barrier' && e.charge < 2;
+    case 'blueprint': return e.type === 'blueprint' && Object.keys(e.need).some(k => (e.need[k] - (e.have[k] || 0)) > 0 && (!f.hold || f.hold.item === k));
+  }
+  return false;
+}
+
+function findNearest(s, f, what) {
+  let best = null, bd = Infinity;
+  const consider = (o, key, id) => { const p = hex.toXY(o.q, o.r); const d = (p.x - f.x) ** 2 + (p.y - f.y) ** 2; if (d < bd) { bd = d; best = { x: p.x, y: p.y, key, id }; } };
+  if (TERRAIN[what]) {
+    for (const k in s.tiles) { const t = s.tiles[k]; if (t.t === what && !t.e) consider(t, k, null); }
+  } else {
+    for (const id in s.ents) {
+      const e = s.ents[id];
+      if (!matches(s, e, what, f)) continue;
+      if (CLAIMABLE[what] && claimedByOther(s, f, id)) continue;
+      consider(e, hex.key(e.q, e.r), id);
+    }
+  }
+  return best;
+}
+
+function evalCond(s, f, c) {
+  let v = false;
+  const home = s.ents[f.home];
+  switch (c.kind) {
+    case 'handEmpty': v = !f.hold; break;
+    case 'handFull': v = !!f.hold && f.hold.n >= CAP; break;
+    case 'holding': v = !!f.hold && f.hold.item === c.item; break;
+    case 'energyBelow': v = f.energy < c.n; break;
+    case 'homeBelow': v = !home || (home.storage[c.item] || 0) < c.n; break;
+    case 'exists': v = !!findNearest(s, f, c.what); break;
+  }
+  return c.not ? !v : v;
+}
+
+function fail(s, f, msg) { releaseClaim(s, f); f.bubble = '?'; f.msg = msg; f.act = { op: 'wait', t: 0, dur: 1, failed: true }; }
+
+const hereEnt = (s, f) => { const t = s.tiles[f.atKey]; return t && t.e ? s.ents[t.e] : null; };
+
+function execBlock(s, f, b, p, idx) {
+  const push = (key, loop) => f.frames.push({ p: p.concat([idx, key]), i: 0, loop });
+  const hold = f.hold;
+  const here = hereEnt(s, f);
+  switch (b.op) {
+    case 'forever': push('body', { k: 'f' }); return;
+    case 'repeat': { const n = Math.max(0, b.n | 0); if (n > 0) push('body', { k: 'r', n }); return; }
+    case 'until': if (!evalCond(s, f, b.cond)) push('body', { k: 'u', cond: b.cond }); return;
+    case 'if': if (evalCond(s, f, b.cond)) push('body', null); else if (b.else && b.else.length) push('else', null); return;
+    case 'goto': {
+      releaseClaim(s, f);
+      const tg = b.target || { kind: 'home' };
+      let dest = null;
+      if (tg.kind === 'home' || tg.kind === 'tower') {
+        const t = s.ents[tg.kind === 'home' ? f.home : tg.id];
+        if (t) { const p2 = posOf(t); dest = { x: p2.x, y: p2.y, key: hex.key(t.q, t.r) }; }
+      } else dest = findNearest(s, f, tg.what);
+      if (!dest) return fail(s, f, '找不到目標：' + (tg.kind === 'nearest' ? NEAREST[tg.what] : '塔'));
+      if (dest.id && CLAIMABLE[tg.what]) { s.claims[dest.id] = { f: f.id, until: s.time + 30 }; f.claim = dest.id; }
+      f.msg = '';
+      f.act = { op: 'move', tx: dest.x, ty: dest.y, key: dest.key };
+      return;
+    }
+    case 'gather': {
+      const tile = s.tiles[f.atKey], T = tile && TERRAIN[tile.t];
+      if (!T || !T.res || tile.e) return fail(s, f, '這裡沒有可採集的資源');
+      if (hold && hold.item !== T.res) return fail(s, f, '手上拿著別的東西');
+      if (hold && hold.n >= CAP) return fail(s, f, '手上已經滿了');
+      f.act = { op: 'gather', t: 0, item: T.res }; return;
+    }
+    case 'plant':
+      if (!here || here.type !== 'farm' || here.planted) return fail(s, f, '這裡不是空的農田');
+      if (!hold || hold.item !== '法力花') return fail(s, f, '需要拿著法力花才能播種');
+      f.act = { op: 'plant', t: 0, dur: 1 }; return;
+    case 'harvest':
+      if (!here || here.type !== 'farm' || !here.planted || here.growth < 1) return fail(s, f, '這裡沒有成熟的農田');
+      if (hold && (hold.item !== '法力花' || hold.n + 3 > CAP)) return fail(s, f, '手上放不下');
+      f.act = { op: 'harvest', t: 0, dur: 1 }; return;
+    case 'take': {
+      if (!here || here.type !== 'tower') return fail(s, f, '要在魔法塔才能拿取');
+      if (hold && hold.item !== b.item) return fail(s, f, '手上拿著別的東西');
+      if (!(here.storage[b.item] > 0)) return fail(s, f, '塔裡沒有' + b.item);
+      f.act = { op: 'take', t: 0, dur: 0.5, item: b.item, n: Math.max(1, Math.min(CAP, b.n | 0)) }; return;
+    }
+    case 'drop':
+      if (!hold) return fail(s, f, '手上沒有東西');
+      if (!here) return fail(s, f, '這裡沒有可以交付的對象');
+      f.act = { op: 'drop', t: 0, dur: 0.5 }; return;
+    case 'collect':
+      if (!here || here.type !== 'barrier' || here.buf < 1) return fail(s, f, '這裡沒有可收取的元素');
+      if (hold && (hold.item !== here.elem || hold.n >= CAP)) return fail(s, f, '手上放不下');
+      f.act = { op: 'collect', t: 0, dur: 0.5 }; return;
+    case 'wait': f.act = { op: 'wait', t: 0, dur: Math.max(0.1, +b.s || 1) }; return;
+    case 'refuel': f.act = { op: 'refuel', phase: 'go', t: 0, auto: false }; return;
+  }
+}
+
+function runScript(s, f) {
+  for (let k = 0; k < 64 && !f.act; k++) {
+    if (!f.frames.length) { if (f.ended) return; f.frames.push({ p: [], i: 0, loop: null }); }
+    const fr = f.frames[f.frames.length - 1];
+    const L = listAt(f, fr.p);
+    if (fr.i >= L.length) {
+      const lp = fr.loop;
+      if (lp && lp.k === 'f') { fr.i = 0; if (!L.length) return; continue; }
+      if (lp && lp.k === 'r') { lp.n--; if (lp.n > 0) { fr.i = 0; continue; } }
+      if (lp && lp.k === 'u' && !evalCond(s, f, lp.cond)) { fr.i = 0; continue; }
+      f.frames.pop();
+      if (!f.frames.length) { f.ended = true; return; }
+      continue;
+    }
+    const idx = fr.i; fr.i++;
+    execBlock(s, f, L[idx], fr.p, idx);
+  }
+}
+
+// 自動補給結束後：回到最內層迴圈的開頭，避免從半途的步驟接續
+function unwindToLoop(f) {
+  while (f.frames.length && !f.frames[f.frames.length - 1].loop) f.frames.pop();
+  if (f.frames.length) f.frames[f.frames.length - 1].i = 0; else f.ended = false;
+}
+
+function addHold(f, item, n) { if (!f.hold) f.hold = { item, n: 0 }; f.hold.n = Math.min(CAP, f.hold.n + n); }
+
+function doAct(s, f, h) {
+  const a = f.act;
+  const done = () => { f.act = null; f.bubble = ''; };
+  switch (a.op) {
+    case 'move': {
+      const dx = a.tx - f.x, dy = a.ty - f.y, d = Math.hypot(dx, dy), sp = SPEED * (f.energy <= 0 ? 0.5 : 1) * h;
+      if (d <= sp) { f.x = a.tx; f.y = a.ty; f.atKey = a.key; done(); } else { f.x += dx / d * sp; f.y += dy / d * sp; }
+      return;
+    }
+    case 'wait': a.t += h; if (a.t >= a.dur) done(); return;
+    case 'gather': {
+      const tile = s.tiles[f.atKey];
+      if (!tile || tile.e || !TERRAIN[tile.t].res) return fail(s, f, '資源消失了');
+      a.t += h;
+      if (a.t >= 1.5) {
+        a.t -= 1.5; addHold(f, a.item, 1); addStat(s, a.item, 1);
+        if (f.hold.n >= CAP) done();
+      }
+      return;
+    }
+    case 'refuel': {
+      const home = s.ents[f.home];
+      if (!home) { done(); return; }
+      if (a.phase === 'go') {
+        const p = posOf(home), dx = p.x - f.x, dy = p.y - f.y, d = Math.hypot(dx, dy), sp = SPEED * 0.8 * h;
+        if (d <= sp) { f.x = p.x; f.y = p.y; f.atKey = hex.key(home.q, home.r); a.phase = 'rest'; } else { f.x += dx / d * sp; f.y += dy / d * sp; }
+        return;
+      }
+      if (a.phase === 'rest') {
+        if ((home.storage['花蜜'] || 0) >= 1) { home.storage['花蜜'] -= 1; a.phase = 'eat'; a.t = 0; f.bubble = '🍯'; return; }
+        f.bubble = 'z'; f.msg = '塔裡沒有花蜜，正在休息'; f.energy = Math.min(100, f.energy + 1.5 * h);
+        if (f.energy >= 100) { done(); f.msg = ''; if (a.auto) unwindToLoop(f); }
+        return;
+      }
+      a.t += h; // eat
+      if (a.t >= 0.5) { f.energy = 100; f.msg = ''; done(); if (a.auto) unwindToLoop(f); }
+      return;
+    }
+  }
+  // 其餘為「定時動作」：時間到才生效，生效前再檢查一次
+  a.t += h;
+  if (a.t < a.dur) return;
+  const here = hereEnt(s, f);
+  switch (a.op) {
+    case 'plant':
+      if (!here || here.type !== 'farm' || here.planted || !f.hold || f.hold.item !== '法力花') return fail(s, f, '無法播種');
+      f.hold.n--; if (!f.hold.n) f.hold = null; ops.plant(s, here); break;
+    case 'harvest': {
+      const y = here ? ops.harvest(s, here) : 0;
+      if (!y) return fail(s, f, '沒有可採收的花');
+      addHold(f, '法力花', y); break;
+    }
+    case 'take': {
+      if (!here || here.type !== 'tower') return fail(s, f, '不在塔中');
+      const k = Math.min(a.n - (f.hold ? f.hold.n : 0), here.storage[a.item] || 0, CAP - (f.hold ? f.hold.n : 0));
+      if (k <= 0) return fail(s, f, '塔裡沒有' + a.item);
+      here.storage[a.item] -= k; addHold(f, a.item, k); break;
+    }
+    case 'drop': {
+      if (!here || !f.hold) return fail(s, f, '無法放下');
+      const k = ops.deliver(s, here.id, f.hold.item, f.hold.n);
+      if (k <= 0) return fail(s, f, '對方不需要' + f.hold.item);
+      f.hold.n -= k; if (!f.hold.n) f.hold = null; break;
+    }
+    case 'collect': {
+      if (!here || here.type !== 'barrier') return fail(s, f, '不在結界');
+      const k = Math.min(here.buf, CAP - (f.hold ? f.hold.n : 0));
+      if (k <= 0 || (f.hold && f.hold.item !== here.elem)) return fail(s, f, '收不了');
+      here.buf -= k; addHold(f, here.elem, k); break;
+    }
+  }
+  releaseClaim(s, f);
+  done();
+}
+
+function stepFairy(s, f, h) {
+  if (!f.act) {
+    if (f.energy < 15) { releaseClaim(s, f); f.act = { op: 'refuel', phase: 'go', t: 0, auto: true }; }
+    else runScript(s, f);
+  }
+  const a = f.act;
+  const busy = a && a.op !== 'wait' && !(a.op === 'refuel' && a.phase !== 'go');
+  f.energy = Math.max(0, f.energy - (busy ? 1 : 0.3) * h);
+  if (f.act) doAct(s, f, h);
+  else if (f.ended) f.bubble = '…';
+}
+
+// ---------- 世界推進 ----------
+function stepWorld(s, h) {
+  s.time += h;
+  for (const id in s.ents) {
+    const e = s.ents[id];
+    if (e.type === 'farm' && e.planted && e.growth < 1) {
+      const slow = s.features.fert && e.fert <= 0 ? 2.5 : 1;
+      e.growth = Math.min(1, e.growth + h / (GROW_TIME * slow));
+    } else if (e.type === 'barrier') {
+      const rate = (e.charge > 0 ? 5 : 20) * (e.fast ? 0.7 : 1);
+      e.t += h;
+      if (e.t >= rate) {
+        e.t = 0;
+        if (e.buf < 10) { e.buf++; addStat(s, e.elem, 1); if (e.charge > 0) e.charge = Math.max(0, e.charge - 0.1); }
+      }
+    } else if (e.type === 'tower') stepTower(s, e, h);
+  }
+  for (const id in s.fairies) stepFairy(s, s.fairies[id], h);
+  for (const id in s.channels) stepChannel(s, s.channels[id], h);
+  for (const g of s.goals) if (!g.done && g.kind !== 'order') { const [c, n] = goalProgress(s, g); if (c >= n) g.done = true; }
+  if (!s.complete && s.goals.every(g => g.done)) { s.complete = true; s.completeAt = s.time; }
+}
+
+function stepTower(s, t, h) {
+  for (const d of t.devices) {
+    if (!d || !d.recipe) continue;
+    const R = RECIPES[d.recipe], outItem = Object.keys(R.out)[0];
+    // 保留原料：每種原料用掉後至少還要剩 keep 個（例如留法力花當種子）
+    const full = (t.storage[outItem] || 0) >= d.limit, ready = Object.entries(R.in).every(([k, n]) => (t.storage[k] || 0) >= n + (d.keep || 0));
+    if (d.prog === 0 && (full || !ready)) { d.state = full ? 'full' : 'wait'; continue; }
+    d.prog += h; d.state = 'work';
+    if (d.prog < R.time) continue;
+    if (full || !ready) { d.prog = R.time; d.state = full ? 'full' : 'wait'; continue; }
+    pay(t.storage, R.in);
+    for (const [k, n] of Object.entries(R.out)) { t.storage[k] = (t.storage[k] || 0) + n; addStat(s, k, n); }
+    d.prog = 0;
+    const p = posOf(t); emit('craft', p.x, p.y, { color: ITEMS[outItem].color });
+  }
+}
+
+function channelPoints(s, ch) { return ch.nodes.map(id => posOf(s.ents[id])); }
+function channelLength(pts) { let L = 0; for (let i = 1; i < pts.length; i++) L += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); return L; }
+
+function stepChannel(s, ch, h) {
+  const src = s.ents[ch.nodes[0]], dst = s.ents[ch.nodes[ch.nodes.length - 1]];
+  if (!src || !dst) { delete s.channels[ch.id]; return; }
+  ch.timer = Math.min(CH_INTERVAL, ch.timer + h);
+  if (ch.timer >= CH_INTERVAL) {
+    let item = null;
+    if (src.type === 'barrier' && src.buf >= 1) { src.buf--; item = src.elem; }
+    else if (src.type === 'tower' && (src.storage[ch.item] || 0) >= 1) { src.storage[ch.item]--; item = ch.item; }
+    if (item) { ch.transit.push({ d: 0, item }); ch.timer = 0; }
+  }
+  const len = channelLength(channelPoints(s, ch));
+  for (const it of ch.transit) it.d += CH_SPEED * h;
+  while (ch.transit.length && ch.transit[0].d >= len) {
+    const it = ch.transit.shift();
+    dst.storage[it.item] = (dst.storage[it.item] || 0) + 1;
+  }
+}
+
+function goalProgress(s, g) {
+  const n = g.n;
+  switch (g.kind) {
+    case 'build': return [s.stats.built[g.type] || 0, n];
+    case 'buildNear': {
+      const c = Object.values(s.ents).filter(e => e.type === g.type && e.built &&
+        Object.values(s.tiles).some(t => t.t === g.near && hex.dist(t, e) <= g.range)).length;
+      return [c, n];
+    }
+    case 'produce': return [s.stats.produced[g.item] || 0, n];
+    case 'fairies': return [Object.keys(s.fairies).length, n];
+    case 'expand': return [s.stats.expanded, n];
+    case 'device': return [towers(s).reduce((k, t) => k + t.devices.filter(d => d && d.type === g.dev).length, 0), n];
+    case 'channels': return [Object.keys(s.channels).length, n];
+    case 'order': return [g.done ? n : towers(s).reduce((k, t) => k + (t.storage[g.item] || 0), 0), n];
+  }
+  return [0, n];
+}
+
+function tick(s, dt) {
+  while (dt > 1e-9) { const h = Math.min(0.1, dt); stepWorld(s, h); dt -= h; }
+}
+
+function save(s) { return JSON.stringify(s); }
+function load(str) { const s = JSON.parse(str); if (!s || s.v !== 1 || !s.tiles) throw new Error('存檔格式不符'); return s; }
+
+globalThis.FG = {
+  hex, ITEMS, RECIPES, DEVICES, BUILDS, TERRAIN, LEVELS, TEMPLATES, NEAREST, CAP, CH_HOP, FERT_MAX, SUMMON_COST,
+  newGame, tick, save, load, spawnBuilding, ops, cmd, goalProgress, findNearest, channelPoints, channelLength,
+  costText, towers, centralOf, entAt, posOf, fx,
+};
+})();
+</script>
+<script id="fg-ui">
+// ===== Fairy Garden 介面：Canvas 繪製、輸入、面板、腳本編輯器 =====
+(function () {
+'use strict';
+const FG = globalThis.FG, hex = FG.hex;
+const $ = q => document.querySelector(q);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const cv = $('#cv'), ctx = cv.getContext('2d');
+const S = 34;          // 一個座標單位 = 34px（縮放 1 時）
+const SKY = 120;       // 流動通道的高度（px，縮放 1 時）
+let W = 0, H = 0;
+const UI = { s: null, playing: false, speed: 1, cam: { x: 0, y: 0, z: 1 }, tool: null, sel: null, layer: 'all',
+  chPath: [], chItem: '法力花', mouse: { x: 0, y: 0, in: false }, drag: null, keys: {}, parts: [], t: 0,
+  lastUi: 0, lastSave: 0, doneSeen: {}, completeShown: false, ed: null, sideHtml: '', goalsHtml: '' };
+
+// ---------- 存檔 ----------
+const KEY = 'fairygarden.v1';
+function store() {
+  // 存檔可能被手動改壞：讀取失敗時保留原字串到備份鍵，避免覆寫掉玩家進度
+  const raw = localStorage.getItem(KEY);
+  if (!raw) return { unlocked: 1, saves: {} };
+  try { return JSON.parse(raw); } catch (e) { localStorage.setItem(KEY + '.broken', raw); return { unlocked: 1, saves: {} }; }
+}
+function saveGame(silent) {
+  if (!UI.s) return;
+  const st = store();
+  st.saves[UI.s.level] = FG.save(UI.s);
+  if (UI.s.complete) st.unlocked = Math.max(st.unlocked, UI.s.level + 1);
+  localStorage.setItem(KEY, JSON.stringify(st));
+  UI.lastSave = performance.now();
+  if (!silent) toast('已存檔', 'good');
+}
+
+// ---------- 座標 ----------
+const w2s = (wx, wy) => ({ x: (wx * S - UI.cam.x) * UI.cam.z + W / 2, y: (wy * S - UI.cam.y) * UI.cam.z + H / 2 });
+const s2w = (x, y) => ({ x: ((x - W / 2) / UI.cam.z + UI.cam.x) / S, y: ((y - H / 2) / UI.cam.z + UI.cam.y) / S });
+const tileAtScreen = (x, y) => { const w = s2w(x, y); const h = hex.fromXY(w.x, w.y); return UI.s.tiles[hex.key(h.q, h.r)] || null; };
+const entPos = e => { const p = FG.posOf(e); return w2s(p.x, p.y); };
+function centerOn(q, r) { const p = hex.toXY(q, r); UI.cam.x = p.x * S; UI.cam.y = p.y * S; }
+function resize() { const d = window.devicePixelRatio || 1; W = innerWidth; H = innerHeight; cv.width = W * d; cv.height = H * d; ctx.setTransform(d, 0, 0, d, 0, 0); }
+addEventListener('resize', resize); resize();
+
+// ---------- 繪圖小工具 ----------
+const hsl = (h, s, l, a) => `hsla(${h},${s}%,${l}%,${a === undefined ? 1 : a})`;
+const CORN = [...Array(6)].map((_, i) => { const a = Math.PI / 180 * (60 * i - 30); return [Math.cos(a), Math.sin(a)]; });
+function hexPath(x, y, r) { ctx.beginPath(); CORN.forEach(([c, s], i) => i ? ctx.lineTo(x + r * c, y + r * s) : ctx.moveTo(x + r * c, y + r * s)); ctx.closePath(); }
+const hash = (q, r, k) => { let h = (q * 374761393 + r * 668265263 + k * 1442695041) | 0; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+function glow(x, y, r, color, a) {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, color); g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.globalAlpha = a === undefined ? 1 : a; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+}
+function emoji(t, x, y, size, alpha) { ctx.globalAlpha = alpha || 1; ctx.font = `${size}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, x, y); ctx.globalAlpha = 1; }
+function label(t, x, y, color, size) { ctx.font = `600 ${size || 13}px "Noto Sans TC","Microsoft JhengHei",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(10,14,24,.75)'; ctx.strokeText(t, x, y); ctx.fillStyle = color || '#fff'; ctx.fillText(t, x, y); }
+
+// ---------- 粒子 ----------
+function part(wx, wy, o) { if (UI.parts.length > 900) return; UI.parts.push(Object.assign({ x: wx, y: wy, lift: 0, vx: 0, vy: 0, vl: 0, life: 1, max: 1, size: 2, color: '#fff' }, o)); }
+function burst(wx, wy, color, n, lift) {
+  for (let i = 0; i < n; i++) { const a = Math.random() * 7, v = 0.4 + Math.random() * 1.2;
+    part(wx, wy, { lift: lift || 10, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.6, vl: 20 + Math.random() * 40, life: 0.8 + Math.random() * 0.6, max: 1.4, size: 1.5 + Math.random() * 2.5, color }); }
+}
+function drainFx() {
+  while (FG.fx.length) {
+    const e = FG.fx.shift();
+    if (e.type === 'burst') burst(e.x, e.y, e.color, 16, 8);
+    else if (e.type === 'build') burst(e.x, e.y, '#fff6c0', 30, 4);
+    else if (e.type === 'craft') for (let i = 0; i < 8; i++) part(e.x + (Math.random() - .5) * .3, e.y, { lift: 95, vl: 30 + Math.random() * 30, vx: (Math.random() - .5) * .5, life: 1.2, max: 1.2, size: 2.5, color: e.color });
+  }
+}
+function stepParts(dt) {
+  for (const p of UI.parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.lift += p.vl * dt; p.vx *= 0.97; p.vy *= 0.97; p.life -= dt; }
+  UI.parts = UI.parts.filter(p => p.life > 0);
+}
+function drawParts() {
+  ctx.globalCompositeOperation = 'lighter';
+  const z = UI.cam.z;
+  for (const p of UI.parts) {
+    const q = w2s(p.x, p.y); const a = Math.max(0, p.life / p.max);
+    glow(q.x, q.y - p.lift * z, p.size * 3 * z, p.color, a * 0.9);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+// ---------- 地面層 ----------
+const TC = { grass: [108, 40, 50], meadow: [92, 46, 55], forest: [130, 36, 33], rock: [228, 10, 56], water: [198, 62, 46] };
+function drawTile(t, p, R, z) {
+  const [h, sa, l0] = TC[t.t]; const l = l0 + (t.v - 0.5) * 6;
+  if (t.t === 'water') {
+    hexPath(p.x, p.y + 3 * z, R * 1.01); ctx.fillStyle = hsl(h, sa, l + (Math.sin(UI.t * 1.3 + t.v * 9) * 2)); ctx.fill();
+    if (z > 0.55) { ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.lineWidth = 1.2 * z; ctx.beginPath();
+      const o = (UI.t * 0.4 + t.v) % 1; ctx.arc(p.x + (o - 0.5) * R, p.y + 3 * z + (t.v - 0.5) * R * 0.6, R * 0.25, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke(); }
+    return;
+  }
+  hexPath(p.x, p.y + 5 * z, R); ctx.fillStyle = hsl(h, sa, l - 20); ctx.fill();
+  hexPath(p.x, p.y, R); ctx.fillStyle = hsl(h, sa, l); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,.08)'; ctx.lineWidth = 1; ctx.stroke();
+  if (t.e || z < 0.45) return;
+  if (t.t === 'forest') {
+    for (let i = 0; i < 3; i++) {
+      const ox = (hash(t.q, t.r, i) - 0.5) * R * 1.1, oy = (hash(t.q, t.r, i + 7) - 0.5) * R * 0.8, rr = (6 + hash(t.q, t.r, i + 3) * 4) * z;
+      ctx.fillStyle = '#4b3423'; ctx.fillRect(p.x + ox - 1.5 * z, p.y + oy, 3 * z, 7 * z);
+      ctx.fillStyle = hsl(135, 38, 20 + hash(t.q, t.r, i + 5) * 10); ctx.beginPath(); ctx.arc(p.x + ox, p.y + oy - rr * 0.5, rr, 0, 7); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.beginPath(); ctx.arc(p.x + ox - rr * 0.3, p.y + oy - rr * 0.8, rr * 0.45, 0, 7); ctx.fill();
+    }
+  } else if (t.t === 'rock') {
+    for (let i = 0; i < 2; i++) {
+      const ox = (hash(t.q, t.r, i) - 0.5) * R, oy = (hash(t.q, t.r, i + 4) - 0.5) * R * 0.6, rr = (5 + hash(t.q, t.r, i + 2) * 5) * z;
+      ctx.fillStyle = hsl(230, 12, 40); ctx.beginPath(); ctx.ellipse(p.x + ox, p.y + oy, rr, rr * 0.7, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = hsl(230, 15, 68); ctx.beginPath(); ctx.ellipse(p.x + ox - rr * 0.25, p.y + oy - rr * 0.25, rr * 0.5, rr * 0.3, 0, 0, 7); ctx.fill();
+    }
+  } else if (t.t === 'meadow') {
+    const cols = ['#ff9ad5', '#fff07a', '#ffffff', '#c9a7ff', '#ffb37f'];
+    for (let i = 0; i < 8; i++) { ctx.fillStyle = cols[(hash(t.q, t.r, i) * 5) | 0]; ctx.beginPath();
+      ctx.arc(p.x + (hash(t.q, t.r, i + 9) - 0.5) * R * 1.3, p.y + (hash(t.q, t.r, i + 19) - 0.5) * R, 1.9 * z, 0, 7); ctx.fill(); }
+  } else if (t.v > 0.72) {
+    ctx.strokeStyle = 'rgba(30,70,30,.5)'; ctx.lineWidth = 1.2 * z; ctx.beginPath();
+    const ox = p.x + (hash(t.q, t.r, 1) - 0.5) * R, oy = p.y + (hash(t.q, t.r, 2) - 0.5) * R * 0.6;
+    ctx.moveTo(ox - 3 * z, oy); ctx.lineTo(ox - 1 * z, oy - 5 * z); ctx.moveTo(ox, oy); ctx.lineTo(ox + 1 * z, oy - 6 * z); ctx.moveTo(ox + 3 * z, oy); ctx.lineTo(ox + 3 * z, oy - 4 * z); ctx.stroke();
+  }
+}
+
+// ---------- 建築 ----------
+function drawFarm(e, p, R, z) {
+  hexPath(p.x, p.y, R * 0.82); ctx.fillStyle = '#7a5236'; ctx.fill(); ctx.strokeStyle = '#5a3a24'; ctx.lineWidth = 2 * z; ctx.stroke();
+  ctx.strokeStyle = 'rgba(40,25,15,.45)'; ctx.lineWidth = 1.5 * z;
+  for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(p.x - R * 0.55, p.y + i * R * 0.35); ctx.lineTo(p.x + R * 0.55, p.y + i * R * 0.35); ctx.stroke(); }
+  if (e.planted) {
+    for (let i = 0; i < 6; i++) {
+      const x = p.x + ((i % 3) - 1) * R * 0.38, y = p.y + (i < 3 ? -0.2 : 0.3) * R;
+      if (e.growth < 1) { const hh = (3 + e.growth * 9) * z; ctx.strokeStyle = '#7ddc6a'; ctx.lineWidth = 2 * z; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - hh); ctx.stroke();
+        ctx.fillStyle = '#9cf08a'; ctx.beginPath(); ctx.ellipse(x + 2 * z, y - hh * 0.7, 2.5 * z, 1.3 * z, -0.5, 0, 7); ctx.fill(); }
+      else { glow(x, y - 8 * z, 9 * z, 'rgba(255,143,200,.8)', 0.6 + 0.3 * Math.sin(UI.t * 3 + i)); ctx.fillStyle = '#ff8fc8'; ctx.beginPath(); ctx.arc(x, y - 8 * z, 3.6 * z, 0, 7); ctx.fill(); ctx.fillStyle = '#fff0a0'; ctx.beginPath(); ctx.arc(x, y - 8 * z, 1.4 * z, 0, 7); ctx.fill(); }
+    }
+  }
+  if (UI.s.features.fert) {
+    const n = Math.ceil(e.fert / 2);
+    for (let i = 0; i < 3; i++) { ctx.fillStyle = i < n ? '#7dffb0' : 'rgba(255,255,255,.15)'; ctx.beginPath(); ctx.arc(p.x - 7 * z + i * 7 * z, p.y + R * 0.68, 2.4 * z, 0, 7); ctx.fill(); }
+    if (e.fert <= 0) emoji('🥀', p.x + R * 0.55, p.y - R * 0.55, 13 * z);
+  }
+}
+function drawBarrier(e, p, R, z) {
+  const c = FG.ITEMS[e.elem].color, on = e.charge > 0 ? 1 : 0.35 + 0.15 * Math.sin(UI.t * 8);
+  glow(p.x, p.y, R * 1.1, c, 0.35 * on);
+  ctx.strokeStyle = c; ctx.globalAlpha = on; ctx.lineWidth = 2.5 * z; ctx.beginPath(); ctx.ellipse(p.x, p.y, R * 0.72, R * 0.38, 0, 0, 7); ctx.stroke();
+  ctx.fillStyle = c; ctx.globalAlpha = 0.12 * on; ctx.beginPath(); ctx.ellipse(p.x, p.y, R * 0.72, R * 0.38, 0, Math.PI, 0); ctx.ellipse(p.x, p.y, R * 0.72, R * 0.9, 0, 0, Math.PI, true); ctx.fill();
+  ctx.globalAlpha = 1;
+  for (let i = 0; i < 3; i++) { const a = UI.t * 1.5 + i * 2.09; glow(p.x + Math.cos(a) * R * 0.7, p.y + Math.sin(a) * R * 0.36, 5 * z, c, on); }
+  for (let i = 0; i < Math.min(10, e.buf); i++) { const a = Math.PI * (1.15 + i * 0.075); ctx.fillStyle = c; ctx.beginPath(); ctx.arc(p.x + Math.cos(a) * R * 0.6, p.y - R * 0.35 + Math.sin(a) * R * 0.5, 2.2 * z, 0, 7); ctx.fill(); }
+  emoji(FG.ITEMS[e.elem].icon, p.x, p.y - R * 0.32, 14 * z, 0.9);
+}
+function drawTower(e, p, R, z) {
+  const k = (e.central ? 1.25 : 1) * z, x = p.x, y = p.y + 4 * z;
+  ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x, y + 2 * z, 22 * k, 8 * k, 0, 0, 7); ctx.fill();
+  const g = ctx.createLinearGradient(x - 14 * k, 0, x + 14 * k, 0); g.addColorStop(0, '#f1ebfb'); g.addColorStop(1, '#8f80b5');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x - 15 * k, y); ctx.lineTo(x - 10 * k, y - 60 * k); ctx.lineTo(x + 10 * k, y - 60 * k); ctx.lineTo(x + 15 * k, y); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(70,55,110,.35)'; ctx.lineWidth = 1 * z;
+  for (let i = 1; i < 6; i++) { const yy = y - i * 10 * k, w = 15 - i * 0.85; ctx.beginPath(); ctx.moveTo(x - w * k, yy); ctx.lineTo(x + w * k, yy); ctx.stroke(); }
+  ctx.fillStyle = '#4a3a6a'; ctx.beginPath(); ctx.moveTo(x - 5 * k, y); ctx.lineTo(x - 5 * k, y - 9 * k); ctx.arc(x, y - 9 * k, 5 * k, Math.PI, 0); ctx.lineTo(x + 5 * k, y); ctx.fill();
+  for (const wy of [28, 44]) { glow(x, y - wy * k, 7 * k, 'rgba(255,233,160,.8)', 0.7); ctx.fillStyle = '#ffe9a0'; ctx.fillRect(x - 2.2 * k, y - (wy + 4) * k, 4.4 * k, 7 * k); }
+  ctx.fillStyle = '#6c5c95'; ctx.beginPath(); ctx.ellipse(x, y - 60 * k, 14 * k, 4 * k, 0, 0, 7); ctx.fill();
+  const rg = ctx.createLinearGradient(x - 16 * k, 0, x + 16 * k, 0); rg.addColorStop(0, e.color); rg.addColorStop(1, '#3d2d66');
+  ctx.fillStyle = rg; ctx.beginPath(); ctx.moveTo(x - 17 * k, y - 60 * k); ctx.lineTo(x, y - 95 * k); ctx.lineTo(x + 17 * k, y - 60 * k); ctx.closePath(); ctx.fill();
+  const cy = y - 104 * k + Math.sin(UI.t * 2) * 2 * k, pulse = 0.7 + 0.3 * Math.sin(UI.t * 3);
+  ctx.globalCompositeOperation = 'lighter'; glow(x, cy, 26 * k, e.color, 0.6 * pulse); ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(x, cy - 8 * k); ctx.lineTo(x + 5 * k, cy); ctx.lineTo(x, cy + 8 * k); ctx.lineTo(x - 5 * k, cy); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = e.color; ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.moveTo(x, cy - 8 * k); ctx.lineTo(x + 5 * k, cy); ctx.lineTo(x, cy + 8 * k); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+  if (Math.random() < 0.08) { const w = FG.posOf(e); part(w.x + (Math.random() - .5) * 0.3, w.y, { lift: 104 * (e.central ? 1.25 : 1), vl: 18, vx: (Math.random() - .5) * .3, life: 1.6, max: 1.6, size: 1.6, color: e.color }); }
+  if (z > 0.6 || (UI.sel && UI.sel.id === e.id)) label(e.name, x, y + 14 * z, '#fff3c8', 13);
+}
+function drawAnchor(e, p, R, z) {
+  hexPath(p.x, p.y, R * 0.45); ctx.fillStyle = '#8a8fb0'; ctx.fill();
+  const top = p.y - SKY * z;
+  ctx.globalCompositeOperation = 'lighter';
+  const g = ctx.createLinearGradient(0, p.y, 0, top); g.addColorStop(0, 'rgba(255,240,180,.55)'); g.addColorStop(1, 'rgba(255,240,180,.05)');
+  ctx.fillStyle = g; ctx.fillRect(p.x - 3 * z, top, 6 * z, p.y - top);
+  glow(p.x, p.y - 14 * z, 14 * z, '#fff0b0', 0.8); glow(p.x, top, 16 * z, '#fff0b0', 0.5 + 0.2 * Math.sin(UI.t * 4));
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = '#fffbe0'; ctx.beginPath(); ctx.moveTo(p.x, p.y - 24 * z); ctx.lineTo(p.x + 5 * z, p.y - 12 * z); ctx.lineTo(p.x, p.y - 2 * z); ctx.lineTo(p.x - 5 * z, p.y - 12 * z); ctx.fill();
+}
+function drawBlueprint(e, p, R, z) {
+  hexPath(p.x, p.y, R * 0.88); ctx.fillStyle = 'rgba(143,232,255,.12)'; ctx.fill();
+  ctx.setLineDash([5 * z, 4 * z]); ctx.lineDashOffset = -UI.t * 12; ctx.strokeStyle = '#8fe8ff'; ctx.lineWidth = 2 * z; ctx.stroke(); ctx.setLineDash([]);
+  emoji(FG.BUILDS[e.target].icon, p.x, p.y - 4 * z, 20 * z, 0.55);
+  let need = 0, have = 0; for (const k in e.need) { need += e.need[k]; have += Math.min(e.need[k], e.have[k] || 0); }
+  ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(p.x - 14 * z, p.y + 10 * z, 28 * z, 4 * z);
+  ctx.fillStyle = '#8fe8ff'; ctx.fillRect(p.x - 14 * z, p.y + 10 * z, 28 * z * have / need, 4 * z);
+}
+
+// ---------- 精靈 ----------
+function fairyScreen(f) { const p = w2s(f.x, f.y); const bob = Math.sin(UI.t * 4 + f.id.length + f.x) * 2; return { x: p.x, y: p.y - (18 + bob) * UI.cam.z }; }
+function drawFairy(f) {
+  const z = UI.cam.z, p = fairyScreen(f), home = UI.s.ents[f.home], c = home ? home.color : '#fff';
+  const tired = f.energy < 15 ? 0.45 : 1;
+  ctx.globalCompositeOperation = 'lighter'; glow(p.x, p.y, 14 * z, c, 0.55 * tired); ctx.globalCompositeOperation = 'source-over';
+  const fl = 0.5 + 0.5 * Math.abs(Math.sin(UI.t * 22 + f.x));
+  ctx.fillStyle = 'rgba(235,245,255,.75)';
+  ctx.beginPath(); ctx.ellipse(p.x - 5 * z, p.y - 2 * z, 5 * z, 3.4 * z * fl, -0.5, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(p.x + 5 * z, p.y - 2 * z, 5 * z, 3.4 * z * fl, 0.5, 0, 7); ctx.fill();
+  ctx.fillStyle = '#fffbe8'; ctx.globalAlpha = tired; ctx.beginPath(); ctx.arc(p.x, p.y, 3.8 * z, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+  if (f.hold) emoji(FG.ITEMS[f.hold.item].icon, p.x + 8 * z, p.y + 6 * z, 11 * z);
+  if (f.bubble) label(f.bubble, p.x, p.y - 14 * z, f.bubble === '?' ? '#ffb0b0' : '#fff6c0', 13);
+  if (UI.sel && UI.sel.kind === 'fairy' && UI.sel.id === f.id) { ctx.strokeStyle = '#ffd98a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, 11 * z, 0, 7); ctx.stroke(); label(f.name, p.x, p.y + 18 * z, '#ffd98a', 12); }
+  if (f.act && f.act.op === 'move' && Math.random() < 0.35) part(f.x, f.y, { lift: 18, vl: -4, life: 0.7, max: 0.7, size: 1.3, color: c });
+}
+
+// ---------- 天空層：流動通道 ----------
+function chColor(ch) { const src = UI.s.ents[ch.nodes[0]]; const it = src && src.type === 'barrier' ? src.elem : ch.item; return FG.ITEMS[it] ? FG.ITEMS[it].color : '#fff'; }
+function skyPts(ids) { return ids.map(id => { const p = entPos(UI.s.ents[id]); return { x: p.x, y: p.y - SKY * UI.cam.z, gy: p.y }; }); }
+function strokePath(pts) { ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke(); }
+function drawChannels(strong) {
+  const z = UI.cam.z;
+  ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const ch of Object.values(UI.s.channels)) {
+    const pts = skyPts(ch.nodes), c = chColor(ch);
+    for (const p of [pts[0], pts[pts.length - 1]]) {
+      const g = ctx.createLinearGradient(0, p.gy, 0, p.y); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(1, c);
+      ctx.strokeStyle = g; ctx.globalAlpha = 0.5; ctx.lineWidth = 3 * z; ctx.beginPath(); ctx.moveTo(p.x, p.gy - 20 * z); ctx.lineTo(p.x, p.y); ctx.stroke();
+    }
+    ctx.strokeStyle = c;
+    ctx.globalAlpha = strong ? 0.22 : 0.13; ctx.lineWidth = 14 * z; strokePath(pts);
+    ctx.globalAlpha = strong ? 0.45 : 0.3; ctx.lineWidth = 5 * z; strokePath(pts);
+    ctx.setLineDash([3 * z, 16 * z]); ctx.lineDashOffset = -UI.t * 50 * z; ctx.globalAlpha = 0.9; ctx.lineWidth = 2.2 * z; ctx.strokeStyle = '#fffbe8'; strokePath(pts); ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    for (const p of pts) glow(p.x, p.y, 12 * z, c, 0.7);
+    // 運送中的光點
+    const wp = FG.channelPoints(UI.s, ch), segs = [];
+    let total = 0; for (let i = 1; i < wp.length; i++) { const L = Math.hypot(wp[i].x - wp[i - 1].x, wp[i].y - wp[i - 1].y); segs.push(L); total += L; }
+    for (const it of ch.transit) {
+      let d = it.d, i = 0; while (i < segs.length - 1 && d > segs[i]) { d -= segs[i]; i++; }
+      const f = Math.min(1, d / segs[i]), a = pts[i], b = pts[i + 1];
+      const x = a.x + (b.x - a.x) * f, y = a.y + (b.y - a.y) * f, ic = FG.ITEMS[it.item].color;
+      glow(x, y, 16 * z, ic, 0.9); glow(x, y, 5 * z, '#ffffff', 1);
+      if (Math.random() < 0.5) { const w = s2w(x, y + SKY * z); part(w.x, w.y, { lift: SKY + (Math.random() - .5) * 8, vl: (Math.random() - .5) * 10, vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .3, life: 0.9, max: 0.9, size: 1.6, color: ic }); }
+    }
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+function drawChannelPreview() {
+  if (UI.tool !== 'channel' || !UI.chPath.length) return;
+  const z = UI.cam.z, pts = skyPts(UI.chPath);
+  const last = UI.s.ents[UI.chPath[UI.chPath.length - 1]], t = UI.mouse.in ? tileAtScreen(UI.mouse.x, UI.mouse.y) : null;
+  ctx.strokeStyle = '#fff6a8'; ctx.lineWidth = 3 * z; ctx.setLineDash([8 * z, 6 * z]); strokePath(pts);
+  if (t && last) {
+    const okd = hex.dist(last, t) <= FG.CH_HOP, mp = w2s(hex.toXY(t.q, t.r).x, hex.toXY(t.q, t.r).y);
+    ctx.strokeStyle = okd ? '#8ff0b0' : '#ff8f8f'; ctx.beginPath(); ctx.moveTo(pts[pts.length - 1].x, pts[pts.length - 1].y); ctx.lineTo(mp.x, mp.y - SKY * z); ctx.stroke();
+    label(hex.dist(last, t) + ' / ' + FG.CH_HOP + ' 格', mp.x, mp.y - SKY * z - 14, okd ? '#8ff0b0' : '#ff8f8f');
+  }
+  ctx.setLineDash([]);
+}
+
+// ---------- 主繪製 ----------
+function render() {
+  const s = UI.s, z = UI.cam.z, R = S * z;
+  const bg = ctx.createRadialGradient(W / 2, H / 2, 100, W / 2, H / 2, Math.max(W, H) * 0.75);
+  bg.addColorStop(0, '#24443f'); bg.addColorStop(1, '#0b1418'); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  const vis = [];
+  for (const k in s.tiles) { const t = s.tiles[k], w = hex.toXY(t.q, t.r), p = w2s(w.x, w.y);
+    if (p.x < -R * 2 || p.x > W + R * 2 || p.y < -R * 4 || p.y > H + R * 2) continue; vis.push([t, p]); }
+  vis.sort((a, b) => a[1].y - b[1].y);
+  for (const [t, p] of vis) drawTile(t, p, R, z);
+  // 懸停與選取框
+  const ht = UI.mouse.in ? tileAtScreen(UI.mouse.x, UI.mouse.y) : null;
+  if (ht) {
+    const w = hex.toXY(ht.q, ht.r), p = w2s(w.x, w.y);
+    if (UI.tool && UI.tool.startsWith('build:')) { const c = FG.cmd.canPlace(s, UI.tool.slice(6), ht.q, ht.r);
+      hexPath(p.x, p.y, R * 0.95); ctx.fillStyle = c.ok ? 'rgba(143,240,176,.3)' : 'rgba(255,143,143,.3)'; ctx.fill(); emoji(FG.BUILDS[UI.tool.slice(6)].icon, p.x, p.y, 20 * z, 0.7); }
+    hexPath(p.x, p.y, R * 0.95); ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+  if (UI.sel && UI.sel.kind !== 'fairy') { const t = UI.sel.kind === 'tile' ? s.tiles[UI.sel.id] : s.ents[UI.sel.id];
+    if (t) { const w = hex.toXY(t.q, t.r), p = w2s(w.x, w.y); hexPath(p.x, p.y, R * 0.97); ctx.strokeStyle = '#ffd98a'; ctx.lineWidth = 2.5; ctx.stroke(); } else UI.sel = null; }
+  for (const id of UI.chPath) { const e = s.ents[id]; if (e) { const p = entPos(e); hexPath(p.x, p.y, R * 0.97); ctx.strokeStyle = '#fff6a8'; ctx.lineWidth = 3; ctx.stroke(); } }
+  // 建築（依螢幕 y 排序）與精靈
+  const items = [];
+  for (const e of Object.values(s.ents)) { const p = entPos(e); if (p.x < -R * 3 || p.x > W + R * 3 || p.y < -R * 2 || p.y > H + R * 5) continue; items.push([p.y, () => drawEnt(e, p, R, z)]); }
+  for (const f of Object.values(s.fairies)) items.push([w2s(f.x, f.y).y + 1, () => drawFairy(f)]);
+  items.sort((a, b) => a[0] - b[0]);
+  for (const [, fn] of items) fn();
+  if (UI.layer === 'sky') { ctx.fillStyle = 'rgba(6,10,30,.55)'; ctx.fillRect(0, 0, W, H); }
+  if (UI.layer !== 'ground') drawChannels(UI.layer === 'sky');
+  drawChannelPreview();
+  drawParts();
+}
+function drawEnt(e, p, R, z) {
+  if (e.type === 'farm') drawFarm(e, p, R, z);
+  else if (e.type === 'barrier') drawBarrier(e, p, R, z);
+  else if (e.type === 'tower') drawTower(e, p, R, z);
+  else if (e.type === 'anchor') { if (UI.layer !== 'ground') drawAnchor(e, p, R, z); else { hexPath(p.x, p.y, R * 0.45); ctx.fillStyle = '#8a8fb0'; ctx.fill(); } }
+  else if (e.type === 'blueprint') drawBlueprint(e, p, R, z);
+}
+
+// ---------- 訊息 ----------
+function toast(msg, kind) { const d = document.createElement('div'); d.className = 'toast ' + (kind || ''); d.textContent = msg; $('#toasts').append(d); setTimeout(() => d.remove(), 3300); }
+
+// ---------- 面板：目標、工具、側欄 ----------
+function renderGoals() {
+  const s = UI.s;
+  const html = '<h3 style="margin-top:0">本章目標</h3>' + s.goals.map(g => {
+    const [c, n] = FG.goalProgress(s, g);
+    return `<div class="goal ${g.done ? 'done' : ''}"><span class="chk">${g.done ? '✔' : '○'}</span><span>${esc(g.text)}</span><span class="prog">${Math.min(c, n)}/${n}</span>` +
+      (g.kind === 'order' && !g.done ? `<button data-act="order" data-id="${g.id}" ${c >= n ? '' : 'disabled'}>交付</button>` : '') + '</div>';
+  }).join('');
+  if (html !== UI.goalsHtml && !UI.drag) { $('#goals').innerHTML = html; UI.goalsHtml = html; }
+}
+function renderTools() {
+  const s = UI.s, list = [];
+  for (const [k, b] of Object.entries(FG.BUILDS)) if (s.unlocked.includes(k)) list.push([`build:${k}`, b.icon, b.name, FG.costText(b.cost)]);
+  if (s.unlocked.includes('channel')) list.push(['channel', '✨', '流動通道', '連接結界、光之錨、塔']);
+  list.push(['demolish', '🧹', '拆除', '藍圖全額退回，建築退一半']);
+  $('#tools').innerHTML = list.map(([id, ic, n, sub]) => `<button data-tool="${id}" class="${UI.tool === id ? 'on' : ''}"><span class="ic">${ic}</span><span>${n}<small>${esc(sub)}</small></span></button>`).join('');
+}
+const inv = st => { const ks = Object.keys(st).filter(k => st[k] > 0); return ks.length ? '<div class="inv">' + ks.map(k => `<span class="it" title="${esc(FG.ITEMS[k].desc)}">${FG.ITEMS[k].icon} ${k}<b>${st[k]}</b></span>`).join('') + '</div>' : '<p>（空）</p>'; };
+const recipeText = id => { const R = FG.RECIPES[id]; const f = o => Object.entries(o).map(([k, n]) => k + n).join('＋'); return `${R.name}：${f(R.in)} → ${f(R.out)}（${R.time}秒）`; };
+const ACT = { move: '飛行中', gather: '採集中', plant: '播種中', harvest: '採收中', take: '拿取中', drop: '放下中', collect: '收取中', wait: '等待中' };
+function fairyState(f) {
+  if (!f.act) return f.ended ? '腳本已執行完畢（沒有重複積木）' : (f.prog.length ? '思考中' : '沒有腳本，待命中');
+  if (f.act.op === 'refuel') return { go: '回家補給', rest: '休息中', eat: '吃花蜜' }[f.act.phase];
+  if (f.act.failed) return '困惑中';
+  return ACT[f.act.op] || f.act.op;
+}
+function sideFor() {
+  const s = UI.s, sel = UI.sel;
+  if (UI.tool === 'channel') {
+    const names = UI.chPath.map(id => esc(entName(s.ents[id]))).join(' → ') || '（尚未選擇）';
+    return `<h2>✨ 流動通道</h2><p>在約五層樓高的天空架設光之通道，元素會沿著通道自己流動。依序點選：<b>起點</b>（結界或魔法塔）→ <b>光之錨</b>（可略過或多個）→ <b>終點魔法塔</b>。相鄰節點最多 ${FG.CH_HOP} 格。右鍵或 Esc 取消。</p>
+      <div class="kv"><span>起點為塔時運送</span><span><select data-act="chitem">${Object.keys(FG.ITEMS).map(k => `<option ${k === UI.chItem ? 'selected' : ''}>${k}</option>`).join('')}</select></span><span>目前路徑</span><span>${names}</span></div>
+      <h3>已架設的通道</h3>` + (Object.values(s.channels).map(ch => `<div class="row" style="align-items:center"><span>${ch.nodes.map(id => esc(entName(s.ents[id]))).join(' → ')}${ch.item ? '（' + ch.item + '）' : ''}</span><button data-act="rmch" data-id="${ch.id}">拆除</button></div>`).join('') || '<p>（尚無）</p>');
+  }
+  if (!sel) return `<h2>Fairy Garden</h2><p>點選魔法塔、精靈、設施或地格查看詳情。</p><h3>操作</h3><p>左鍵：選取／放置　右鍵：取消工具<br>拖曳或 WASD：移動視角　滾輪：縮放<br>空白鍵：暫停　1／2／3：切換圖層　E：編輯所選精靈的腳本</p>`;
+  if (sel.kind === 'fairy') {
+    const f = s.fairies[sel.id]; if (!f) { UI.sel = null; return ''; }
+    const towers = FG.towers(s);
+    return `<h2>🧚 ${esc(f.name)}</h2>
+      <div class="kv"><span>家</span><span><select data-act="home">${towers.map(t => `<option value="${t.id}" ${t.id === f.home ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select></span>
+      <span>活力</span><span><div class="bar en"><i style="width:${Math.round(f.energy / 5) * 5}%"></i></div></span>
+      <span>手上</span><span>${f.hold ? FG.ITEMS[f.hold.item].icon + ' ' + f.hold.item + ' × ' + f.hold.n : '（空）'}</span>
+      <span>狀態</span><span>${fairyState(f)}</span></div>
+      ${f.msg ? `<p class="warn">⚠ ${esc(f.msg)}</p>` : ''}
+      <div class="row"><button class="primary" data-act="edit">編輯腳本（E）</button><button data-act="restart">從頭執行腳本</button></div>
+      <p>腳本共 ${countBlocks(f.prog)} 個積木。活力低於 15 時，精靈會自動回家吃 1 份花蜜，然後回到迴圈開頭繼續工作。</p>`;
+  }
+  if (sel.kind === 'tile') { const t = s.tiles[sel.id], T = FG.TERRAIN[t.t]; return `<h2>${T.name}</h2><p>座標 (${t.q}, ${t.r})</p>${T.res ? `<p>精靈可在這裡「採集」${FG.ITEMS[T.res].icon} ${T.res}。</p>` : ''}${FG.TERRAIN[t.t] && ({ grass: 1, meadow: 1, rock: 1, forest: 1 })[t.t] && s.unlocked.includes('barrier') ? `<p>在此建造的結界會產出 ${({ grass: '陽光', meadow: '陽光（較快）', rock: '風語', forest: '土息' })[t.t]}。</p>` : ''}`; }
+  const e = s.ents[sel.id]; if (!e) { UI.sel = null; return ''; }
+  const demo = `<div class="row"><button data-act="demolish">${e.type === 'blueprint' ? '取消藍圖' : '拆除'}</button></div>`;
+  if (e.type === 'tower') {
+    const fs = Object.values(s.fairies).filter(f => f.home === e.id);
+    const slots = e.devices.map((d, i) => {
+      if (!d) return `<div class="dev empty">空格 ${i + 1}` + ['transmuter', 'brewer'].filter(k => s.unlocked.includes(k) || (k === 'brewer' && s.level === 1)).map(k => `<button data-act="adddev" data-type="${k}" data-slot="${i}">安裝${FG.DEVICES[k].name}<br><small>${FG.costText(FG.DEVICES[k].cost)}</small></button>`).join('') + '</div>';
+      const R = d.recipe && FG.RECIPES[d.recipe], allow = (FG.DEVICES[d.type].recipes || Object.keys(FG.RECIPES)).filter(r => s.recipes.includes(r));
+      const st = { work: '加工中', wait: '等待原料', full: '已達產量上限', idle: '閒置' }[d.state] || '';
+      return `<div class="dev"><div class="devh">${FG.DEVICES[d.type].name}<button data-act="rmdev" data-slot="${i}" title="拆除並退回材料">✕</button></div>
+        <select data-act="recipe" data-slot="${i}">${allow.map(r => `<option value="${r}" ${r === d.recipe ? 'selected' : ''}>${recipeText(r)}</option>`).join('')}</select>
+        <label>產量上限 <input type="number" min="0" max="999" data-act="limit" data-slot="${i}" value="${d.limit}"></label>
+        <label title="每種原料至少留下這麼多，不拿去加工">保留原料 <input type="number" min="0" max="999" data-act="keep" data-slot="${i}" value="${d.keep || 0}"></label>
+        <div class="bar"><i style="width:${R ? Math.round(d.prog / R.time * 20) * 5 : 0}%"></i></div><span class="st ${d.state === 'wait' ? 'warn' : ''}">${st}</span></div>`;
+    }).join('');
+    return `<h2 style="color:${e.color}">🗼 ${esc(e.name)}</h2><div class="sub">${e.central ? '德魯伊的據點・' : ''}${fs.length} 隻精靈以此為家</div>
+      <h3>庫存</h3>${inv(e.storage)}
+      <h3>塔內空間（${e.devices.filter(Boolean).length}/${e.slots} 格）</h3><div class="slots">${slots}</div>
+      <div class="row">${s.unlocked.includes('expand') ? `<button data-act="expand">擴充塔內空間<br><small>${FG.costText(FG.cmd.expandCost(e))}</small></button>` : ''}
+      <button data-act="summon">召喚精靈<br><small>${FG.costText(FG.SUMMON_COST)}</small></button></div>
+      <h3>精靈</h3><div class="row">${fs.map(f => `<button data-act="self" data-id="${f.id}">${esc(f.name)}${f.energy < 15 ? ' 😴' : ''}</button>`).join('') || '<p>（沒有）</p>'}</div>`;
+  }
+  if (e.type === 'farm') return `<h2>🌱 農田</h2><div class="kv"><span>狀態</span><span>${!e.planted ? '空地，等待播種' : e.growth >= 1 ? '成熟，可以採收' : '生長中 ' + Math.floor(e.growth * 100) + '%'}</span>
+    ${s.features.fert ? `<span>滋養</span><span>${e.fert} / ${FG.FERT_MAX}${e.fert <= 0 ? '　<b class="warn">土地疲乏：生長變慢 2.5 倍</b>' : ''}</span>` : ''}</div>
+    <p>播種要用掉精靈手上 1 朵法力花，30 秒後成熟，採收得 3 朵。${s.features.fert ? '每次採收消耗 1 點滋養；精靈「放下」滋養露可補 2 點。' : ''}</p>${demo}`;
+  if (e.type === 'barrier') return `<h2>🔮 魔力收集結界</h2><div class="kv"><span>產出</span><span>${FG.ITEMS[e.elem].icon} ${e.elem}${e.fast ? '（花海加速）' : ''}</span><span>累積</span><span>${e.buf} / 10</span>
+    <span>能量</span><span>${e.charge.toFixed(1)} 顆結界晶${e.charge <= 0 ? '　<b class="warn">能量耗盡：產出慢 4 倍</b>' : ''}</span></div>
+    <p>精靈用「收取」把累積的元素帶走，或架設流動通道自動送出。每產出 10 單位消耗 1 顆結界晶；精靈「放下」結界晶可補充。</p>${demo}`;
+  if (e.type === 'anchor') return `<h2>🕯️ 光之錨</h2><p>流動通道的中繼點。光柱直通約五層樓高的通道層。</p>${demo}`;
+  if (e.type === 'blueprint') {
+    const rows = Object.keys(e.need).map(k => `<span>${FG.ITEMS[k].icon} ${k}</span><span>${e.have[k] || 0} / ${e.need[k]}</span>`).join('');
+    return `<h2>📐 ${FG.BUILDS[e.target].name}（藍圖）</h2><p>精靈把材料「放下」在這裡就會完工。腳本可用「前往 最近的需要材料的藍圖」。</p><div class="kv">${rows}</div>${demo}`;
+  }
+  return '';
+}
+const entName = e => !e ? '?' : e.type === 'tower' ? e.name : e.type === 'barrier' ? e.elem + '結界' : e.type === 'anchor' ? '光之錨' : FG.BUILDS[e.type] ? FG.BUILDS[e.type].name : e.type;
+const countBlocks = L => L.reduce((n, b) => n + 1 + (b.body ? countBlocks(b.body) : 0) + (b.else ? countBlocks(b.else) : 0), 0);
+function renderSide() {
+  const el = $('#side'), a = document.activeElement;
+  if (UI.drag || (a && el.contains(a) && (a.tagName === 'SELECT' || a.tagName === 'INPUT'))) return;
+  const html = sideFor();
+  if (html !== UI.sideHtml) { el.innerHTML = html; UI.sideHtml = html; }
+}
+function renderHint() {
+  const s = UI.s; const g = s.goals.find(x => !x.done);
+  const html = s.complete ? '🌟 本章所有目標完成！可以繼續經營花園，或從「選單」前往下一章。' : g ? '💡 ' + esc(g.hint) : '';
+  if ($('#hint').innerHTML !== html) $('#hint').innerHTML = html;
+}
+function uiTick() {
+  const s = UI.s;
+  renderGoals(); renderSide(); renderHint();
+  const m = Math.floor(s.time / 60), sec = Math.floor(s.time % 60);
+  $('#clock').textContent = `遊戲時間 ${m}:${String(sec).padStart(2, '0')}・精靈 ${Object.keys(s.fairies).length} 隻`;
+  for (const g of s.goals) if (g.done && !UI.doneSeen[g.id]) { UI.doneSeen[g.id] = true; toast('✔ 目標完成：' + g.text, 'good'); }
+  if (s.complete && !UI.completeShown) { UI.completeShown = true; saveGame(true); showComplete(); }
+  if (UI.ed) highlightRunning();
+}
+
+// ---------- 面板事件 ----------
+function act(name, el) {
+  const s = UI.s, sel = UI.sel, slot = +el.dataset.slot;
+  const r = (res, good) => { if (res && !res.ok) toast(res.reason, 'bad'); else if (good) toast(good, 'good'); UI.sideHtml = ''; UI.goalsHtml = ''; };
+  switch (name) {
+    case 'order': return r(FG.cmd.fulfillOrder(s, el.dataset.id), '訂單已交付！');
+    case 'summon': return r(FG.cmd.summonFairy(s, sel.id), '新的精靈誕生了');
+    case 'expand': return r(FG.cmd.expandTower(s, sel.id), '塔內空間擴大了');
+    case 'adddev': return r(FG.cmd.addDevice(s, sel.id, slot, el.dataset.type), '設備安裝完成');
+    case 'rmdev': return r(FG.cmd.removeDevice(s, sel.id, slot));
+    case 'self': UI.sel = { kind: 'fairy', id: el.dataset.id }; return r();
+    case 'edit': return openEditor(sel.id);
+    case 'restart': return r(FG.cmd.setScript(s, sel.id, s.fairies[sel.id].prog), '腳本重新開始');
+    case 'demolish': { const res = FG.cmd.demolish(s, sel.id); if (res.ok) UI.sel = null; return r(res); }
+    case 'rmch': return r(FG.cmd.removeChannel(s, el.dataset.id));
+  }
+}
+function change(name, el) {
+  const s = UI.s, sel = UI.sel, slot = +el.dataset.slot;
+  if (name === 'recipe') FG.cmd.setRecipe(s, sel.id, slot, el.value);
+  else if (name === 'limit') FG.cmd.setLimit(s, sel.id, slot, +el.value);
+  else if (name === 'keep') FG.cmd.setKeep(s, sel.id, slot, +el.value);
+  else if (name === 'home') FG.cmd.assignHome(s, sel.id, el.value);
+  else if (name === 'chitem') UI.chItem = el.value;
+  el.blur(); UI.sideHtml = '';
+}
+for (const id of ['#side', '#goals']) {
+  $(id).addEventListener('click', e => { const b = e.target.closest('button[data-act]'); if (b && !b.disabled) act(b.dataset.act, b); });
+  $(id).addEventListener('change', e => { const t = e.target; if (t.dataset.act) change(t.dataset.act, t); });
+}
+$('#tools').addEventListener('click', e => { const b = e.target.closest('button[data-tool]'); if (!b) return; setTool(UI.tool === b.dataset.tool ? null : b.dataset.tool); });
+function setTool(t) { UI.tool = t; UI.chPath = []; renderTools(); UI.sideHtml = ''; }
+$('#speed').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setSpeed(+b.dataset.speed); });
+$('#layers').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setLayer(b.dataset.layer); });
+function setSpeed(v) { UI.speed = v; document.querySelectorAll('#speed button').forEach(b => b.classList.toggle('on', +b.dataset.speed === v)); }
+function setLayer(v) { UI.layer = v; document.querySelectorAll('#layers button').forEach(b => b.classList.toggle('on', b.dataset.layer === v)); }
+$('#btnSave').onclick = () => saveGame();
+$('#btnMenu').onclick = () => { saveGame(true); showMenu(); };
+
+// ---------- 地圖輸入 ----------
+cv.addEventListener('contextmenu', e => e.preventDefault());
+cv.addEventListener('mousedown', e => { UI.drag = { x: e.clientX, y: e.clientY, cx: UI.cam.x, cy: UI.cam.y, btn: e.button, moved: false }; });
+addEventListener('mousemove', e => {
+  UI.mouse.x = e.clientX; UI.mouse.y = e.clientY; UI.mouse.in = e.target === cv;
+  const d = UI.drag; if (!d) return;
+  const dx = e.clientX - d.x, dy = e.clientY - d.y;
+  if (Math.abs(dx) + Math.abs(dy) > 6) d.moved = true;
+  if (d.moved) { UI.cam.x = d.cx - dx / UI.cam.z; UI.cam.y = d.cy - dy / UI.cam.z; }
+});
+addEventListener('mouseup', e => {
+  const d = UI.drag; UI.drag = null;
+  if (!d || d.moved || e.target !== cv || !UI.s) return;
+  if (d.btn === 2) { if (UI.tool === 'channel' && UI.chPath.length) { UI.chPath.pop(); UI.sideHtml = ''; } else setTool(null); return; }
+  if (d.btn === 0) clickMap(e.clientX, e.clientY);
+});
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  const before = s2w(e.clientX, e.clientY);
+  UI.cam.z = Math.max(0.4, Math.min(2.4, UI.cam.z * (e.deltaY < 0 ? 1.12 : 1 / 1.12)));
+  const after = s2w(e.clientX, e.clientY);
+  UI.cam.x += (before.x - after.x) * S; UI.cam.y += (before.y - after.y) * S;
+}, { passive: false });
+function clickMap(x, y) {
+  const s = UI.s, t = tileAtScreen(x, y);
+  if (UI.tool && UI.tool.startsWith('build:')) {
+    if (!t) return;
+    const r = FG.cmd.placeBlueprint(s, UI.tool.slice(6), t.q, t.r);
+    if (!r.ok) toast(r.reason, 'bad'); else { const w = hex.toXY(t.q, t.r); burst(w.x, w.y, '#8fe8ff', 10, 4); }
+    return;
+  }
+  const e = t && t.e ? s.ents[t.e] : null;
+  if (UI.tool === 'demolish') { if (e) { const r = FG.cmd.demolish(s, e.id); if (!r.ok) toast(r.reason, 'bad'); else toast('已拆除'); } return; }
+  if (UI.tool === 'channel') {
+    if (!e || !['barrier', 'tower', 'anchor'].includes(e.type)) return toast('請點選結界、光之錨或魔法塔', 'bad');
+    if (!UI.chPath.length && e.type === 'anchor') return toast('起點必須是結界或魔法塔', 'bad');
+    const last = UI.chPath.length ? s.ents[UI.chPath[UI.chPath.length - 1]] : null;
+    if (last && last.id === e.id) return;
+    if (last && hex.dist(last, e) > FG.CH_HOP) return toast('距離超過 ' + FG.CH_HOP + ' 格，需要中繼的光之錨', 'bad');
+    UI.chPath.push(e.id); UI.sideHtml = '';
+    if (UI.chPath.length >= 2 && e.type === 'tower') {
+      const r = FG.cmd.buildChannel(s, UI.chPath, UI.chItem);
+      if (r.ok) { toast('流動通道架設完成', 'good'); UI.chPath = []; } else { toast(r.reason, 'bad'); UI.chPath.pop(); }
+    }
+    return;
+  }
+  // 選取：精靈優先
+  let best = null, bd = 18 * Math.max(1, UI.cam.z);
+  for (const f of Object.values(s.fairies)) { const p = fairyScreen(f), d = Math.hypot(p.x - x, p.y - y); if (d < bd) { bd = d; best = f; } }
+  if (best) UI.sel = { kind: 'fairy', id: best.id };
+  else if (e) UI.sel = { kind: 'ent', id: e.id };
+  else if (t) UI.sel = { kind: 'tile', id: hex.key(t.q, t.r) };
+  else UI.sel = null;
+  UI.sideHtml = '';
+}
+addEventListener('keydown', e => {
+  const tag = document.activeElement && document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'SELECT') return;
+  if (UI.ed) { if (e.key === 'Escape') closeEditor(); return; }
+  if (!UI.playing) return;
+  UI.keys[e.key.toLowerCase()] = true;
+  if (e.key === ' ') { e.preventDefault(); setSpeed(UI.speed ? 0 : 1); }
+  if (e.key === '1') setLayer('all'); if (e.key === '2') setLayer('ground'); if (e.key === '3') setLayer('sky');
+  if (e.key === 'Escape') { if (UI.tool) setTool(null); else UI.sel = null; UI.sideHtml = ''; }
+  if (e.key.toLowerCase() === 'e' && UI.sel && UI.sel.kind === 'fairy') openEditor(UI.sel.id);
+});
+addEventListener('keyup', e => { UI.keys[e.key.toLowerCase()] = false; });
+function panKeys(dt) {
+  const k = UI.keys, v = 700 * dt / UI.cam.z;
+  if (k.w || k.arrowup) UI.cam.y -= v; if (k.s || k.arrowdown) UI.cam.y += v;
+  if (k.a || k.arrowleft) UI.cam.x -= v; if (k.d || k.arrowright) UI.cam.x += v;
+}
+
+// ---------- 腳本編輯器 ----------
+const BLOCKS = {
+  forever: { cat: 'flow', name: '永遠重複', make: () => ({ op: 'forever', body: [] }) },
+  repeat:  { cat: 'flow', name: '重複 N 次', make: () => ({ op: 'repeat', n: 3, body: [] }) },
+  until:   { cat: 'flow', name: '重複直到…', make: () => ({ op: 'until', cond: { kind: 'handFull' }, body: [] }) },
+  if:      { cat: 'flow', name: '如果…否則', make: () => ({ op: 'if', cond: { kind: 'handEmpty' }, body: [], else: [] }) },
+  goto:    { cat: 'move', name: '前往…', make: () => ({ op: 'goto', target: { kind: 'home' } }) },
+  refuel:  { cat: 'move', name: '回家補給', make: () => ({ op: 'refuel' }) },
+  gather:  { cat: 'act', name: '採集（裝滿為止）', make: () => ({ op: 'gather' }) },
+  plant:   { cat: 'act', name: '播種', make: () => ({ op: 'plant' }) },
+  harvest: { cat: 'act', name: '採收', make: () => ({ op: 'harvest' }) },
+  take:    { cat: 'act', name: '從塔中拿取', make: () => ({ op: 'take', item: '木枝', n: 5 }) },
+  drop:    { cat: 'act', name: '放下（交給所在處）', make: () => ({ op: 'drop' }) },
+  collect: { cat: 'act', name: '從結界收取', make: () => ({ op: 'collect' }), need: 'barrier' },
+  wait:    { cat: 'act', name: '等待 N 秒', make: () => ({ op: 'wait', s: 2 }) },
+};
+const CONDS = { handEmpty: '手上是空的', handFull: '手上滿了', holding: '手上拿著', energyBelow: '活力低於', homeBelow: '家中庫存少於', exists: '存在' };
+const CAT_NAME = { flow: '流程', move: '移動', act: '動作' };
+function nearestOptions() {
+  const s = UI.s;
+  return Object.entries(FG.NEAREST).filter(([k]) => {
+    if (/barrier/.test(k)) return s.unlocked.includes('barrier');
+    if (k === 'farmNeedNourish') return s.features.fert;
+    return true;
+  });
+}
+const getList = (prog, lp) => { let L = prog; for (let i = 0; i < lp.length; i += 2) L = L[lp[i]][lp[i + 1]]; return L; };
+function sel(options, value, onChange) {
+  const el = document.createElement('select');
+  for (const [v, t] of options) { const o = document.createElement('option'); o.value = v; o.textContent = t; if (v === value) o.selected = true; el.append(o); }
+  el.onchange = () => onChange(el.value); el.onmousedown = e => e.stopPropagation();
+  return el;
+}
+function num(value, onChange, min, max) {
+  const el = document.createElement('input'); el.type = 'number'; el.value = value; el.min = min; el.max = max;
+  el.onchange = () => onChange(Math.max(min, Math.min(max, +el.value || min))); el.onmousedown = e => e.stopPropagation();
+  return el;
+}
+const itemOpts = () => Object.keys(FG.ITEMS).map(k => [k, FG.ITEMS[k].icon + ' ' + k]);
+const txt = t => { const s = document.createElement('span'); s.textContent = t; return s; };
+function condParts(c) {
+  const parts = [sel([['', '是'], ['1', '不是']], c.not ? '1' : '', v => { c.not = !!v; }),
+    sel(Object.entries(CONDS), c.kind, v => { c.kind = v; if ((v === 'holding' || v === 'homeBelow') && !c.item) c.item = '法力花'; if ((v === 'energyBelow' || v === 'homeBelow') && !c.n) c.n = v === 'energyBelow' ? 30 : 5; if (v === 'exists' && !c.what) c.what = 'farmRipe'; renderProgram(); })];
+  if (c.kind === 'holding' || c.kind === 'homeBelow') parts.push(sel(itemOpts(), c.item, v => { c.item = v; }));
+  if (c.kind === 'energyBelow' || c.kind === 'homeBelow') parts.push(num(c.n, v => { c.n = v; }, 0, 999));
+  if (c.kind === 'exists') parts.push(sel(nearestOptions(), c.what, v => { c.what = v; }));
+  return parts;
+}
+function headParts(b) {
+  switch (b.op) {
+    case 'forever': return [txt('永遠重複')];
+    case 'repeat': return [txt('重複'), num(b.n, v => { b.n = v; }, 1, 99), txt('次')];
+    case 'until': return [txt('重複直到'), ...condParts(b.cond)];
+    case 'if': return [txt('如果'), ...condParts(b.cond)];
+    case 'goto': {
+      const t = b.target, val = t.kind === 'home' ? 'home' : t.kind === 'tower' ? 'tower:' + t.id : 'nearest:' + t.what;
+      const opts = [['home', '家（所屬的塔）'], ...FG.towers(UI.s).map(x => ['tower:' + x.id, x.name]), ...nearestOptions().map(([k, n]) => ['nearest:' + k, '最近的' + n])];
+      return [txt('前往'), sel(opts, val, v => { const [k, id] = v.split(':'); b.target = k === 'home' ? { kind: 'home' } : k === 'tower' ? { kind: 'tower', id } : { kind: 'nearest', what: id }; })];
+    }
+    case 'take': return [txt('從塔中拿取'), sel(itemOpts(), b.item, v => { b.item = v; }), num(b.n, v => { b.n = v; }, 1, FG.CAP), txt('個')];
+    case 'wait': return [txt('等待'), num(b.s, v => { b.s = v; }, 0.5, 60), txt('秒')];
+    default: return [txt(BLOCKS[b.op].name)];
+  }
+}
+function blockEl(b, path) {
+  const d = document.createElement('div'); d.className = 'blk c-' + BLOCKS[b.op].cat; d.draggable = true; d.dataset.path = JSON.stringify(path);
+  const head = document.createElement('div'); head.className = 'bh'; head.append(...headParts(b));
+  const x = document.createElement('button'); x.className = 'x'; x.textContent = '✕'; x.title = '刪除';
+  x.onclick = () => { getList(UI.ed.prog, path.slice(0, -1)).splice(path[path.length - 1], 1); renderProgram(); };
+  head.append(x); d.append(head);
+  d.addEventListener('dragstart', e => { e.stopPropagation(); e.dataTransfer.setData('text/plain', 'move:' + JSON.stringify(path)); });
+  if (b.body) d.append(listEl(b.body, path.concat('body')));
+  if (b.op === 'if') { const l = document.createElement('div'); l.className = 'else'; l.textContent = '否則'; d.append(l, listEl(b.else, path.concat('else'))); }
+  return d;
+}
+function listEl(arr, lp) {
+  const l = document.createElement('div'); l.className = 'list'; l.dataset.lp = JSON.stringify(lp);
+  arr.forEach((b, i) => l.append(blockEl(b, lp.concat(i))));
+  if (!arr.length) { const p = document.createElement('div'); p.className = 'ph'; p.textContent = '把積木拖到這裡'; l.append(p); }
+  l.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); showMarker(l, e.clientY); });
+  l.addEventListener('dragleave', e => { if (!l.contains(e.relatedTarget)) l.classList.remove('over'); });
+  l.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); dropInto(lp, dropIndex(l, e.clientY), e.dataTransfer.getData('text/plain')); });
+  return l;
+}
+function dropIndex(l, y) { let i = 0; for (const c of l.children) if (c.classList.contains('blk')) { const r = c.getBoundingClientRect(); if (r.top + r.height / 2 < y) i++; } return i; }
+let marker = null;
+function showMarker(l, y) {
+  document.querySelectorAll('.list.over').forEach(x => x !== l && x.classList.remove('over')); l.classList.add('over');
+  if (!marker) { marker = document.createElement('div'); marker.className = 'marker'; }
+  const blks = [...l.children].filter(c => c.classList.contains('blk')), i = dropIndex(l, y);
+  if (i < blks.length) l.insertBefore(marker, blks[i]); else l.append(marker);
+}
+function dropInto(lp, idx, data) {
+  const prog = UI.ed.prog, target = getList(prog, lp);
+  if (data.startsWith('new:')) target.splice(idx, 0, BLOCKS[data.slice(4)].make());
+  else if (data.startsWith('move:')) {
+    const src = JSON.parse(data.slice(5));
+    const isInside = lp.length >= src.length && src.every((v, i) => lp[i] === v);
+    if (!isInside) {
+      const srcList = getList(prog, src.slice(0, -1)), si = src[src.length - 1];
+      const [b] = srcList.splice(si, 1);
+      if (srcList === target && si < idx) idx--;
+      target.splice(idx, 0, b);
+    }
+  }
+  renderProgram();
+}
+function renderProgram() {
+  const box = $('#edProg'); box.innerHTML = '';
+  box.append(listEl(UI.ed.prog, []));
+  UI.ed.shown = '';
+  highlightRunning();
+}
+function highlightRunning() {
+  const ed = UI.ed, f = UI.s.fairies[ed.fid]; if (!f) return;
+  const same = JSON.stringify(f.prog) === JSON.stringify(ed.prog);
+  let key = '';
+  if (same && f.frames.length) { const fr = f.frames[f.frames.length - 1]; if (fr.i > 0) key = JSON.stringify(fr.p.concat(fr.i - 1)); }
+  if (key === ed.shown) return; ed.shown = key;
+  document.querySelectorAll('#edProg .running').forEach(x => x.classList.remove('running'));
+  if (key) { const el = document.querySelector(`#edProg .blk[data-path='${key}']`); if (el) el.classList.add('running'); }
+  $('#edState').textContent = `${f.name}：${fairyState(f)}${f.msg ? '（' + f.msg + '）' : ''}`;
+}
+function openEditor(fid) {
+  const s = UI.s, f = s.fairies[fid];
+  UI.ed = { fid, prog: JSON.parse(JSON.stringify(f.prog)), shown: null };
+  const pal = Object.keys(CAT_NAME).map(c => `<h3>${CAT_NAME[c]}</h3>` + Object.entries(BLOCKS).filter(([k, b]) => b.cat === c && (!b.need || s.unlocked.includes(b.need)))
+    .map(([k, b]) => `<div class="pblock c-${c}" draggable="true" data-new="${k}">${b.name}</div>`).join('')).join('');
+  const tpls = FG.TEMPLATES.filter(t => t.min <= s.level);
+  $('#editor').innerHTML = `<div class="edwin panel"><div class="edhead"><h2>🧚 編輯腳本：${esc(f.name)}</h2>
+    <label>範本 <select id="edTpl"><option value="">（選擇範本）</option>${tpls.map((t, i) => `<option value="${i}">${t.name}</option>`).join('')}</select></label>
+    <label>複製自 <select id="edCopy"><option value="">（其他精靈）</option>${Object.values(s.fairies).filter(x => x.id !== fid).map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></label>
+    <button id="edClear">清空</button><button id="edCancel">取消</button><button id="edApply" class="primary">套用並從頭執行</button></div>
+    <div class="edbody"><div class="palette">${pal}</div><div class="program" id="edProgWrap"><div id="edProg"></div><div class="trash" id="edTrash">🗑 拖到這裡刪除</div></div></div>
+    <div class="edfoot"><span id="edState"></span><br>把左側積木拖進右側；積木可拖曳重排、放進「重複」與「如果」裡面。正在執行的積木會發光（需與目前執行中的腳本相同）。「放下」會依所在處自動判斷：在塔＝存入庫存、在藍圖＝交付材料、在農田＝補滋養露、在結界＝補結界晶。</div></div>`;
+  $('#editor').classList.remove('hidden');
+  document.querySelectorAll('#editor .pblock').forEach(p => p.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', 'new:' + p.dataset.new)));
+  const trash = $('#edTrash');
+  trash.addEventListener('dragover', e => { e.preventDefault(); trash.classList.add('over'); });
+  trash.addEventListener('dragleave', () => trash.classList.remove('over'));
+  trash.addEventListener('drop', e => { e.preventDefault(); trash.classList.remove('over'); const d = e.dataTransfer.getData('text/plain');
+    if (d.startsWith('move:')) { const p = JSON.parse(d.slice(5)); getList(UI.ed.prog, p.slice(0, -1)).splice(p[p.length - 1], 1); } renderProgram(); });
+  document.addEventListener('dragend', () => { if (marker) marker.remove(); document.querySelectorAll('.list.over').forEach(x => x.classList.remove('over')); });
+  $('#edTpl').onchange = e => { if (e.target.value !== '') { UI.ed.prog = JSON.parse(JSON.stringify(tpls[+e.target.value].prog)); renderProgram(); } e.target.value = ''; };
+  $('#edCopy').onchange = e => { if (e.target.value) { UI.ed.prog = JSON.parse(JSON.stringify(s.fairies[e.target.value].prog)); renderProgram(); } e.target.value = ''; };
+  $('#edClear').onclick = () => { UI.ed.prog = []; renderProgram(); };
+  $('#edCancel').onclick = closeEditor;
+  $('#edApply').onclick = () => { FG.cmd.setScript(s, fid, UI.ed.prog); toast(f.name + ' 的腳本已更新', 'good'); closeEditor(); };
+  renderProgram();
+}
+function closeEditor() { UI.ed = null; $('#editor').classList.add('hidden'); $('#editor').innerHTML = ''; UI.sideHtml = ''; }
+
+// ---------- 選單、對話框 ----------
+function showMenu() {
+  UI.playing = false; $('#hud').classList.add('hidden'); closeEditor(); $('#dialog').classList.add('hidden');
+  const st = store();
+  $('#menu').innerHTML = `<h1>Fairy Garden</h1><div class="tag">精靈花園・用腳本經營的魔法自動化農場</div><div class="cards">` +
+    Object.entries(FG.LEVELS).map(([n, L]) => {
+      n = +n; const locked = n > st.unlocked, sv = st.saves[n];
+      return `<div class="card panel ${locked ? 'locked' : ''}"><h2>${L.title}</h2><div class="meta">${L.minutes}</div><p>${esc(L.intro.split('\n\n')[1] || L.intro)}</p>
+        <div class="row">${locked ? '<span class="meta">🔒 完成上一章後解鎖</span>' : (sv ? `<button class="primary" data-go="cont" data-lv="${n}">繼續</button><button data-go="new" data-lv="${n}">重新開始</button>` : `<button class="primary" data-go="new" data-lv="${n}">開始</button>`)}</div></div>`;
+    }).join('') + `</div><div class="help">你是一位自然德魯伊，以中央魔法塔為據點。精靈住在塔裡，依照你寫的腳本採集、搬運、建造與維護設施。<br>進度會自動存在瀏覽器（localStorage）。</div>`;
+  $('#menu').classList.remove('hidden');
+}
+$('#menu').addEventListener('click', e => {
+  const b = e.target.closest('button[data-go]'); if (!b) return;
+  const lv = +b.dataset.lv;
+  if (b.dataset.go === 'cont') {
+    let s; try { s = FG.load(store().saves[lv]); } catch (err) { toast('存檔讀取失敗，改為重新開始：' + err.message, 'bad'); s = FG.newGame(lv); }
+    startLevel(s, false);
+  } else {
+    if (store().saves[lv] && !confirm('重新開始會覆蓋這一章的存檔，確定嗎？')) return;
+    startLevel(FG.newGame(lv), true);
+  }
+});
+function startLevel(s, fresh) {
+  UI.s = s; UI.sel = null; UI.tool = null; UI.chPath = []; UI.parts = []; UI.doneSeen = {}; UI.sideHtml = ''; UI.goalsHtml = '';
+  for (const g of s.goals) if (g.done) UI.doneSeen[g.id] = true;
+  UI.completeShown = s.complete;
+  const c = FG.centralOf(s); centerOn(c.q, c.r); UI.cam.z = 1;
+  $('#menu').classList.add('hidden'); $('#hud').classList.remove('hidden');
+  $('#lvTitle').textContent = FG.LEVELS[s.level].title;
+  renderTools(); setSpeed(1); setLayer('all');
+  UI.playing = true;
+  if (fresh) { saveGame(true); dialog(FG.LEVELS[s.level].title, FG.LEVELS[s.level].intro, [['開始', closeDialog]]); }
+}
+function dialog(title, text, buttons) {
+  const d = $('#dialog');
+  d.innerHTML = `<div class="dlg panel"><h2>${esc(title)}</h2><p>${esc(text)}</p><div class="row"></div></div>`;
+  for (const [t, fn, primary] of buttons) { const b = document.createElement('button'); b.textContent = t; if (primary !== false) b.className = 'primary'; b.onclick = fn; d.querySelector('.row').append(b); }
+  d.classList.remove('hidden'); setSpeed(0);
+}
+function closeDialog() { $('#dialog').classList.add('hidden'); setSpeed(1); }
+function showComplete() {
+  const s = UI.s, m = Math.floor(s.completeAt / 60), next = FG.LEVELS[s.level + 1];
+  const btns = [['繼續在本章遊玩', closeDialog, false]];
+  if (next) btns.push(['前往' + next.title, () => { closeDialog(); startLevel(FG.newGame(s.level + 1), true); }]);
+  else btns.push(['回到選單', () => { closeDialog(); showMenu(); }]);
+  dialog('🌟 ' + FG.LEVELS[s.level].title + '　完成！', `花了遊戲時間 ${m} 分鐘。\n精靈 ${Object.keys(s.fairies).length} 隻，採收法力花 ${s.stats.produced['法力花'] || 0} 朵。` +
+    (next ? '\n\n下一章已解鎖。' : '\n\n這是目前版本的最後一章。小鎮居民的供需與對外貿易將在後續章節登場。'), btns);
+}
+
+// ---------- 主迴圈 ----------
+let last = performance.now();
+function frame(ts) {
+  const dt = Math.min(0.1, (ts - last) / 1000); last = ts;
+  if (UI.s && UI.playing) {
+    UI.t += dt;
+    if (UI.speed > 0) FG.tick(UI.s, dt * UI.speed);
+    panKeys(dt); drainFx(); stepParts(dt); render();
+    if (ts - UI.lastUi > 200) { UI.lastUi = ts; uiTick(); }
+    if (ts - UI.lastSave > 20000) saveGame(true);
+    const t = UI.mouse.in && !UI.drag ? tileAtScreen(UI.mouse.x, UI.mouse.y) : null;
+    const tip = $('#tip');
+    if (t) { const e = t.e ? UI.s.ents[t.e] : null; tip.textContent = (e ? entName(e) + '・' : '') + FG.TERRAIN[t.t].name; tip.style.left = UI.mouse.x + 16 + 'px'; tip.style.top = UI.mouse.y + 16 + 'px'; }
+    else tip.textContent = '';
+  }
+  requestAnimationFrame(frame);
+}
+addEventListener('beforeunload', () => { if (UI.s && UI.playing) saveGame(true); });
+showMenu();
+requestAnimationFrame(frame);
+globalThis.FGUI = UI;
+})();
+</script>
+</body>
+</html>

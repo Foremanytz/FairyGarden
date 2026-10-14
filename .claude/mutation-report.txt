@@ -1,0 +1,75 @@
+SURVIVED " < " → " <= " | const isAtTile = (f, t) => { const p = hex.toXY(t.q, t.r); return f.atKey === hex.key(t.q,
+SURVIVED "true" → "false" | const idleAt = (f, msg) => { f.msg = msg; f.bubble = '…'; f.act = { op: 'wait', t: 0, dur:
+SURVIVED " > " → " >= " | const bps = entsWhere(s, f, e => e.type === 'blueprint' && Object.keys(e.need).some(k => m
+SURVIVED " <= " → " < " | if (k <= 0) return actFail(s, f, '對方不需要' + f.hold.item);
+SURVIVED " || " → " && " | if (!e || e.type !== 'flower') return actFail(s, f, '不在魔法之花');
+SURVIVED " >= " → " > " | if (e.t >= rate) {
+SURVIVED " > " → " >= " | if (e.buf < 10) { e.buf++; addStat(s, e.elem, 1); if (e.charge > 0) e.charge = Math.max(0,
+SURVIVED " > " → " >= " | function store(t, item, n) { const k = Math.min(n, room(t, item)); if (k > 0) t.storage[it
+SURVIVED " && " → " || " | const here = (s, f) => { const t = s.tiles[f.atKey]; return t && t.e ? s.ents[t.e] : null;
+SURVIVED " || " → " && " | if (!d || !RECIPES[rid] || !s.recipes.includes(rid)) return no('無法使用這個配方');
+SURVIVED " <= " → " < " | const e = s.ents[id]; if (!e || n <= 0) return 0;
+SURVIVED " < " → " <= " | for (const o of list) { const p = hex.toXY(o.q, o.r), d = (p.x - f.x) ** 2 + (p.y - f.y) *
+SURVIVED " < " → " <= " | if (hex.dist({ q: 0, r: 0 }, { q, r }) > 3) { const x = R(); if (x < 0.05) t = 'forest'; e
+SURVIVED " && " → " || " | const atEnt = (s, f, e) => { const h = here(s, f); return h && h.id === e.id && Math.abs(f
+SURVIVED " || " → " && " | if (!e || e.type !== 'farm' || e.planted || !f.hold || f.hold.item !== '月光花') return actFa
+SURVIVED " && " → " || " | const isAtTile = (f, t) => { const p = hex.toXY(t.q, t.r); return f.atKey === hex.key(t.q,
+SURVIVED " && " → " || " | const src = nearest(s, f, entsWhere(s, f, e => e.type === 'barrier' && e.elem === item && 
+SURVIVED " < " → " <= " | if (d <= rad && (d < rad || R() < 0.6)) tile.t = t;
+SURVIVED " < " → " <= " | if (d <= rad && (d < rad || R() < 0.6)) tile.t = t;
+SURVIVED " > " → " >= " | const claimedByOther = (s, f, id) => { const c = s.claims[id]; return c && c.f !== f.id &&
+SURVIVED " > " → " >= " | while (dt > 1e-9) { const h = Math.min(0.1, dt); stepWorld(s, h); dt -= h; }
+SURVIVED " || " → " && " | if (k <= 0 || (f.hold && f.hold.item !== e.elem)) return actFail(s, f, '收不了');
+SURVIVED " <= " → " < " | if (k <= 0) return actFail(s, f, '家裡沒有' + a.item);
+SURVIVED " && " → " || " | if (f.atKey === key && Math.abs(f.x - p.x) < 1e-6 && Math.abs(f.y - p.y) < 1e-6) return fa
+SURVIVED " === " → " !== " | const farms = entsWhere(s, f, e => e.type === 'farm').length;
+SURVIVED " < " → " <= " | const atEnt = (s, f, e) => { const h = here(s, f); return h && h.id === e.id && Math.abs(f
+SURVIVED " < " → " <= " | if (hex.dist({ q: 0, r: 0 }, { q, r }) > 3) { const x = R(); if (x < 0.05) t = 'forest'; e
+SURVIVED " <= " → " < " | if (k <= 0 || (f.hold && f.hold.item !== e.elem)) return actFail(s, f, '收不了');
+SURVIVED " < " → " <= " | if (hex.dist({ q: 0, r: 0 }, { q, r }) > 3) { const x = R(); if (x < 0.05) t = 'forest'; e
+SURVIVED "true" → "false" | if (f.hold) return atEnt(s, f, empty) ? timed(f, 'plant', { dur: 1 }) : goTo(s, f, empty, 
+SURVIVED " < " → " <= " | if (f.atKey === key && Math.abs(f.x - p.x) < 1e-6 && Math.abs(f.y - p.y) < 1e-6) return fa
+SURVIVED " || " → " && " | if (d.prog === 0 && (blocked || !ready)) { d.state = blocked || 'wait'; continue; }
+SURVIVED " < " → " <= " | if (d.prog < R.time) continue;
+SURVIVED " < " → " <= " | if (slot < 0 || slot >= t.slots || t.devices[slot]) return no('這一格不能安裝');
+SURVIVED " >= " → " > " | if ((home.storage['花蜜'] || 0) >= 1) { home.storage['花蜜'] -= 1; a.phase = 'eat'; a.t = 0; f
+SURVIVED " || " → " && " | if (!e || !f.hold) return actFail(s, f, '無法放下');
+SURVIVED " !== " → " === " | if (k <= 0 || (f.hold && f.hold.item !== e.elem)) return actFail(s, f, '收不了');
+SURVIVED " < " → " <= " | const pred = item === '滋養露' ? (e => e.type === 'farm' && s.features.fert && e.fert <= FERT
+SURVIVED " <= " → " < " | if ((home.storage[item] || 0) <= 0) return idleAt(f, '家裡沒有' + item);
+SURVIVED " <= " → " < " | for (const k in s.tiles) if (hex.dist(s.tiles[k], { q: 0, r: 0 }) <= 2) s.tiles[k].t = 'gr
+SURVIVED " < " → " <= " | if (f.energy < 15) { releaseClaim(s, f); f.act = { op: 'refuel', phase: 'go', t: 0 }; }
+SURVIVED "true" → "false" | const empty = nearest(s, f, entsWhere(s, f, e => e.type === 'farm' && !e.planted, true));
+SURVIVED " <= " → " < " | if (d <= rad && (d < rad || R() < 0.6)) tile.t = t;
+SURVIVED " || " → " && " | if (d.prog === 0 && (blocked || !ready)) { d.state = blocked || 'wait'; continue; }
+SURVIVED " || " → " && " | if (!e || e.type !== 'farm' || e.planted || !f.hold || f.hold.item !== '月光花') return actFa
+SURVIVED " >= " → " > " | case 'wait': a.t += h; if (a.t >= a.dur) done(); return;
+SURVIVED " <= " → " < " | if ((home.storage[item] || 0) <= 0) return idleAt(f, '家裡沒有' + item);
+SURVIVED " || " → " && " | case 'order': return [g.done ? n : flowers(s).reduce((k, t) => k + (t.storage[g.item] || 0
+SURVIVED " < " → " <= " | const isAtTile = (f, t) => { const p = hex.toXY(t.q, t.r); return f.atKey === hex.key(t.q,
+SURVIVED " >= " → " > " | if (a.t >= 1.5) { a.t -= 1.5; addHold(f, a.item, 1); addStat(s, a.item, 1); if (f.hold.n >
+SURVIVED " < " → " <= " | if (f.atKey === key && Math.abs(f.x - p.x) < 1e-6 && Math.abs(f.y - p.y) < 1e-6) return fa
+SURVIVED " <= " → " < " | if (d <= sp) { f.x = p.x; f.y = p.y; f.atKey = hex.key(home.q, home.r); a.phase = 'rest'; 
+SURVIVED " === " → " !== " | if (d.prog === 0 && (blocked || !ready)) { d.state = blocked || 'wait'; continue; }
+SURVIVED "(!" → "(" | f.hold.n--; if (!f.hold.n) f.hold = null; ops.plant(s, e); break;
+SURVIVED " > " → " >= " | if (k > 0) { e.have[item] = (e.have[item] || 0) + k; if (has(e.have, e.need)) completeBlue
+SURVIVED " || " → " && " | if (farm.type !== 'farm' || !farm.planted || farm.growth < 1) return 0;
+SURVIVED " && " → " || " | const pred = item === '滋養露' ? (e => e.type === 'farm' && s.features.fert && e.fert <= FERT
+SURVIVED " >= " → " > " | while (ch.transit.length && ch.transit[0].d >= len) store(dst, ch.transit.shift().item, 1)
+SURVIVED " < " → " <= " | if (e.type === 'farm' && e.planted && e.growth < 1) {
+SURVIVED " || " → " && " | if (!e || e.type !== 'farm' || e.planted || !f.hold || f.hold.item !== '月光花') return actFa
+SURVIVED " > " → " >= " | if (hex.dist({ q: 0, r: 0 }, { q, r }) > 3) { const x = R(); if (x < 0.05) t = 'forest'; e
+SURVIVED " >= " → " > " | if (a.t >= 0.5) { f.energy = 100; f.msg = ''; done(); }
+SURVIVED " >= " → " > " | if (f.energy >= 100) { f.msg = ''; done(); }
+SURVIVED " < " → " <= " | const atEnt = (s, f, e) => { const h = here(s, f); return h && h.id === e.id && Math.abs(f
+SURVIVED " || " → " && " | if (blocked || !ready) { d.prog = R.time; d.state = blocked || 'wait'; continue; }
+SURVIVED " || " → " && " | if (!e || e.type !== 'barrier') return actFail(s, f, '不在結界');
+SURVIVED " && " → " || " | function releaseClaim(s, f) { if (f.claim && s.claims[f.claim] && s.claims[f.claim].f === 
+SURVIVED " <= " → " < " | if (d <= sp) { f.x = a.tx; f.y = a.ty; f.atKey = a.key; done(); } else { f.x += dx / d * s
+SURVIVED " || " → " && " | if (blocked || !ready) { d.prog = R.time; d.state = blocked || 'wait'; continue; }
+SURVIVED " || " → " && " | if (!e || e.type !== 'farm' || e.planted || !f.hold || f.hold.item !== '月光花') return actFa
+SURVIVED " || " → " && " | if (d <= rad && (d < rad || R() < 0.6)) tile.t = t;
+SURVIVED " <= " → " < " | const dx = a.tx - f.x, dy = a.ty - f.y, d = Math.hypot(dx, dy), sp = SPEED * (f.energy <= 
+SURVIVED " < " → " <= " | if (a.t < a.dur) return;
+candidates 387, sampled 387, killed 314, survived 73
+GATE_RESULT: {"tool":"tests/mutation.mjs","mutants":387,"killed":314,"rate":0.811,"threshold":0.8,"pass":true}

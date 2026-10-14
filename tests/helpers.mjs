@@ -1,0 +1,11 @@
+import { loadFG } from './load-core.mjs';
+export const FG = loadFG();
+export const K = (q, r) => FG.hex.key(q, r);
+export const central = s => Object.values(s.ents).find(e => e.type === 'flower' && e.central);
+export const fairies = s => Object.values(s.fairies);
+export const run = (s, sec) => { for (let i = 0; i < Math.round(sec * 10); i++) FG.tick(s, 0.1); };
+export const idleAll = s => { for (const f of fairies(s)) FG.cmd.setTask(s, f.id, { kind: 'idle' }); };
+export const noBrew = s => { for (const t of FG.flowers(s)) for (const d of t.devices) if (d) d.limit = 0; };
+export const clearTile = (s, q, r, t = 'grass') => { const tile = s.tiles[K(q, r)]; tile.t = t; if (tile.e) { delete s.ents[tile.e]; delete tile.e; } return tile; };
+export const onlyForestAt = (s, q, r) => { for (const k in s.tiles) if (s.tiles[k].t === 'forest') s.tiles[k].t = 'grass'; clearTile(s, q, r, 'forest'); };
+export const atHome = (s, f) => { const h = s.ents[f.home], p = FG.hex.toXY(h.q, h.r); return Math.hypot(p.x - f.x, p.y - f.y) < 0.05; };

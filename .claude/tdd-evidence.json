@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "stages": {
+    "stage-1": {
+      "recorded_at_utc": "2026-10-14T12:52:40+00:00",
+      "forced_rerecord": true,
+      "mode": "pre-impl",
+      "tests": {
+        "tests/core.test.mjs": "bc4e50fa70ae63ebd28999e6c1b1d38381d3c849ccd8bd29c8a7fa545acaaa9c",
+        "tests/load-core.mjs": "cdfea6864d2a303dfd137d5ee820fce55b6d2910281a78c9e86900432bd1d679"
+      },
+      "impl": {
+        "index.html": "ABSENT"
+      }
+    }
+  }
+}

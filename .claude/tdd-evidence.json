@@ -24,6 +24,37 @@
       "impl": {
         "index.html": "62034d883f353221a064ce0b34176bd2558c8b8a445aa7381e373b9b95b35ed9"
       }
+    },
+    "stage-2": {
+      "recorded_at_utc": "2026-10-14T15:18:21+00:00",
+      "forced_rerecord": false,
+      "mode": "pre-impl",
+      "tests": {
+        "tests/helpers.mjs": "010c728ee57a97da165d2e58ccbf4df26fb1e31a48544f6017abff07d1ec2cd6",
+        "tests/core.test.mjs": "5140247cb38b90f139814c523dc02e72a8b4df554346904aa58d42ed7ffac673",
+        "tests/tasks.test.mjs": "bf05aa402821d1fcfd420ccc35fc0c5f54587d66215adf1f405dcdb15da9ec19",
+        "tests/storage.test.mjs": "a2010bda03f2b47250b4f32b5257196ed61bdf2efc91a99f2ed9527065f3196f",
+        "tests/playthrough.test.mjs": "2f950b6d8ec56f01777cb7ac8e72b00c60b1430c75e1e5dbefada23013360eb4"
+      },
+      "impl": {
+        "index.html": "62034d883f353221a064ce0b34176bd2558c8b8a445aa7381e373b9b95b35ed9"
+      }
+    },
+    "stage-2-mut": {
+      "recorded_at_utc": "2026-10-14T15:42:42+00:00",
+      "forced_rerecord": true,
+      "mode": "test-only",
+      "tests": {
+        "tests/helpers.mjs": "2d31c58d6780dd27f94cc4bd83ef897834b53b03fde5ee351c9e31b920e4b7d8",
+        "tests/core.test.mjs": "5140247cb38b90f139814c523dc02e72a8b4df554346904aa58d42ed7ffac673",
+        "tests/tasks.test.mjs": "bf05aa402821d1fcfd420ccc35fc0c5f54587d66215adf1f405dcdb15da9ec19",
+        "tests/storage.test.mjs": "e50e777e3bb5da1a97d8d41f89d01105f3ebeafc69b7abb05d18709dd19fac39",
+        "tests/playthrough.test.mjs": "3f6b7f4b2b4884df0b748fdd995bc07eb174a7c880a49e46cd8f94392c1d91e1",
+        "tests/edges.test.mjs": "90361e672283b5af14af1eb99e15a42d920f09e57df6ba9e6bbec123cc61ea55"
+      },
+      "impl": {
+        "index.html": "6f80f3e963df48816553c873c36d5ce254f04741ac33705d696262534c355d35"
+      }
     }
   }
 }

@@ -24,17 +24,27 @@ h2 { margin: 0 0 6px; font-size: 20px; } h3 { margin: 14px 0 6px; font-size: 15p
 #lvTitle { font-size: 18px; font-weight: 700; color: var(--gold); min-width: 280px; }
 #top .grp { display: flex; gap: 4px; align-items: center; } #top .grp span { color: var(--dim); margin-right: 4px; }
 #clock { margin-left: auto; color: var(--dim); font-variant-numeric: tabular-nums; }
-#goals { position: fixed; top: 64px; left: 12px; width: 350px; padding: 12px 14px; }
+#left { position: fixed; top: 64px; left: 12px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; max-height: calc(100vh - 190px); }
+#goals { width: 350px; padding: 10px 14px; flex: none; }
+#roster { padding: 10px 14px; overflow: auto; min-height: 0; }
+.phead { display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 16px; } .phead h3 { margin: 0; } .phead span { color: var(--dim); }
+table.roster { border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+.roster th { color: var(--dim); font-weight: 400; text-align: left; padding: 2px 6px; white-space: nowrap; }
+.roster td { padding: 3px 6px; border-top: 1px solid var(--line); white-space: nowrap; }
+.roster tr.sel td { background: rgba(255,217,138,.1); }
+.roster select { font-size: 13px; max-width: 130px; } .roster input[type=number] { width: 52px; font-size: 13px; }
+.roster .bar { width: 56px; } .roster .stc { max-width: 230px; overflow: hidden; text-overflow: ellipsis; color: var(--dim); }
+button.link { background: none; border: 0; padding: 0; color: var(--gold); text-decoration: underline dotted; }
 .goal { display: grid; grid-template-columns: 20px 1fr auto; gap: 6px; align-items: center; padding: 5px 0; border-bottom: 1px dashed var(--line); }
 .goal:last-child { border-bottom: 0; } .goal.done { color: var(--dim); } .goal.done .chk { color: var(--ok); }
 .goal .prog { color: var(--dim); font-size: 13px; font-variant-numeric: tabular-nums; } .goal button { padding: 2px 10px; grid-column: 2 / 4; justify-self: start; }
-#tools { position: fixed; left: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 6px; padding: 10px; width: 200px; }
-#tools button { display: grid; grid-template-columns: 32px 1fr; text-align: left; align-items: center; padding: 6px 8px; }
+#tools { position: fixed; left: 50%; transform: translateX(-50%); bottom: 12px; display: flex; gap: 6px; padding: 8px; }
+#tools button { display: grid; grid-template-columns: 30px 1fr; text-align: left; align-items: center; padding: 6px 10px; min-width: 150px; }
 #tools button .ic { font-size: 22px; } #tools button small { display: block; color: var(--dim); font-size: 12px; }
-#side { position: fixed; top: 64px; right: 12px; width: 430px; max-height: calc(100vh - 150px); overflow: auto; padding: 14px 16px; }
+#side { position: fixed; top: 64px; right: 12px; width: 430px; max-height: calc(100vh - 190px); overflow: auto; padding: 14px 16px; }
 #side .sub { color: var(--dim); font-size: 13px; } #side p { color: var(--dim); line-height: 1.6; margin: 6px 0; }
 .inv { display: flex; flex-wrap: wrap; gap: 6px; } .it { background: rgba(255,255,255,.06); border-radius: 8px; padding: 3px 8px; font-size: 14px; }
-.it b { color: var(--gold); margin-left: 4px; }
+.it b { color: var(--gold); margin-left: 4px; } .it.full { outline: 1px solid var(--bad); } .it.full b { color: var(--bad); }
 .slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .dev { background: rgba(201,167,255,.08); border: 1px solid rgba(201,167,255,.3); border-radius: 10px; padding: 8px; font-size: 13px; display: flex; flex-direction: column; gap: 5px; }
 .dev.empty { background: rgba(255,255,255,.03); border-style: dashed; border-color: var(--line); color: var(--dim); }
@@ -42,10 +52,10 @@ h2 { margin: 0 0 6px; font-size: 20px; } h3 { margin: 14px 0 6px; font-size: 15p
 .dev select { width: 100%; font-size: 12px; } .dev button small { color: var(--dim); }
 .bar { height: 8px; background: rgba(255,255,255,.1); border-radius: 4px; overflow: hidden; } .bar i { display: block; height: 100%; background: linear-gradient(90deg, #a98bff, #ff9df0); }
 .bar.en i { background: linear-gradient(90deg, #ffc94a, #8ff0b0); }
-.st { color: var(--dim); } .warn { color: var(--bad); }
+.st { color: var(--dim); } .warn { color: var(--bad); } .note { color: #ffe9a8; }
 .row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
 .kv { display: grid; grid-template-columns: 90px 1fr; gap: 4px 8px; margin: 6px 0; } .kv span:nth-child(odd) { color: var(--dim); }
-#hint { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); max-width: 820px; padding: 10px 18px; color: #fff7dc; line-height: 1.6; }
+#hint { position: fixed; bottom: 92px; left: 50%; transform: translateX(-50%); max-width: 820px; padding: 10px 18px; color: #fff7dc; line-height: 1.6; }
 #hint:empty { display: none; }
 #toasts { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none; }
 .toast { background: rgba(20,26,40,.94); border: 1px solid var(--accent); border-radius: 10px; padding: 8px 16px; animation: tf 3.2s forwards; }
@@ -63,28 +73,6 @@ h2 { margin: 0 0 6px; font-size: 20px; } h3 { margin: 14px 0 6px; font-size: 15p
 .card.locked { opacity: .5; }
 .help { margin-top: 30px; color: var(--dim); font-size: 14px; line-height: 1.8; text-align: center; }
 .dlg { width: 640px; padding: 26px 30px; } .dlg p { white-space: pre-line; line-height: 1.8; color: #dfe3f2; }
-#editor .edwin { position: fixed; inset: 50px 120px; display: flex; flex-direction: column; padding: 16px 20px; }
-.edhead { display: flex; gap: 10px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
-.edhead h2 { margin: 0 auto 0 0; } .edhead label { color: var(--dim); }
-.edbody { flex: 1; display: grid; grid-template-columns: 300px 1fr; gap: 16px; min-height: 0; margin-top: 12px; }
-.palette { overflow: auto; padding-right: 6px; } .palette h3 { margin: 10px 0 6px; }
-.pblock { padding: 7px 12px; border-radius: 8px; margin: 4px 0; cursor: grab; font-weight: 600; color: #10131c; }
-.program { position: relative; overflow: auto; background: rgba(0,0,0,.25); border-radius: 12px; padding: 14px 14px 80px; }
-.list { min-height: 34px; padding: 4px 0 4px 0; border-radius: 8px; }
-.list > .ph { color: var(--dim); font-size: 13px; padding: 6px 10px; border: 1px dashed var(--line); border-radius: 8px; }
-.list.over { background: rgba(255,255,255,.06); }
-.blk { margin: 5px 0; border-radius: 9px; padding: 6px 8px 6px 10px; color: #10131c; font-weight: 600; cursor: grab; border-left: 6px solid rgba(0,0,0,.25); }
-.blk .bh { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.blk .bh select, .blk .bh input { color: #10131c; background: rgba(255,255,255,.75); border-color: rgba(0,0,0,.2); font-weight: 400; }
-.blk .bh .x { margin-left: auto; padding: 0 7px; background: rgba(0,0,0,.15); color: #10131c; border: 0; }
-.blk > .list { margin-left: 18px; background: rgba(0,0,0,.12); padding: 4px 8px; }
-.blk .else { margin: 4px 0 2px 2px; }
-.blk.running { outline: 3px solid #fff6a8; box-shadow: 0 0 16px #fff6a8; }
-.c-flow { background: #f0b25a; } .c-move { background: #6cb8f0; } .c-act { background: #7fd48a; }
-.marker { height: 4px; background: #fff6a8; border-radius: 2px; margin: 2px 0; }
-.trash { position: absolute; right: 14px; bottom: 14px; padding: 14px 22px; border: 2px dashed var(--bad); border-radius: 12px; color: var(--bad); }
-.trash.over { background: rgba(255,143,143,.2); }
-.edfoot { color: var(--dim); font-size: 13px; padding-top: 8px; line-height: 1.6; }
 
 </style>
 </head>
@@ -98,7 +86,7 @@ h2 { margin: 0 0 6px; font-size: 20px; } h3 { margin: 14px 0 6px; font-size: 15p
     <div class="grp"><button id="btnSave">存檔</button><button id="btnMenu">選單</button></div>
     <div id="clock"></div>
   </div>
-  <div id="goals" class="panel"></div>
+  <div id="left"><div id="goals" class="panel"></div><div id="roster" class="panel"></div></div>
   <div id="tools" class="panel"></div>
   <div id="side" class="panel"></div>
   <div id="hint" class="panel"></div>
@@ -107,7 +95,6 @@ h2 { margin: 0 0 6px; font-size: 20px; } h3 { margin: 14px 0 6px; font-size: 15p
 <div id="tip"></div>
 <div id="menu" class="modal"></div>
 <div id="dialog" class="modal hidden"></div>
-<div id="editor" class="modal hidden"></div>
 
 <script id="fg-core">
 // ===== Fairy Garden 核心邏輯：純資料與模擬，不碰 DOM（tests/ 會單獨載入這段）=====
@@ -143,7 +130,7 @@ const hex = {
 
 // ---------- 資料表 ----------
 const ITEMS = {
-  '法力花': { icon: '🌸', color: '#ff8fc8', desc: '農田的作物，也是種子' },
+  '月光花': { icon: '🌙', color: '#cfe0ff', desc: '農田的作物，也是種子；花海可採集野生的' },
   '花蜜':   { icon: '🍯', color: '#ffc94a', desc: '精靈的食物，回復活力' },
   '木枝':   { icon: '🪵', color: '#c08a55', desc: '在森林採集的建材' },
   '月石':   { icon: '🪨', color: '#c4c8e8', desc: '在岩地採集的建材' },
@@ -157,129 +144,106 @@ const ITEMS = {
   '虹晶':   { icon: '🌈', color: '#ff9df0', desc: '最珍貴的魔法結晶' },
 };
 const RECIPES = {
-  nectar:   { name: '花蜜',   in: { '法力花': 2 }, out: { '花蜜': 1 }, time: 4 },
+  nectar:   { name: '花蜜',   in: { '月光花': 2 }, out: { '花蜜': 1 }, time: 4 },
   nourish:  { name: '滋養露', in: { '露水': 1, '土息': 1 }, out: { '滋養露': 2 }, time: 5 },
   crystal:  { name: '結界晶', in: { '月石': 1, '陽光': 2 }, out: { '結界晶': 1 }, time: 6 },
   stardust: { name: '星塵',   in: { '陽光': 1, '風語': 1, '花蜜': 1 }, out: { '星塵': 1 }, time: 8 },
   prism:    { name: '虹晶',   in: { '星塵': 2, '露水': 2, '結界晶': 1 }, out: { '虹晶': 1 }, time: 12 },
 };
 const DEVICES = {
-  brewer:     { name: '花蜜釀造台', cost: { '木枝': 3, '法力花': 2 }, recipes: ['nectar'], limit: 5, keep: 4 },
+  brewer:     { name: '花蜜釀造台', cost: { '木枝': 3, '月光花': 2 }, recipes: ['nectar'], limit: 5, keep: 4 },
   transmuter: { name: '元素轉化器', cost: { '月石': 3, '木枝': 3 }, recipes: null, limit: 10, keep: 0 },
 };
 const BUILDS = {
   farm:    { name: '農田',         icon: '🌱', cost: { '木枝': 2 }, terrain: ['grass', 'meadow'] },
   barrier: { name: '魔力收集結界', icon: '🔮', cost: { '月石': 3, '木枝': 2 }, terrain: ['grass', 'meadow', 'rock', 'forest'] },
-  tower:   { name: '魔法塔',       icon: '🗼', cost: { '木枝': 10, '月石': 10, '結界晶': 2 }, terrain: ['grass', 'meadow'] },
+  flower:  { name: '魔法之花',     icon: '🌷', cost: { '木枝': 10, '月石': 10, '結界晶': 2 }, terrain: ['grass', 'meadow'] },
   anchor:  { name: '光之錨',       icon: '🕯️', cost: { '月石': 2, '結界晶': 1 }, terrain: ['grass', 'meadow', 'rock', 'forest'] },
 };
 const TERRAIN = {
-  grass:  { name: '草地' }, meadow: { name: '花海' }, forest: { name: '森林', res: '木枝' },
+  grass:  { name: '草地' }, meadow: { name: '花海', res: '月光花' }, forest: { name: '森林', res: '木枝' },
   rock:   { name: '岩地', res: '月石' }, water: { name: '水域', res: '露水' },
 };
 const BARRIER_ELEM = { grass: '陽光', meadow: '陽光', rock: '風語', forest: '土息' };
-const CAP = 5;            // 精靈一次能拿的數量
-const SPEED = 3.5;        // 精靈飛行速度（單位/秒，相鄰格距 √3）
-const GROW_TIME = 30;     // 農田生長秒數
+// 指令單的動作；item 為該動作可選的物品（null＝不需要物品）
+const TASKS = {
+  idle:     { name: '待命', items: null },
+  collect:  { name: '收集', items: ['木枝', '月石', '露水', '月光花', '陽光', '風語', '土息'] },
+  farm:     { name: '種植', items: null },
+  build:    { name: '建造', items: null },
+  maintain: { name: '維護', items: ['滋養露', '結界晶'] },
+  haul:     { name: '運送', items: Object.keys(ITEMS) },
+};
+const CAP = 5;               // 精靈一次能拿的數量
+const SPEED = 3.5;           // 精靈飛行速度（單位/秒，相鄰格距 √3）
+const GROW_TIME = 30;
 const FERT_MAX = 6;
-const CH_HOP = 7;         // 通道相鄰節點最遠格數
-const CH_SPEED = 4;       // 通道光點速度
-const CH_INTERVAL = 1.5;  // 通道每隔幾秒送出一個
-const SUMMON_COST = { '花蜜': 3, '法力花': 4 };
+const CH_HOP = 7;
+const CH_SPEED = 4;
+const CH_INTERVAL = 1.5;
+const DEFAULT_RADIUS = 20;
+const STORAGE_BASE = 60, STORAGE_STEP = 30;
+const SUMMON_COST = { '花蜜': 3, '月光花': 4 };
 const FAIRY_NAMES = ['鈴蘭', '薄荷', '露珠', '星點', '苜蓿', '蒲公英', '楓糖', '晨曦', '月桂', '雛菊', '琥珀', '青苔', '柳絮', '螢火', '雲雀', '杏仁'];
-const TOWER_COLORS = ['#c9a7ff', '#7fd8ff', '#ffb37f', '#9cffb0'];
-
-// 目標選擇器：前往「最近的 X」
-const NEAREST = {
-  forest: '森林', rock: '岩地', water: '水邊', tower: '任一魔法塔',
-  farmEmpty: '空的農田', farmRipe: '成熟的農田', farmNeedNourish: '缺滋養的農田',
-  barrierReady: '有產出的結界', barrierNeedCrystal: '缺結界晶的結界', blueprint: '需要材料的藍圖',
-};
-const CLAIMABLE = { farmEmpty: 1, farmRipe: 1, farmNeedNourish: 1, barrierReady: 1, barrierNeedCrystal: 1 };
-
-// ---------- 範本腳本 ----------
-const B = {
-  forever: body => ({ op: 'forever', body }),
-  iff: (cond, body, els) => ({ op: 'if', cond, body, else: els || [] }),
-  go: what => ({ op: 'goto', target: what === 'home' ? { kind: 'home' } : { kind: 'nearest', what } }),
-  op: (op, extra) => Object.assign({ op }, extra || {}),
-};
-const DUMP_HAND = B.iff({ kind: 'handEmpty', not: true }, [B.go('home'), B.op('drop')]);
-const TEMPLATES = [
-  { name: '採集木枝', min: 1, prog: [B.forever([B.go('forest'), B.op('gather'), B.go('home'), B.op('drop')])] },
-  { name: '搬木枝去蓋藍圖', min: 1, prog: [B.forever([DUMP_HAND, B.go('home'), B.op('take', { item: '木枝', n: 5 }),
-      B.go('blueprint'), B.op('drop')])] },
-  { name: '種花與採收', min: 1, prog: [B.forever([DUMP_HAND,
-      B.iff({ kind: 'exists', what: 'farmRipe' }, [B.go('farmRipe'), B.op('harvest'), B.go('home'), B.op('drop')], [
-        B.iff({ kind: 'exists', what: 'farmEmpty' }, [B.go('home'), B.op('take', { item: '法力花', n: 1 }), B.go('farmEmpty'), B.op('plant')],
-          [B.op('wait', { s: 2 })])])])] },
-  { name: '採集露水', min: 2, prog: [B.forever([B.go('water'), B.op('gather'), B.go('home'), B.op('drop')])] },
-  { name: '採集月石', min: 2, prog: [B.forever([B.go('rock'), B.op('gather'), B.go('home'), B.op('drop')])] },
-  { name: '收取結界元素', min: 2, prog: [B.forever([B.go('barrierReady'), B.op('collect'), B.go('home'), B.op('drop')])] },
-  { name: '替農田補滋養露', min: 2, prog: [B.forever([DUMP_HAND,
-      B.iff({ kind: 'exists', what: 'farmNeedNourish' }, [B.go('home'), B.op('take', { item: '滋養露', n: 1 }), B.go('farmNeedNourish'), B.op('drop')],
-        [B.op('wait', { s: 3 })])])] },
-  { name: '替結界補結界晶', min: 2, prog: [B.forever([DUMP_HAND,
-      B.iff({ kind: 'exists', what: 'barrierNeedCrystal' }, [B.go('home'), B.op('take', { item: '結界晶', n: 1 }), B.go('barrierNeedCrystal'), B.op('drop')],
-        [B.op('wait', { s: 3 })])])] },
-];
-const tpl = name => JSON.parse(JSON.stringify(TEMPLATES.find(t => t.name === name).prog));
+const FLOWER_COLORS = ['#c9a7ff', '#7fd8ff', '#ffb37f', '#9cffb0'];
+const FLOWER_NAMES = ['中央魔法之花', '湖畔之花', '花海之花', '星光之花'];
 
 // ---------- 關卡 ----------
+const T = (kind, item) => ({ kind, item: item || null });
 const LEVELS = {
   1: {
-    title: '第一章　中央魔法塔', minutes: '約 10 分鐘', seed: 11,
-    intro: '德魯伊在森林深處喚醒了沉睡的中央魔法塔。兩隻精靈從塔中醒來，等著你寫下第一份工作腳本。\n\n本章學習：擺放藍圖讓精靈搬材料建造、種植與採收法力花、在塔內釀造花蜜（精靈的食物），以及用積木編寫精靈腳本。',
+    title: '第一章　中央魔法之花', minutes: '約 10 分鐘', seed: 11,
+    intro: '德魯伊在森林深處喚醒了沉睡的中央魔法之花。兩隻精靈從花中醒來，等著你分派第一份工作。\n\n本章學習：擺放藍圖讓精靈搬材料建造、種植與採收月光花、在乙太空間釀造花蜜（精靈的食物），以及用精靈列表分派任務。',
     features: { fert: false }, unlocked: ['farm'], recipes: ['nectar'],
     terrain: [['forest', 5, -2, 2], ['forest', -5, 5, 2], ['forest', -6, -1, 1], ['water', -2, -5, 2], ['rock', 7, 2, 1], ['meadow', 8, -7, 2], ['water', 10, 3, 2]],
-    towers: [{ q: 0, r: 0, central: true, slots: 2, storage: { '法力花': 6, '花蜜': 4, '木枝': 4 }, devices: [['brewer', 'nectar']] }],
-    fairies: [{ home: 0, prog: [] }, { home: 0, prog: [] }],
+    flowers: [{ q: 0, r: 0, central: true, slots: 2, storage: { '月光花': 6, '花蜜': 4, '木枝': 4 }, devices: [['brewer', 'nectar']] }],
+    fairies: [{ home: 0, task: T('idle') }, { home: 0, task: T('idle') }],
     goals: [
-      { kind: 'build', type: 'farm', n: 3, text: '建造 3 塊農田', hint: '左側選「農田」，點塔附近的草地放藍圖。再點一隻精靈 →「編輯腳本」→ 範本「搬木枝去蓋藍圖」→ 套用。' },
-      { kind: 'produce', item: '法力花', n: 15, text: '採收 15 朵法力花', hint: '給一隻精靈套用範本「種花與採收」。花需要 30 秒長成；播種會用掉 1 朵花、採收得 3 朵。' },
-      { kind: 'produce', item: '花蜜', n: 6, text: '釀造 6 份花蜜', hint: '點中央魔法塔，塔內的「花蜜釀造台」會自動用 2 朵法力花釀 1 份花蜜。調高它的產量上限；「保留原料」讓它留下法力花當種子。' },
-      { kind: 'fairies', n: 4, text: '精靈數量達到 4 隻', hint: '點中央魔法塔 →「召喚精靈」（花蜜 3、法力花 4）。精靈累了會回塔吃花蜜。' },
-      { kind: 'order', item: '花蜜', n: 8, who: '森林旅人', text: '訂單：森林旅人想要 8 份花蜜', hint: '塔內花蜜足夠時，在目標面板按「交付」。' },
+      { kind: 'build', type: 'farm', n: 3, text: '建造 3 塊農田', hint: '下方選「農田」，點花附近的草地放藍圖。在左側精靈列表把一隻精靈的動作設為「建造」，另一隻設為「收集 木枝」。' },
+      { kind: 'produce', item: '月光花', n: 15, text: '採收 15 朵月光花', hint: '把精靈的動作設為「種植」。花需要 30 秒長成；播種用掉 1 朵、採收得 3 朵。' },
+      { kind: 'produce', item: '花蜜', n: 6, text: '釀造 6 份花蜜', hint: '點中央魔法之花，乙太空間裡的「花蜜釀造台」會自動用 2 朵月光花釀 1 份花蜜。調高它的產量上限；「保留原料」讓它留下月光花當種子。' },
+      { kind: 'fairies', n: 4, text: '精靈數量達到 4 隻', hint: '點中央魔法之花 →「召喚精靈」（花蜜 3、月光花 4）。精靈累了會回家吃花蜜。' },
+      { kind: 'order', item: '花蜜', n: 8, who: '森林旅人', text: '訂單：森林旅人想要 8 份花蜜', hint: '倉庫的花蜜足夠時，在目標面板按「交付」。注意倉庫有容量上限，可以點花擴建倉庫。' },
     ],
   },
   2: {
     title: '第二章　擴充與維護', minutes: '約 15–20 分鐘', seed: 22,
-    intro: '花園開始運轉，但土地會疲乏、精靈需要更多種類的魔法。\n\n本章學習：擴充塔內空間、安裝可選配方的元素轉化器、建造魔力收集結界（依地形產出陽光／風語／土息）、維護塔外設施（農田要滋養露、結界要結界晶），以及在湖邊建造第二座魔法塔。',
-    features: { fert: true }, unlocked: ['farm', 'barrier', 'tower', 'expand', 'transmuter', 'brewer'], recipes: ['nectar', 'nourish', 'crystal'],
+    intro: '花園開始運轉，但土地會疲乏、精靈需要更多種類的魔法。\n\n本章學習：擴充乙太空間、安裝可選配方的元素轉化器、建造魔力收集結界（依地形產出陽光／風語／土息）、維護戶外設施（農田要滋養露、結界要結界晶），以及在湖邊種下第二朵魔法之花。',
+    features: { fert: true }, unlocked: ['farm', 'barrier', 'flower', 'expand', 'transmuter', 'brewer'], recipes: ['nectar', 'nourish', 'crystal'],
     terrain: [['forest', -5, 1, 2], ['forest', 4, 3, 2], ['rock', -2, -5, 2], ['rock', 6, -1, 1], ['water', 9, -7, 2], ['water', -7, 8, 1], ['meadow', -9, 3, 2]],
-    towers: [{ q: 0, r: 0, central: true, slots: 3, storage: { '法力花': 10, '花蜜': 8, '木枝': 12, '月石': 8 }, devices: [['brewer', 'nectar', 8]] }],
+    flowers: [{ q: 0, r: 0, central: true, slots: 3, storage: { '月光花': 10, '花蜜': 8, '木枝': 12, '月石': 8 }, devices: [['brewer', 'nectar', 8]] }],
     farms: [[2, -1], [1, -2], [3, -2]],
-    fairies: [{ home: 0, prog: 'tpl:種花與採收' }, { home: 0, prog: 'tpl:採集木枝' }, { home: 0, prog: [] }, { home: 0, prog: [] }],
+    fairies: [{ home: 0, task: T('farm') }, { home: 0, task: T('collect', '木枝') }, { home: 0, task: T('idle') }, { home: 0, task: T('idle') }],
     goals: [
-      { kind: 'expand', n: 1, text: '擴充塔內空間 1 次', hint: '點中央魔法塔 →「擴充塔內空間」。塔內每一格可以安裝一台設備。' },
-      { kind: 'device', dev: 'transmuter', n: 1, text: '在塔內安裝元素轉化器', hint: '在塔內空格按「安裝元素轉化器」，再選擇配方。' },
-      { kind: 'build', type: 'barrier', n: 3, text: '建造 3 座魔力收集結界', hint: '結界依所在地形產出：草地→陽光、岩地→風語、森林→土息。需要月石，記得派精靈採集月石。' },
-      { kind: 'produce', item: '結界晶', n: 6, text: '轉化 6 顆結界晶', hint: '結界晶 = 月石 1 + 陽光 2。用範本「收取結界元素」把陽光帶回塔。' },
-      { kind: 'produce', item: '滋養露', n: 10, text: '轉化 10 瓶滋養露', hint: '滋養露 = 露水 1 + 土息 1。農田缺滋養時生長變慢，用範本「替農田補滋養露」。' },
-      { kind: 'buildNear', type: 'tower', near: 'water', range: 3, n: 1, text: '在水邊建造第二座魔法塔', hint: '魔法塔藍圖要放在離水域 3 格內的草地。可在精靈面板把牠的「家」改成新塔。' },
-      { kind: 'order', item: '滋養露', n: 6, who: '河畔村', text: '訂單：河畔村想要 6 瓶滋養露', hint: '在目標面板按「交付」，會從所有塔的庫存扣除。' },
+      { kind: 'expand', n: 1, text: '擴充乙太空間 1 次', hint: '點中央魔法之花 →「擴充乙太空間」。每一格可以安裝一台設備。' },
+      { kind: 'device', dev: 'transmuter', n: 1, text: '在乙太空間安裝元素轉化器', hint: '在空格按「安裝元素轉化器」，再選擇配方。' },
+      { kind: 'build', type: 'barrier', n: 3, text: '建造 3 座魔力收集結界', hint: '結界依所在地形產出：草地→陽光、岩地→風語、森林→土息。需要月石，派精靈「收集 月石」。' },
+      { kind: 'produce', item: '結界晶', n: 6, text: '轉化 6 顆結界晶', hint: '結界晶 = 月石 1 + 陽光 2。派精靈「收集 陽光」把結界的產出帶回家。' },
+      { kind: 'produce', item: '滋養露', n: 10, text: '轉化 10 瓶滋養露', hint: '滋養露 = 露水 1 + 土息 1。農田缺滋養時生長變慢，派精靈「維護 滋養露」。' },
+      { kind: 'buildNear', type: 'flower', near: 'water', range: 3, n: 1, text: '在水邊種下第二朵魔法之花', hint: '魔法之花的藍圖要放在離水域 3 格內的草地。在精靈列表可以把精靈的「家」改成新的花。' },
+      { kind: 'order', item: '滋養露', n: 6, who: '河畔村', text: '訂單：河畔村想要 6 瓶滋養露', hint: '在目標面板按「交付」，會從所有魔法之花的倉庫扣除。' },
     ],
   },
   3: {
     title: '第三章　流動通道', minutes: '約 20–30 分鐘', seed: 33,
-    intro: '魔法塔之間的距離越來越遠，精靈來回搬運已經不夠快。在五層樓高的天空中，可以架起讓魔法元素自行流動的光之通道。\n\n本章學習：建造光之錨、從結界或塔架設流動通道到另一座塔、在花海旁建第三座塔，並組出星塵與虹晶的多段加工鏈。',
-    features: { fert: true }, unlocked: ['farm', 'barrier', 'tower', 'anchor', 'channel', 'expand', 'transmuter', 'brewer'],
+    intro: '魔法之花之間的距離越來越遠，精靈來回搬運已經不夠快。在五層樓高的天空中，可以架起讓魔法元素自行流動的光之通道。\n\n本章學習：建造光之錨、從結界或魔法之花架設流動通道到另一朵花、在花海旁種下第三朵花，並組出星塵與虹晶的多段加工鏈。',
+    features: { fert: true }, unlocked: ['farm', 'barrier', 'flower', 'anchor', 'channel', 'expand', 'transmuter', 'brewer'],
     recipes: ['nectar', 'nourish', 'crystal', 'stardust', 'prism'],
     terrain: [['forest', -4, 2, 2], ['rock', 3, 4, 2], ['rock', 12, -2, 1], ['water', 10, -6, 2], ['meadow', -8, 9, 3], ['forest', 6, -9, 2], ['meadow', -11, 1, 1]],
-    towers: [
-      { q: 0, r: 0, central: true, slots: 4, storage: { '法力花': 12, '花蜜': 10, '木枝': 14, '月石': 14, '結界晶': 3, '滋養露': 4 },
+    flowers: [
+      { q: 0, r: 0, central: true, slots: 4, storage: { '月光花': 12, '花蜜': 10, '木枝': 14, '月石': 14, '結界晶': 3, '滋養露': 4 },
         devices: [['brewer', 'nectar', 8], ['transmuter', 'nourish']] },
       { q: 9, r: -4, slots: 2, storage: { '花蜜': 4 }, devices: [['transmuter', 'crystal']] },
     ],
     farms: [[2, -1], [1, -2], [-1, -1]],
     barriers: [[3, 4], [11, -4], [-3, 3]],
-    fairies: [{ home: 0, prog: 'tpl:種花與採收' }, { home: 0, prog: 'tpl:採集木枝' }, { home: 0, prog: 'tpl:採集月石' },
-      { home: 1, prog: 'tpl:採集露水' }, { home: 1, prog: [] }],
+    fairies: [{ home: 0, task: T('farm') }, { home: 0, task: T('collect', '木枝') }, { home: 0, task: T('collect', '月石') },
+      { home: 1, task: T('collect', '露水') }, { home: 1, task: T('idle') }],
     goals: [
-      { kind: 'build', type: 'anchor', n: 3, text: '建造 3 座光之錨', hint: '光之錨是通道的中繼點，相鄰節點不能超過 7 格。' },
-      { kind: 'channels', n: 2, text: '架設 2 條流動通道', hint: '左側選「流動通道」：依序點起點（結界或塔）→ 光之錨 → 終點的塔。' },
-      { kind: 'buildNear', type: 'tower', near: 'meadow', range: 2, n: 1, text: '在花海旁建造第三座魔法塔', hint: '花海上的結界產陽光的速度比草地快。' },
-      { kind: 'produce', item: '星塵', n: 6, text: '轉化 6 份星塵', hint: '星塵 = 陽光 1 + 風語 1 + 花蜜 1。用通道把各地的元素匯集到同一座塔。' },
+      { kind: 'build', type: 'anchor', n: 3, text: '建造 3 座光之錨', hint: '光之錨是通道的中繼點，相鄰節點不能超過 7 格。派精靈「建造」。' },
+      { kind: 'channels', n: 2, text: '架設 2 條流動通道', hint: '下方選「流動通道」：依序點起點（結界或魔法之花）→ 光之錨 → 終點的魔法之花。' },
+      { kind: 'buildNear', type: 'flower', near: 'meadow', range: 2, n: 1, text: '在花海旁種下第三朵魔法之花', hint: '花海上的結界產陽光的速度比草地快。' },
+      { kind: 'produce', item: '星塵', n: 6, text: '轉化 6 份星塵', hint: '星塵 = 陽光 1 + 風語 1 + 花蜜 1。用通道把各地的元素匯集到同一朵花。' },
       { kind: 'order', item: '虹晶', n: 2, who: '星辰商隊', text: '訂單：星辰商隊想要 2 顆虹晶', hint: '虹晶 = 星塵 2 + 露水 2 + 結界晶 1。' },
     ],
   },
@@ -290,11 +254,14 @@ function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>>
 const has = (st, need) => Object.entries(need).every(([k, n]) => (st[k] || 0) >= n);
 function pay(st, cost) { if (!has(st, cost)) return false; for (const [k, n] of Object.entries(cost)) st[k] -= n; return true; }
 const costText = cost => Object.entries(cost).map(([k, n]) => k + '×' + n).join('、');
-const towers = s => Object.values(s.ents).filter(e => e.type === 'tower');
-const centralOf = s => towers(s).find(t => t.central);
-const entAt = (s, q, r) => { const t = s.tiles[hex.key(q, r)]; return t && t.e ? s.ents[t.e] : null; };
+const flowers = s => Object.values(s.ents).filter(e => e.type === 'flower');
+const centralOf = s => flowers(s).find(t => t.central);
 const posOf = e => hex.toXY(e.q, e.r);
 const addStat = (s, item, n) => { s.stats.produced[item] = (s.stats.produced[item] || 0) + n; };
+// 倉庫上限：所有物品共用同一個上限值，但每種物品各自和上限比較（A 存滿不擋 B）
+const room = (t, item) => Math.max(0, t.cap - (t.storage[item] || 0));
+// 存入倉庫：超過上限的部分消失，回傳實際存入的數量
+function store(t, item, n) { const k = Math.min(n, room(t, item)); if (k > 0) t.storage[item] = (t.storage[item] || 0) + k; return k; }
 const fx = [];
 const emit = (type, x, y, extra) => { if (fx.length < 200) fx.push(Object.assign({ type, x, y }, extra || {})); };
 
@@ -304,7 +271,7 @@ function newGame(level) {
   const L = LEVELS[level];
   const R = rng(L.seed);
   const s = {
-    v: 1, level, time: 0, nextId: 1, tiles: {}, ents: {}, fairies: {}, channels: {}, claims: {},
+    v: 2, level, time: 0, nextId: 1, tiles: {}, ents: {}, fairies: {}, channels: {}, claims: {},
     features: Object.assign({}, L.features), unlocked: L.unlocked.slice(), recipes: L.recipes.slice(),
     stats: { built: {}, produced: {}, expanded: 0, orders: 0 },
     goals: L.goals.map((g, i) => Object.assign({ id: 'g' + i, done: false }, g)), complete: false, completeAt: null,
@@ -312,8 +279,7 @@ function newGame(level) {
   for (let q = -RADIUS; q <= RADIUS; q++) for (let r = -RADIUS; r <= RADIUS; r++) {
     if (hex.dist({ q: 0, r: 0 }, { q, r }) > RADIUS) continue;
     let t = 'grass';
-    const d = hex.dist({ q: 0, r: 0 }, { q, r });
-    if (d > 3) { const x = R(); if (x < 0.05) t = 'forest'; else if (x < 0.075) t = 'rock'; else if (x < 0.09) t = 'meadow'; }
+    if (hex.dist({ q: 0, r: 0 }, { q, r }) > 3) { const x = R(); if (x < 0.05) t = 'forest'; else if (x < 0.075) t = 'rock'; else if (x < 0.09) t = 'meadow'; }
     s.tiles[hex.key(q, r)] = { q, r, t, v: R() };
   }
   for (const [t, cq, cr, rad] of L.terrain) {
@@ -323,10 +289,10 @@ function newGame(level) {
     }
   }
   for (const k in s.tiles) if (hex.dist(s.tiles[k], { q: 0, r: 0 }) <= 2) s.tiles[k].t = 'grass';
-  const tids = L.towers.map(T => {
-    const tile = s.tiles[hex.key(T.q, T.r)]; tile.t = 'grass';
-    const id = spawnBuilding(s, 'tower', T.q, T.r, { central: !!T.central, slots: T.slots, storage: Object.assign({}, T.storage) });
-    T.devices.forEach(([type, rec, limit], i) => {
+  const fids = L.flowers.map(F => {
+    s.tiles[hex.key(F.q, F.r)].t = 'grass';
+    const id = spawnBuilding(s, 'flower', F.q, F.r, { central: !!F.central, slots: F.slots, storage: Object.assign({}, F.storage) });
+    F.devices.forEach(([type, rec, limit], i) => {
       const t = s.ents[id];
       t.devices[i] = newDevice(type); t.devices[i].recipe = rec; if (limit) t.devices[i].limit = limit;
     });
@@ -334,10 +300,7 @@ function newGame(level) {
   });
   for (const [q, r] of L.farms || []) { s.tiles[hex.key(q, r)].t = 'grass'; const id = spawnBuilding(s, 'farm', q, r); s.ents[id].fert = 2; }
   for (const [q, r] of L.barriers || []) spawnBuilding(s, 'barrier', q, r);
-  for (const F of L.fairies) {
-    const f = newFairy(s, tids[F.home]);
-    f.prog = typeof F.prog === 'string' ? tpl(F.prog.slice(4)) : F.prog.slice();
-  }
+  for (const F of L.fairies) { const f = newFairy(s, fids[F.home]); setTask(s, f, F.task); }
   return s;
 }
 
@@ -346,10 +309,10 @@ function spawnBuilding(s, type, q, r, opts) {
   const id = opts.id || ('e' + s.nextId++);
   const tile = s.tiles[hex.key(q, r)];
   const e = { id, type, q, r };
-  if (type === 'tower') {
-    const n = towers(s).length;
-    Object.assign(e, { central: !!opts.central, name: opts.central ? '中央魔法塔' : ['', '湖畔之塔', '花海之塔', '星光之塔'][Math.min(n, 3)] || ('第' + (n + 1) + '座塔'),
-      color: TOWER_COLORS[n % TOWER_COLORS.length], storage: opts.storage || {}, slots: opts.slots || 2, devices: [] });
+  if (type === 'flower') {
+    const n = flowers(s).length;
+    Object.assign(e, { central: !!opts.central, name: opts.central ? FLOWER_NAMES[0] : FLOWER_NAMES[Math.min(n, 3)],
+      color: FLOWER_COLORS[n % FLOWER_COLORS.length], storage: opts.storage || {}, cap: STORAGE_BASE, capLevel: 0, slots: opts.slots || 2, devices: [] });
     while (e.devices.length < e.slots) e.devices.push(null);
   } else if (type === 'farm') Object.assign(e, { planted: false, growth: 0, fert: FERT_MAX / 2 });
   else if (type === 'barrier') Object.assign(e, { elem: BARRIER_ELEM[tile.t] || '陽光', buf: 0, charge: 2, t: 0, fast: tile.t === 'meadow' });
@@ -360,12 +323,12 @@ function spawnBuilding(s, type, q, r, opts) {
 
 function newDevice(type) { return { type, recipe: DEVICES[type].recipes ? DEVICES[type].recipes[0] : null, prog: 0, limit: DEVICES[type].limit, keep: DEVICES[type].keep, state: 'idle' }; }
 
-function newFairy(s, towerId) {
-  const t = s.ents[towerId], p = posOf(t);
+function newFairy(s, homeId) {
+  const t = s.ents[homeId], p = posOf(t);
   const n = Object.keys(s.fairies).length;
   const id = 'f' + s.nextId++;
-  s.fairies[id] = { id, name: FAIRY_NAMES[n % FAIRY_NAMES.length], home: towerId, x: p.x, y: p.y, atKey: hex.key(t.q, t.r),
-    hold: null, energy: 100, prog: [], frames: [], ended: false, act: null, bubble: '', msg: '', claim: null };
+  s.fairies[id] = { id, name: FAIRY_NAMES[n % FAIRY_NAMES.length], home: homeId, x: p.x, y: p.y, atKey: hex.key(t.q, t.r),
+    hold: null, energy: 100, task: { kind: 'idle', item: null, at: null, radius: DEFAULT_RADIUS }, act: null, bubble: '', msg: '', claim: null };
   return s.fairies[id];
 }
 
@@ -376,16 +339,16 @@ const ops = {
     if (farm.type !== 'farm' || !farm.planted || farm.growth < 1) return 0;
     farm.planted = false; farm.growth = 0;
     if (s.features.fert) farm.fert = Math.max(0, farm.fert - 1);
-    addStat(s, '法力花', 3);
-    const p = posOf(farm); emit('burst', p.x, p.y, { color: ITEMS['法力花'].color });
+    addStat(s, '月光花', 3);
+    const p = posOf(farm); emit('burst', p.x, p.y, { color: ITEMS['月光花'].color });
     return 3;
   },
-  // 把物品交給設施，回傳實際收下的數量
+  // 把物品交給設施，回傳對方收下的數量。魔法之花一律全收，超過倉庫上限的部分消失
   deliver(s, id, item, n) {
     const e = s.ents[id]; if (!e || n <= 0) return 0;
-    if (e.type === 'tower') { e.storage[item] = (e.storage[item] || 0) + n; return n; }
+    if (e.type === 'flower') { store(e, item, n); return n; }
     if (e.type === 'blueprint') {
-      const want = (e.need[item] || 0) - (e.have[item] || 0); const k = Math.max(0, Math.min(want, n));
+      const k = Math.max(0, Math.min(missing(e, item), n));
       if (k > 0) { e.have[item] = (e.have[item] || 0) + k; if (has(e.have, e.need)) completeBlueprint(s, e); }
       return k;
     }
@@ -398,6 +361,7 @@ const ops = {
     return 0;
   },
 };
+const missing = (bp, item) => (bp.need[item] || 0) - (bp.have[item] || 0);
 
 function completeBlueprint(s, bp) {
   const { id, q, r, target } = bp;
@@ -411,6 +375,20 @@ function completeBlueprint(s, bp) {
 // ---------- 指令（玩家操作）----------
 const ok = extra => Object.assign({ ok: true }, extra || {});
 const no = reason => ({ ok: false, reason });
+
+function setTask(s, f, task) {
+  const kind = TASKS[task.kind] ? task.kind : 'idle', items = TASKS[kind].items;
+  const item = items ? (items.includes(task.item) ? task.item : items[0]) : null;
+  const radius = Math.max(1, Math.min(40, Math.round(+task.radius || DEFAULT_RADIUS)));
+  let at = null;
+  if (task.at && task.at.flower && s.ents[task.at.flower]) at = { flower: task.at.flower };
+  else if (task.at && Number.isFinite(task.at.q) && Number.isFinite(task.at.r)) at = { q: task.at.q, r: task.at.r };
+  releaseClaim(s, f);
+  f.task = { kind, item, at, radius };
+  if (f.act && f.act.op !== 'refuel') f.act = null;
+  f.msg = ''; f.bubble = '';
+}
+
 const cmd = {
   canPlace(s, type, q, r) {
     const B0 = BUILDS[type]; const tile = s.tiles[hex.key(q, r)];
@@ -418,7 +396,7 @@ const cmd = {
     if (!tile) return no('超出地圖');
     if (tile.e) return no('這格已經有東西了');
     if (!B0.terrain.includes(tile.t)) return no(B0.name + '不能蓋在' + TERRAIN[tile.t].name + '上');
-    if (type === 'tower' && towers(s).some(t => hex.dist(t, tile) < 4)) return no('魔法塔之間至少相隔 4 格');
+    if (type === 'flower' && flowers(s).some(t => hex.dist(t, tile) < 4)) return no('魔法之花之間至少相隔 4 格');
     return ok();
   },
   placeBlueprint(s, type, q, r) {
@@ -428,22 +406,17 @@ const cmd = {
     s.tiles[hex.key(q, r)].e = id;
     return ok({ id });
   },
-  // 拆除：藍圖退回已搬入的材料；建築退回一半建造成本；都放回中央塔
+  // 拆除：藍圖退回已搬入的材料；建築退回一半建造成本；都放回中央魔法之花
   demolish(s, id) {
     const e = s.ents[id]; if (!e) return no('不存在');
-    if (e.type === 'tower') return no('魔法塔不能拆除');
+    if (e.type === 'flower') return no('魔法之花不能拆除');
     const back = e.type === 'blueprint' ? e.have : Object.fromEntries(Object.entries(BUILDS[e.type].cost).map(([k, n]) => [k, Math.floor(n / 2)]));
-    const c = centralOf(s); for (const [k, n] of Object.entries(back)) if (n) c.storage[k] = (c.storage[k] || 0) + n;
+    const c = centralOf(s); for (const [k, n] of Object.entries(back)) if (n) store(c, k, n);
     for (const ch of Object.values(s.channels)) if (ch.nodes.includes(id)) delete s.channels[ch.id];
     delete s.ents[id]; delete s.tiles[hex.key(e.q, e.r)].e; delete s.claims[id];
     return ok();
   },
-  setScript(s, fid, prog) {
-    const f = s.fairies[fid];
-    releaseClaim(s, f);
-    f.prog = JSON.parse(JSON.stringify(prog)); f.frames = []; f.ended = false; f.act = null; f.bubble = ''; f.msg = '';
-    return ok();
-  },
+  setTask(s, fid, task) { const f = s.fairies[fid]; if (!f) return no('沒有這隻精靈'); setTask(s, f, task || {}); return ok(); },
   summonFairy(s, tid) {
     const t = s.ents[tid];
     if (Object.keys(s.fairies).length >= 16) return no('精靈已達上限 16 隻');
@@ -451,14 +424,21 @@ const cmd = {
     const f = newFairy(s, tid); emit('burst', f.x, f.y, { color: '#fff6c0' });
     return ok({ id: f.id });
   },
-  expandCost(t) { return { '月石': 2 * t.slots, '法力花': 2 * t.slots }; },
-  expandTower(s, tid) {
+  etherCost(t) { return { '月石': 2 * t.slots, '月光花': 2 * t.slots }; },
+  expandEther(s, tid) {
     const t = s.ents[tid];
     if (!s.unlocked.includes('expand')) return no('尚未解鎖');
     if (t.slots >= 9) return no('已達上限 9 格');
-    const cost = cmd.expandCost(t);
+    const cost = cmd.etherCost(t);
     if (!pay(t.storage, cost)) return no('需要 ' + costText(cost));
     t.slots++; t.devices.push(null); s.stats.expanded++;
+    return ok();
+  },
+  storageCost(t) { const k = t.capLevel + 1; return { '月石': 4 * k, '木枝': 4 * k }; },
+  expandStorage(s, tid) {
+    const t = s.ents[tid], cost = cmd.storageCost(t);
+    if (!pay(t.storage, cost)) return no('需要 ' + costText(cost));
+    t.cap += STORAGE_STEP; t.capLevel++;
     return ok();
   },
   addDevice(s, tid, slot, type) {
@@ -471,7 +451,7 @@ const cmd = {
   },
   removeDevice(s, tid, slot) {
     const t = s.ents[tid], d = t.devices[slot]; if (!d) return no('空格');
-    for (const [k, n] of Object.entries(DEVICES[d.type].cost)) t.storage[k] = (t.storage[k] || 0) + n;
+    for (const [k, n] of Object.entries(DEVICES[d.type].cost)) store(t, k, n);
     t.devices[slot] = null; return ok();
   },
   setRecipe(s, tid, slot, rid) {
@@ -482,28 +462,28 @@ const cmd = {
   },
   setLimit(s, tid, slot, n) { const d = s.ents[tid].devices[slot]; if (!d) return no('空格'); d.limit = Math.max(0, Math.min(999, n | 0)); return ok(); },
   setKeep(s, tid, slot, n) { const d = s.ents[tid].devices[slot]; if (!d) return no('空格'); d.keep = Math.max(0, Math.min(999, n | 0)); return ok(); },
-  assignHome(s, fid, tid) { const f = s.fairies[fid]; if (!s.ents[tid] || s.ents[tid].type !== 'tower') return no('不是魔法塔'); f.home = tid; return ok(); },
+  assignHome(s, fid, tid) { const f = s.fairies[fid]; if (!s.ents[tid] || s.ents[tid].type !== 'flower') return no('不是魔法之花'); f.home = tid; return ok(); },
   buildChannel(s, nodes, item) {
     if (!s.unlocked.includes('channel')) return no('尚未解鎖');
     if (nodes.length < 2) return no('至少需要起點與終點');
     const es = nodes.map(id => s.ents[id]);
     if (es.some(e => !e)) return no('節點不存在');
     const a = es[0], z = es[es.length - 1];
-    if (!['barrier', 'tower'].includes(a.type)) return no('起點必須是結界或魔法塔');
-    if (z.type !== 'tower' || z === a) return no('終點必須是另一座魔法塔');
+    if (!['barrier', 'flower'].includes(a.type)) return no('起點必須是結界或魔法之花');
+    if (z.type !== 'flower' || z === a) return no('終點必須是另一朵魔法之花');
     if (es.slice(1, -1).some(e => e.type !== 'anchor')) return no('中繼點必須是光之錨');
     if (new Set(nodes).size !== nodes.length) return no('節點不能重複');
     for (let i = 1; i < es.length; i++) if (hex.dist(es[i - 1], es[i]) > CH_HOP) return no('相鄰節點距離超過 ' + CH_HOP + ' 格');
-    if (a.type === 'tower' && !ITEMS[item]) return no('從塔出發的通道要指定運送的物品');
+    if (a.type === 'flower' && !ITEMS[item]) return no('從魔法之花出發的通道要指定運送的物品');
     const id = 'c' + s.nextId++;
-    s.channels[id] = { id, nodes: nodes.slice(), item: a.type === 'tower' ? item : null, timer: 0, transit: [] };
+    s.channels[id] = { id, nodes: nodes.slice(), item: a.type === 'flower' ? item : null, timer: 0, transit: [] };
     return ok({ id });
   },
   removeChannel(s, id) { delete s.channels[id]; return ok(); },
   fulfillOrder(s, gid) {
     const g = s.goals.find(x => x.id === gid);
     if (!g || g.kind !== 'order' || g.done) return no('沒有這張訂單');
-    const all = towers(s).sort((a, b) => (b.central ? 1 : 0) - (a.central ? 1 : 0));
+    const all = flowers(s).sort((a, b) => (b.central ? 1 : 0) - (a.central ? 1 : 0));
     const total = all.reduce((n, t) => n + (t.storage[g.item] || 0), 0);
     if (total < g.n) return no(g.item + ' 不足（共 ' + total + '/' + g.n + '）');
     let left = g.n;
@@ -513,146 +493,153 @@ const cmd = {
   },
 };
 
-// ---------- 精靈腳本直譯器 ----------
-function listAt(f, path) { let L = f.prog; for (let i = 0; i < path.length; i += 2) L = L[path[i]][path[i + 1]]; return L; }
-
+// ---------- 精靈：指令單 → 狀態機 ----------
 function releaseClaim(s, f) { if (f.claim && s.claims[f.claim] && s.claims[f.claim].f === f.id) delete s.claims[f.claim]; f.claim = null; }
 const claimedByOther = (s, f, id) => { const c = s.claims[id]; return c && c.f !== f.id && c.until > s.time; };
 
-function matches(s, e, what, f) {
-  switch (what) {
-    case 'tower': return e.type === 'tower';
-    case 'farmEmpty': return e.type === 'farm' && !e.planted;
-    case 'farmRipe': return e.type === 'farm' && e.planted && e.growth >= 1;
-    case 'farmNeedNourish': return e.type === 'farm' && s.features.fert && e.fert <= FERT_MAX - 2;
-    case 'barrierReady': return e.type === 'barrier' && e.buf >= 1;
-    case 'barrierNeedCrystal': return e.type === 'barrier' && e.charge < 2;
-    case 'blueprint': return e.type === 'blueprint' && Object.keys(e.need).some(k => (e.need[k] - (e.have[k] || 0)) > 0 && (!f.hold || f.hold.item === k));
-  }
-  return false;
+function taskCenter(s, f) {
+  const a = f.task.at;
+  if (a && a.flower && s.ents[a.flower]) return s.ents[a.flower];
+  if (a && Number.isFinite(a.q)) return a;
+  return s.ents[f.home];
 }
 
-function findNearest(s, f, what) {
+// 在範圍內找最近（以精靈目前位置計）的目標
+function nearest(s, f, list) {
   let best = null, bd = Infinity;
-  const consider = (o, key, id) => { const p = hex.toXY(o.q, o.r); const d = (p.x - f.x) ** 2 + (p.y - f.y) ** 2; if (d < bd) { bd = d; best = { x: p.x, y: p.y, key, id }; } };
-  if (TERRAIN[what]) {
-    for (const k in s.tiles) { const t = s.tiles[k]; if (t.t === what && !t.e) consider(t, k, null); }
-  } else {
-    for (const id in s.ents) {
-      const e = s.ents[id];
-      if (!matches(s, e, what, f)) continue;
-      if (CLAIMABLE[what] && claimedByOther(s, f, id)) continue;
-      consider(e, hex.key(e.q, e.r), id);
-    }
-  }
+  for (const o of list) { const p = hex.toXY(o.q, o.r), d = (p.x - f.x) ** 2 + (p.y - f.y) ** 2; if (d < bd) { bd = d; best = o; } }
   return best;
 }
+function inRange(s, f) { const c = taskCenter(s, f), r = f.task.radius; return o => c && hex.dist(o, c) <= r; }
+function entsWhere(s, f, pred, claimable) {
+  const ok2 = inRange(s, f);
+  return Object.values(s.ents).filter(e => pred(e) && ok2(e) && !(claimable && claimedByOther(s, f, e.id)));
+}
+function tilesWithRes(s, f, item) {
+  const ok2 = inRange(s, f);
+  return Object.values(s.tiles).filter(t => !t.e && TERRAIN[t.t].res === item && ok2(t));
+}
 
-function evalCond(s, f, c) {
-  let v = false;
+const idleAt = (f, msg) => { f.msg = msg; f.bubble = '…'; f.act = { op: 'wait', t: 0, dur: 1, idle: true }; };
+function goTo(s, f, o, claim) {
+  const p = hex.toXY(o.q, o.r), key = hex.key(o.q, o.r);
+  if (f.atKey === key && Math.abs(f.x - p.x) < 1e-6 && Math.abs(f.y - p.y) < 1e-6) return false;
+  releaseClaim(s, f);
+  if (claim) { s.claims[o.id] = { f: f.id, until: s.time + 30 }; f.claim = o.id; }
+  f.act = { op: 'move', tx: p.x, ty: p.y, key };
+  return true;
+}
+const here = (s, f) => { const t = s.tiles[f.atKey]; return t && t.e ? s.ents[t.e] : null; };
+const atEnt = (s, f, e) => { const h = here(s, f); return h && h.id === e.id && Math.abs(f.x - posOf(e).x) < 1e-6 && Math.abs(f.y - posOf(e).y) < 1e-6; };
+const timed = (f, op, extra) => { f.act = Object.assign({ op, t: 0, dur: 0.5 }, extra || {}); };
+
+// 手上的東西送回家
+function goHomeDrop(s, f) {
   const home = s.ents[f.home];
-  switch (c.kind) {
-    case 'handEmpty': v = !f.hold; break;
-    case 'handFull': v = !!f.hold && f.hold.n >= CAP; break;
-    case 'holding': v = !!f.hold && f.hold.item === c.item; break;
-    case 'energyBelow': v = f.energy < c.n; break;
-    case 'homeBelow': v = !home || (home.storage[c.item] || 0) < c.n; break;
-    case 'exists': v = !!findNearest(s, f, c.what); break;
-  }
-  return c.not ? !v : v;
+  if (!goTo(s, f, home)) timed(f, 'drop');
+}
+// 回家拿取物品
+function goHomeTake(s, f, item, n) {
+  const home = s.ents[f.home];
+  if (!goTo(s, f, home)) timed(f, 'take', { item, n: Math.max(1, Math.min(CAP, n)) });
 }
 
-function fail(s, f, msg) { releaseClaim(s, f); f.bubble = '?'; f.msg = msg; f.act = { op: 'wait', t: 0, dur: 1, failed: true }; }
+const PLAN = {
+  idle(s, f) { if (f.hold) return goHomeDrop(s, f); idleAt(f, '待命中'); },
 
-const hereEnt = (s, f) => { const t = s.tiles[f.atKey]; return t && t.e ? s.ents[t.e] : null; };
+  collect(s, f) {
+    const item = f.task.item, home = s.ents[f.home];
+    const isElem = Object.values(BARRIER_ELEM).includes(item);
+    if (f.hold && f.hold.item !== item) return goHomeDrop(s, f);
+    const h = here(s, f), tile = s.tiles[f.atKey];
+    // 還站在來源上、手上沒滿：繼續採集
+    if (!isElem && f.hold && f.hold.n < CAP && tile && !tile.e && TERRAIN[tile.t].res === item && isAtTile(f, tile)) return timed(f, 'gather', { item });
+    if (f.hold) return goHomeDrop(s, f);
+    if (room(home, item) <= 0) return idleAt(f, '家裡的' + item + '已達倉庫上限，暫停收集');
+    if (isElem) {
+      const src = nearest(s, f, entsWhere(s, f, e => e.type === 'barrier' && e.elem === item && e.buf >= 1, true));
+      if (!src) return idleAt(f, '範圍內沒有可收取' + item + '的結界');
+      if (atEnt(s, f, src)) return timed(f, 'collect');
+      return goTo(s, f, src, true);
+    }
+    const src = (tile && !tile.e && TERRAIN[tile.t].res === item && isAtTile(f, tile)) ? tile : nearest(s, f, tilesWithRes(s, f, item));
+    if (!src) return idleAt(f, '範圍內找不到' + item + '的來源');
+    if (isAtTile(f, src)) return timed(f, 'gather', { item });
+    goTo(s, f, src);
+  },
 
-function execBlock(s, f, b, p, idx) {
-  const push = (key, loop) => f.frames.push({ p: p.concat([idx, key]), i: 0, loop });
-  const hold = f.hold;
-  const here = hereEnt(s, f);
-  switch (b.op) {
-    case 'forever': push('body', { k: 'f' }); return;
-    case 'repeat': { const n = Math.max(0, b.n | 0); if (n > 0) push('body', { k: 'r', n }); return; }
-    case 'until': if (!evalCond(s, f, b.cond)) push('body', { k: 'u', cond: b.cond }); return;
-    case 'if': if (evalCond(s, f, b.cond)) push('body', null); else if (b.else && b.else.length) push('else', null); return;
-    case 'goto': {
-      releaseClaim(s, f);
-      const tg = b.target || { kind: 'home' };
-      let dest = null;
-      if (tg.kind === 'home' || tg.kind === 'tower') {
-        const t = s.ents[tg.kind === 'home' ? f.home : tg.id];
-        if (t) { const p2 = posOf(t); dest = { x: p2.x, y: p2.y, key: hex.key(t.q, t.r) }; }
-      } else dest = findNearest(s, f, tg.what);
-      if (!dest) return fail(s, f, '找不到目標：' + (tg.kind === 'nearest' ? NEAREST[tg.what] : '塔'));
-      if (dest.id && CLAIMABLE[tg.what]) { s.claims[dest.id] = { f: f.id, until: s.time + 30 }; f.claim = dest.id; }
-      f.msg = '';
-      f.act = { op: 'move', tx: dest.x, ty: dest.y, key: dest.key };
-      return;
+  farm(s, f) {
+    const home = s.ents[f.home];
+    if (f.hold && f.hold.item !== '月光花') return goHomeDrop(s, f);
+    if (f.hold && f.hold.n >= 3) return goHomeDrop(s, f);
+    const ripe = room(home, '月光花') > 0 ? nearest(s, f, entsWhere(s, f, e => e.type === 'farm' && e.planted && e.growth >= 1, true)) : null;
+    if (ripe && (!f.hold || f.hold.n + 3 <= CAP)) return atEnt(s, f, ripe) ? timed(f, 'harvest', { dur: 1 }) : goTo(s, f, ripe, true);
+    const empty = nearest(s, f, entsWhere(s, f, e => e.type === 'farm' && !e.planted, true));
+    if (empty) {
+      if (f.hold) return atEnt(s, f, empty) ? timed(f, 'plant', { dur: 1 }) : goTo(s, f, empty, true);
+      if ((home.storage['月光花'] || 0) > 0) return goHomeTake(s, f, '月光花', 1);
+      return idleAt(f, '家裡沒有月光花可以播種');
     }
-    case 'gather': {
-      const tile = s.tiles[f.atKey], T = tile && TERRAIN[tile.t];
-      if (!T || !T.res || tile.e) return fail(s, f, '這裡沒有可採集的資源');
-      if (hold && hold.item !== T.res) return fail(s, f, '手上拿著別的東西');
-      if (hold && hold.n >= CAP) return fail(s, f, '手上已經滿了');
-      f.act = { op: 'gather', t: 0, item: T.res }; return;
-    }
-    case 'plant':
-      if (!here || here.type !== 'farm' || here.planted) return fail(s, f, '這裡不是空的農田');
-      if (!hold || hold.item !== '法力花') return fail(s, f, '需要拿著法力花才能播種');
-      f.act = { op: 'plant', t: 0, dur: 1 }; return;
-    case 'harvest':
-      if (!here || here.type !== 'farm' || !here.planted || here.growth < 1) return fail(s, f, '這裡沒有成熟的農田');
-      if (hold && (hold.item !== '法力花' || hold.n + 3 > CAP)) return fail(s, f, '手上放不下');
-      f.act = { op: 'harvest', t: 0, dur: 1 }; return;
-    case 'take': {
-      if (!here || here.type !== 'tower') return fail(s, f, '要在魔法塔才能拿取');
-      if (hold && hold.item !== b.item) return fail(s, f, '手上拿著別的東西');
-      if (!(here.storage[b.item] > 0)) return fail(s, f, '塔裡沒有' + b.item);
-      f.act = { op: 'take', t: 0, dur: 0.5, item: b.item, n: Math.max(1, Math.min(CAP, b.n | 0)) }; return;
-    }
-    case 'drop':
-      if (!hold) return fail(s, f, '手上沒有東西');
-      if (!here) return fail(s, f, '這裡沒有可以交付的對象');
-      f.act = { op: 'drop', t: 0, dur: 0.5 }; return;
-    case 'collect':
-      if (!here || here.type !== 'barrier' || here.buf < 1) return fail(s, f, '這裡沒有可收取的元素');
-      if (hold && (hold.item !== here.elem || hold.n >= CAP)) return fail(s, f, '手上放不下');
-      f.act = { op: 'collect', t: 0, dur: 0.5 }; return;
-    case 'wait': f.act = { op: 'wait', t: 0, dur: Math.max(0.1, +b.s || 1) }; return;
-    case 'refuel': f.act = { op: 'refuel', phase: 'go', t: 0, auto: false }; return;
-  }
-}
+    if (f.hold) return goHomeDrop(s, f);
+    const anyRipe = entsWhere(s, f, e => e.type === 'farm' && e.planted && e.growth >= 1).length;
+    if (anyRipe && room(home, '月光花') <= 0) return idleAt(f, '家裡的月光花已達倉庫上限，暫停採收');
+    const farms = entsWhere(s, f, e => e.type === 'farm').length;
+    idleAt(f, farms ? '農田生長中，等待收成' : '範圍內沒有農田');
+  },
 
-function runScript(s, f) {
-  for (let k = 0; k < 64 && !f.act; k++) {
-    if (!f.frames.length) { if (f.ended) return; f.frames.push({ p: [], i: 0, loop: null }); }
-    const fr = f.frames[f.frames.length - 1];
-    const L = listAt(f, fr.p);
-    if (fr.i >= L.length) {
-      const lp = fr.loop;
-      if (lp && lp.k === 'f') { fr.i = 0; if (!L.length) return; continue; }
-      if (lp && lp.k === 'r') { lp.n--; if (lp.n > 0) { fr.i = 0; continue; } }
-      if (lp && lp.k === 'u' && !evalCond(s, f, lp.cond)) { fr.i = 0; continue; }
-      f.frames.pop();
-      if (!f.frames.length) { f.ended = true; return; }
-      continue;
+  build(s, f) {
+    const home = s.ents[f.home];
+    const bps = entsWhere(s, f, e => e.type === 'blueprint' && Object.keys(e.need).some(k => missing(e, k) > 0));
+    if (f.hold) {
+      const target = nearest(s, f, bps.filter(e => missing(e, f.hold.item) > 0));
+      if (!target) return goHomeDrop(s, f);
+      return atEnt(s, f, target) ? timed(f, 'drop') : goTo(s, f, target);
     }
-    const idx = fr.i; fr.i++;
-    execBlock(s, f, L[idx], fr.p, idx);
-  }
-}
+    if (!bps.length) return idleAt(f, '範圍內沒有需要材料的藍圖');
+    const lacking = new Set();
+    for (const bp of bps.sort((a, b) => hex.dist(a, home) - hex.dist(b, home))) {
+      for (const k of Object.keys(bp.need)) {
+        const m = missing(bp, k); if (m <= 0) continue;
+        if ((home.storage[k] || 0) > 0) return goHomeTake(s, f, k, m);
+        lacking.add(k);
+      }
+    }
+    idleAt(f, '家裡缺少藍圖需要的材料：' + [...lacking].join('、'));
+  },
 
-// 自動補給結束後：回到最內層迴圈的開頭，避免從半途的步驟接續
-function unwindToLoop(f) {
-  while (f.frames.length && !f.frames[f.frames.length - 1].loop) f.frames.pop();
-  if (f.frames.length) f.frames[f.frames.length - 1].i = 0; else f.ended = false;
-}
+  maintain(s, f) {
+    const item = f.task.item, home = s.ents[f.home];
+    const pred = item === '滋養露' ? (e => e.type === 'farm' && s.features.fert && e.fert <= FERT_MAX - 2) : (e => e.type === 'barrier' && e.charge < 2);
+    if (f.hold && f.hold.item !== item) return goHomeDrop(s, f);
+    const target = nearest(s, f, entsWhere(s, f, pred, true));
+    if (f.hold) {
+      if (!target) return goHomeDrop(s, f);
+      return atEnt(s, f, target) ? timed(f, 'drop') : goTo(s, f, target, true);
+    }
+    if (!target) return idleAt(f, '範圍內的設施都不缺' + item);
+    if ((home.storage[item] || 0) <= 0) return idleAt(f, '家裡沒有' + item);
+    goHomeTake(s, f, item, 1);
+  },
+
+  haul(s, f) {
+    const item = f.task.item, home = s.ents[f.home];
+    const a = f.task.at, dst = a && a.flower ? s.ents[a.flower] : null;
+    if (!dst || dst.type !== 'flower' || dst.id === home.id) { if (f.hold) return goHomeDrop(s, f); return idleAt(f, '運送需要把目標地點設為另一朵魔法之花'); }
+    if (f.hold && f.hold.item !== item) return goHomeDrop(s, f);
+    if (f.hold) return atEnt(s, f, dst) ? timed(f, 'drop') : goTo(s, f, dst);
+    if (room(dst, item) <= 0) return idleAt(f, dst.name + '的' + item + '已達倉庫上限');
+    if ((home.storage[item] || 0) <= 0) return idleAt(f, '家裡沒有' + item);
+    goHomeTake(s, f, item, CAP);
+  },
+};
+const isAtTile = (f, t) => { const p = hex.toXY(t.q, t.r); return f.atKey === hex.key(t.q, t.r) && Math.abs(f.x - p.x) < 1e-6 && Math.abs(f.y - p.y) < 1e-6; };
 
 function addHold(f, item, n) { if (!f.hold) f.hold = { item, n: 0 }; f.hold.n = Math.min(CAP, f.hold.n + n); }
+const actFail = (s, f, msg) => { releaseClaim(s, f); f.msg = msg; f.act = { op: 'wait', t: 0, dur: 0.5 }; };
 
 function doAct(s, f, h) {
   const a = f.act;
-  const done = () => { f.act = null; f.bubble = ''; };
+  const done = () => { f.act = null; };
   switch (a.op) {
     case 'move': {
       const dx = a.tx - f.x, dy = a.ty - f.y, d = Math.hypot(dx, dy), sp = SPEED * (f.energy <= 0 ? 0.5 : 1) * h;
@@ -662,17 +649,13 @@ function doAct(s, f, h) {
     case 'wait': a.t += h; if (a.t >= a.dur) done(); return;
     case 'gather': {
       const tile = s.tiles[f.atKey];
-      if (!tile || tile.e || !TERRAIN[tile.t].res) return fail(s, f, '資源消失了');
+      if (!tile || tile.e || TERRAIN[tile.t].res !== a.item) return actFail(s, f, '資源消失了');
       a.t += h;
-      if (a.t >= 1.5) {
-        a.t -= 1.5; addHold(f, a.item, 1); addStat(s, a.item, 1);
-        if (f.hold.n >= CAP) done();
-      }
+      if (a.t >= 1.5) { a.t -= 1.5; addHold(f, a.item, 1); addStat(s, a.item, 1); if (f.hold.n >= CAP) done(); }
       return;
     }
     case 'refuel': {
       const home = s.ents[f.home];
-      if (!home) { done(); return; }
       if (a.phase === 'go') {
         const p = posOf(home), dx = p.x - f.x, dy = p.y - f.y, d = Math.hypot(dx, dy), sp = SPEED * 0.8 * h;
         if (d <= sp) { f.x = p.x; f.y = p.y; f.atKey = hex.key(home.q, home.r); a.phase = 'rest'; } else { f.x += dx / d * sp; f.y += dy / d * sp; }
@@ -680,45 +663,44 @@ function doAct(s, f, h) {
       }
       if (a.phase === 'rest') {
         if ((home.storage['花蜜'] || 0) >= 1) { home.storage['花蜜'] -= 1; a.phase = 'eat'; a.t = 0; f.bubble = '🍯'; return; }
-        f.bubble = 'z'; f.msg = '塔裡沒有花蜜，正在休息'; f.energy = Math.min(100, f.energy + 1.5 * h);
-        if (f.energy >= 100) { done(); f.msg = ''; if (a.auto) unwindToLoop(f); }
+        f.bubble = 'z'; f.msg = '家裡沒有花蜜，正在休息'; f.energy = Math.min(100, f.energy + 1.5 * h);
+        if (f.energy >= 100) { f.msg = ''; done(); }
         return;
       }
-      a.t += h; // eat
-      if (a.t >= 0.5) { f.energy = 100; f.msg = ''; done(); if (a.auto) unwindToLoop(f); }
+      a.t += h;
+      if (a.t >= 0.5) { f.energy = 100; f.msg = ''; done(); }
       return;
     }
   }
-  // 其餘為「定時動作」：時間到才生效，生效前再檢查一次
   a.t += h;
   if (a.t < a.dur) return;
-  const here = hereEnt(s, f);
+  const e = here(s, f);
   switch (a.op) {
     case 'plant':
-      if (!here || here.type !== 'farm' || here.planted || !f.hold || f.hold.item !== '法力花') return fail(s, f, '無法播種');
-      f.hold.n--; if (!f.hold.n) f.hold = null; ops.plant(s, here); break;
+      if (!e || e.type !== 'farm' || e.planted || !f.hold || f.hold.item !== '月光花') return actFail(s, f, '無法播種');
+      f.hold.n--; if (!f.hold.n) f.hold = null; ops.plant(s, e); break;
     case 'harvest': {
-      const y = here ? ops.harvest(s, here) : 0;
-      if (!y) return fail(s, f, '沒有可採收的花');
-      addHold(f, '法力花', y); break;
+      const y = e ? ops.harvest(s, e) : 0;
+      if (!y) return actFail(s, f, '沒有可採收的花');
+      addHold(f, '月光花', y); break;
     }
     case 'take': {
-      if (!here || here.type !== 'tower') return fail(s, f, '不在塔中');
-      const k = Math.min(a.n - (f.hold ? f.hold.n : 0), here.storage[a.item] || 0, CAP - (f.hold ? f.hold.n : 0));
-      if (k <= 0) return fail(s, f, '塔裡沒有' + a.item);
-      here.storage[a.item] -= k; addHold(f, a.item, k); break;
+      if (!e || e.type !== 'flower') return actFail(s, f, '不在魔法之花');
+      const k = Math.min(a.n, e.storage[a.item] || 0, CAP - (f.hold ? f.hold.n : 0));
+      if (k <= 0) return actFail(s, f, '家裡沒有' + a.item);
+      e.storage[a.item] -= k; addHold(f, a.item, k); break;
     }
     case 'drop': {
-      if (!here || !f.hold) return fail(s, f, '無法放下');
-      const k = ops.deliver(s, here.id, f.hold.item, f.hold.n);
-      if (k <= 0) return fail(s, f, '對方不需要' + f.hold.item);
+      if (!e || !f.hold) return actFail(s, f, '無法放下');
+      const k = ops.deliver(s, e.id, f.hold.item, f.hold.n);
+      if (k <= 0) return actFail(s, f, '對方不需要' + f.hold.item);
       f.hold.n -= k; if (!f.hold.n) f.hold = null; break;
     }
     case 'collect': {
-      if (!here || here.type !== 'barrier') return fail(s, f, '不在結界');
-      const k = Math.min(here.buf, CAP - (f.hold ? f.hold.n : 0));
-      if (k <= 0 || (f.hold && f.hold.item !== here.elem)) return fail(s, f, '收不了');
-      here.buf -= k; addHold(f, here.elem, k); break;
+      if (!e || e.type !== 'barrier') return actFail(s, f, '不在結界');
+      const k = Math.min(e.buf, CAP - (f.hold ? f.hold.n : 0));
+      if (k <= 0 || (f.hold && f.hold.item !== e.elem)) return actFail(s, f, '收不了');
+      e.buf -= k; addHold(f, e.elem, k); break;
     }
   }
   releaseClaim(s, f);
@@ -727,14 +709,13 @@ function doAct(s, f, h) {
 
 function stepFairy(s, f, h) {
   if (!f.act) {
-    if (f.energy < 15) { releaseClaim(s, f); f.act = { op: 'refuel', phase: 'go', t: 0, auto: true }; }
-    else runScript(s, f);
+    if (f.energy < 15) { releaseClaim(s, f); f.act = { op: 'refuel', phase: 'go', t: 0 }; }
+    else { f.msg = ''; f.bubble = ''; PLAN[f.task.kind](s, f); }
   }
   const a = f.act;
   const busy = a && a.op !== 'wait' && !(a.op === 'refuel' && a.phase !== 'go');
   f.energy = Math.max(0, f.energy - (busy ? 1 : 0.3) * h);
   if (f.act) doAct(s, f, h);
-  else if (f.ended) f.bubble = '…';
 }
 
 // ---------- 世界推進 ----------
@@ -752,7 +733,7 @@ function stepWorld(s, h) {
         e.t = 0;
         if (e.buf < 10) { e.buf++; addStat(s, e.elem, 1); if (e.charge > 0) e.charge = Math.max(0, e.charge - 0.1); }
       }
-    } else if (e.type === 'tower') stepTower(s, e, h);
+    } else if (e.type === 'flower') stepFlower(s, e, h);
   }
   for (const id in s.fairies) stepFairy(s, s.fairies[id], h);
   for (const id in s.channels) stepChannel(s, s.channels[id], h);
@@ -760,18 +741,19 @@ function stepWorld(s, h) {
   if (!s.complete && s.goals.every(g => g.done)) { s.complete = true; s.completeAt = s.time; }
 }
 
-function stepTower(s, t, h) {
+function stepFlower(s, t, h) {
   for (const d of t.devices) {
     if (!d || !d.recipe) continue;
     const R = RECIPES[d.recipe], outItem = Object.keys(R.out)[0];
-    // 保留原料：每種原料用掉後至少還要剩 keep 個（例如留法力花當種子）
-    const full = (t.storage[outItem] || 0) >= d.limit, ready = Object.entries(R.in).every(([k, n]) => (t.storage[k] || 0) >= n + (d.keep || 0));
-    if (d.prog === 0 && (full || !ready)) { d.state = full ? 'full' : 'wait'; continue; }
+    // 產物達倉庫上限就暫停；保留原料：每種原料用掉後至少還要剩 keep 個
+    const blocked = room(t, outItem) <= 0 ? 'storefull' : (t.storage[outItem] || 0) >= d.limit ? 'full' : null;
+    const ready = Object.entries(R.in).every(([k, n]) => (t.storage[k] || 0) >= n + (d.keep || 0));
+    if (d.prog === 0 && (blocked || !ready)) { d.state = blocked || 'wait'; continue; }
     d.prog += h; d.state = 'work';
     if (d.prog < R.time) continue;
-    if (full || !ready) { d.prog = R.time; d.state = full ? 'full' : 'wait'; continue; }
+    if (blocked || !ready) { d.prog = R.time; d.state = blocked || 'wait'; continue; }
     pay(t.storage, R.in);
-    for (const [k, n] of Object.entries(R.out)) { t.storage[k] = (t.storage[k] || 0) + n; addStat(s, k, n); }
+    for (const [k, n] of Object.entries(R.out)) { store(t, k, n); addStat(s, k, n); }
     d.prog = 0;
     const p = posOf(t); emit('craft', p.x, p.y, { color: ITEMS[outItem].color });
   }
@@ -784,18 +766,17 @@ function stepChannel(s, ch, h) {
   const src = s.ents[ch.nodes[0]], dst = s.ents[ch.nodes[ch.nodes.length - 1]];
   if (!src || !dst) { delete s.channels[ch.id]; return; }
   ch.timer = Math.min(CH_INTERVAL, ch.timer + h);
-  if (ch.timer >= CH_INTERVAL) {
+  // 目的地該物品（扣掉運送中的）還有空位才送出
+  const it0 = src.type === 'barrier' ? src.elem : ch.item;
+  if (ch.timer >= CH_INTERVAL && room(dst, it0) > ch.transit.length) {
     let item = null;
     if (src.type === 'barrier' && src.buf >= 1) { src.buf--; item = src.elem; }
-    else if (src.type === 'tower' && (src.storage[ch.item] || 0) >= 1) { src.storage[ch.item]--; item = ch.item; }
+    else if (src.type === 'flower' && (src.storage[ch.item] || 0) >= 1) { src.storage[ch.item]--; item = ch.item; }
     if (item) { ch.transit.push({ d: 0, item }); ch.timer = 0; }
   }
   const len = channelLength(channelPoints(s, ch));
   for (const it of ch.transit) it.d += CH_SPEED * h;
-  while (ch.transit.length && ch.transit[0].d >= len) {
-    const it = ch.transit.shift();
-    dst.storage[it.item] = (dst.storage[it.item] || 0) + 1;
-  }
+  while (ch.transit.length && ch.transit[0].d >= len) store(dst, ch.transit.shift().item, 1);
 }
 
 function goalProgress(s, g) {
@@ -810,9 +791,9 @@ function goalProgress(s, g) {
     case 'produce': return [s.stats.produced[g.item] || 0, n];
     case 'fairies': return [Object.keys(s.fairies).length, n];
     case 'expand': return [s.stats.expanded, n];
-    case 'device': return [towers(s).reduce((k, t) => k + t.devices.filter(d => d && d.type === g.dev).length, 0), n];
+    case 'device': return [flowers(s).reduce((k, t) => k + t.devices.filter(d => d && d.type === g.dev).length, 0), n];
     case 'channels': return [Object.keys(s.channels).length, n];
-    case 'order': return [g.done ? n : towers(s).reduce((k, t) => k + (t.storage[g.item] || 0), 0), n];
+    case 'order': return [g.done ? n : flowers(s).reduce((k, t) => k + (t.storage[g.item] || 0), 0), n];
   }
   return [0, n];
 }
@@ -822,12 +803,16 @@ function tick(s, dt) {
 }
 
 function save(s) { return JSON.stringify(s); }
-function load(str) { const s = JSON.parse(str); if (!s || s.v !== 1 || !s.tiles) throw new Error('存檔格式不符'); return s; }
+function load(str) {
+  const s = JSON.parse(str);
+  if (!s || s.v !== 2 || !s.tiles) throw new Error('舊版或格式不符的存檔（需要版本 2）');
+  return s;
+}
 
 globalThis.FG = {
-  hex, ITEMS, RECIPES, DEVICES, BUILDS, TERRAIN, LEVELS, TEMPLATES, NEAREST, CAP, CH_HOP, FERT_MAX, SUMMON_COST,
-  newGame, tick, save, load, spawnBuilding, ops, cmd, goalProgress, findNearest, channelPoints, channelLength,
-  costText, towers, centralOf, entAt, posOf, fx,
+  hex, ITEMS, RECIPES, DEVICES, BUILDS, TERRAIN, TASKS, LEVELS, CAP, CH_HOP, FERT_MAX, SUMMON_COST, DEFAULT_RADIUS, STORAGE_BASE, STORAGE_STEP,
+  newGame, tick, save, load, spawnBuilding, ops, cmd, goalProgress, channelPoints, channelLength,
+  costText, flowers, centralOf, posOf, room, fx,
 };
 })();
 </script>
@@ -843,7 +828,7 @@ const S = 34;          // 一個座標單位 = 34px（縮放 1 時）
 const SKY = 120;       // 流動通道的高度（px，縮放 1 時）
 let W = 0, H = 0;
 const UI = { s: null, playing: false, speed: 1, cam: { x: 0, y: 0, z: 1 }, tool: null, sel: null, layer: 'all',
-  chPath: [], chItem: '法力花', mouse: { x: 0, y: 0, in: false }, drag: null, keys: {}, parts: [], t: 0,
+  chPath: [], chItem: '月光花', pickFor: null, collapse: { goals: false, roster: false }, rosterHtml: '', mouse: { x: 0, y: 0, in: false }, drag: null, keys: {}, parts: [], t: 0,
   lastUi: 0, lastSave: 0, doneSeen: {}, completeShown: false, ed: null, sideHtml: '', goalsHtml: '' };
 
 // ---------- 存檔 ----------
@@ -981,23 +966,35 @@ function drawBarrier(e, p, R, z) {
   for (let i = 0; i < Math.min(10, e.buf); i++) { const a = Math.PI * (1.15 + i * 0.075); ctx.fillStyle = c; ctx.beginPath(); ctx.arc(p.x + Math.cos(a) * R * 0.6, p.y - R * 0.35 + Math.sin(a) * R * 0.5, 2.2 * z, 0, 7); ctx.fill(); }
   emoji(FG.ITEMS[e.elem].icon, p.x, p.y - R * 0.32, 14 * z, 0.9);
 }
-function drawTower(e, p, R, z) {
-  const k = (e.central ? 1.25 : 1) * z, x = p.x, y = p.y + 4 * z;
+function drawFlower(e, p, R, z) {
+  const k = (e.central ? 1.3 : 1.05) * z, x = p.x, y = p.y + 4 * z, t = UI.t;
+  const sway = Math.sin(t * 0.9 + e.q) * 2.5 * k, bx = x + sway, by = y - 70 * k;
   ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x, y + 2 * z, 22 * k, 8 * k, 0, 0, 7); ctx.fill();
-  const g = ctx.createLinearGradient(x - 14 * k, 0, x + 14 * k, 0); g.addColorStop(0, '#f1ebfb'); g.addColorStop(1, '#8f80b5');
-  ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x - 15 * k, y); ctx.lineTo(x - 10 * k, y - 60 * k); ctx.lineTo(x + 10 * k, y - 60 * k); ctx.lineTo(x + 15 * k, y); ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = 'rgba(70,55,110,.35)'; ctx.lineWidth = 1 * z;
-  for (let i = 1; i < 6; i++) { const yy = y - i * 10 * k, w = 15 - i * 0.85; ctx.beginPath(); ctx.moveTo(x - w * k, yy); ctx.lineTo(x + w * k, yy); ctx.stroke(); }
-  ctx.fillStyle = '#4a3a6a'; ctx.beginPath(); ctx.moveTo(x - 5 * k, y); ctx.lineTo(x - 5 * k, y - 9 * k); ctx.arc(x, y - 9 * k, 5 * k, Math.PI, 0); ctx.lineTo(x + 5 * k, y); ctx.fill();
-  for (const wy of [28, 44]) { glow(x, y - wy * k, 7 * k, 'rgba(255,233,160,.8)', 0.7); ctx.fillStyle = '#ffe9a0'; ctx.fillRect(x - 2.2 * k, y - (wy + 4) * k, 4.4 * k, 7 * k); }
-  ctx.fillStyle = '#6c5c95'; ctx.beginPath(); ctx.ellipse(x, y - 60 * k, 14 * k, 4 * k, 0, 0, 7); ctx.fill();
-  const rg = ctx.createLinearGradient(x - 16 * k, 0, x + 16 * k, 0); rg.addColorStop(0, e.color); rg.addColorStop(1, '#3d2d66');
-  ctx.fillStyle = rg; ctx.beginPath(); ctx.moveTo(x - 17 * k, y - 60 * k); ctx.lineTo(x, y - 95 * k); ctx.lineTo(x + 17 * k, y - 60 * k); ctx.closePath(); ctx.fill();
-  const cy = y - 104 * k + Math.sin(UI.t * 2) * 2 * k, pulse = 0.7 + 0.3 * Math.sin(UI.t * 3);
-  ctx.globalCompositeOperation = 'lighter'; glow(x, cy, 26 * k, e.color, 0.6 * pulse); ctx.globalCompositeOperation = 'source-over';
-  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(x, cy - 8 * k); ctx.lineTo(x + 5 * k, cy); ctx.lineTo(x, cy + 8 * k); ctx.lineTo(x - 5 * k, cy); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = e.color; ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.moveTo(x, cy - 8 * k); ctx.lineTo(x + 5 * k, cy); ctx.lineTo(x, cy + 8 * k); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
-  if (Math.random() < 0.08) { const w = FG.posOf(e); part(w.x + (Math.random() - .5) * 0.3, w.y, { lift: 104 * (e.central ? 1.25 : 1), vl: 18, vx: (Math.random() - .5) * .3, life: 1.6, max: 1.6, size: 1.6, color: e.color }); }
+  ctx.fillStyle = '#4f7a3a'; ctx.beginPath(); ctx.ellipse(x, y, 15 * k, 5.5 * k, 0, 0, 7); ctx.fill();
+  // 莖與葉
+  const sg = ctx.createLinearGradient(0, y, 0, by); sg.addColorStop(0, '#3f7a35'); sg.addColorStop(1, '#8fd27a');
+  ctx.strokeStyle = sg; ctx.lineWidth = 5 * k; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.bezierCurveTo(x - 8 * k, y - 22 * k, bx + 8 * k, y - 44 * k, bx, by); ctx.stroke();
+  for (const [ly, dir] of [[-20, -1], [-36, 1]]) {
+    ctx.save(); ctx.translate(x + dir * 2 * k, y + ly * k); ctx.rotate(dir * 0.9 + Math.sin(t + ly) * 0.08);
+    ctx.fillStyle = '#6cbf5a'; ctx.beginPath(); ctx.ellipse(dir * 10 * k, 0, 11 * k, 4.5 * k, 0, 0, 7); ctx.fill(); ctx.restore();
+  }
+  // 花瓣：後層 8 瓣、前層 6 瓣，緩慢呼吸
+  const breathe = 1 + 0.05 * Math.sin(t * 1.5);
+  const petals = (n, len, wid, rot, c0, c1) => {
+    for (let i = 0; i < n; i++) {
+      const a = rot + i * Math.PI * 2 / n;
+      ctx.save(); ctx.translate(bx, by); ctx.rotate(a); ctx.scale(1, 0.62);
+      const g = ctx.createLinearGradient(0, 0, 0, -len); g.addColorStop(0, c1); g.addColorStop(1, c0);
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, -len * 0.55, wid, len * 0.55, 0, 0, 7); ctx.fill(); ctx.restore();
+    }
+  };
+  ctx.globalCompositeOperation = 'lighter'; glow(bx, by, 42 * k, e.color, 0.35 + 0.1 * Math.sin(t * 2)); ctx.globalCompositeOperation = 'source-over';
+  petals(8, 36 * k * breathe, 11 * k, t * 0.05, e.color, '#ffffff');
+  petals(6, 24 * k * breathe, 8.5 * k, t * 0.05 + 0.4, '#ffffff', e.color);
+  ctx.globalCompositeOperation = 'lighter'; glow(bx, by, 14 * k, '#fff3b0', 0.9); ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = '#fff6c8'; ctx.beginPath(); ctx.arc(bx, by, 4.5 * k, 0, 7); ctx.fill();
+  if (Math.random() < 0.08) { const w = FG.posOf(e); part(w.x + (Math.random() - .5) * 0.6, w.y, { lift: 70 * (e.central ? 1.25 : 1), vl: 16, vx: (Math.random() - .5) * .3, life: 1.6, max: 1.6, size: 1.6, color: e.color }); }
   if (z > 0.6 || (UI.sel && UI.sel.id === e.id)) label(e.name, x, y + 14 * z, '#fff3c8', 13);
 }
 function drawAnchor(e, p, R, z) {
@@ -1099,6 +1096,14 @@ function render() {
       hexPath(p.x, p.y, R * 0.95); ctx.fillStyle = c.ok ? 'rgba(143,240,176,.3)' : 'rgba(255,143,143,.3)'; ctx.fill(); emoji(FG.BUILDS[UI.tool.slice(6)].icon, p.x, p.y, 20 * z, 0.7); }
     hexPath(p.x, p.y, R * 0.95); ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 1.5; ctx.stroke();
   }
+  if (UI.sel && UI.sel.kind === 'fairy' && s.fairies[UI.sel.id]) {
+    const f = s.fairies[UI.sel.id], a = f.task.at, home = s.ents[f.home];
+    const c = a && a.flower && s.ents[a.flower] ? s.ents[a.flower] : a && Number.isFinite(a.q) ? a : home;
+    if (c && f.task.kind !== 'idle') {
+      if (f.task.radius < 16) for (const [t, p] of vis) if (hex.dist(t, c) <= f.task.radius) { hexPath(p.x, p.y, R * 0.98); ctx.fillStyle = 'rgba(255,246,168,.12)'; ctx.fill(); }
+      const w = hex.toXY(c.q, c.r), p = w2s(w.x, w.y); hexPath(p.x, p.y, R * 0.6); ctx.strokeStyle = '#fff6a8'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+    }
+  }
   if (UI.sel && UI.sel.kind !== 'fairy') { const t = UI.sel.kind === 'tile' ? s.tiles[UI.sel.id] : s.ents[UI.sel.id];
     if (t) { const w = hex.toXY(t.q, t.r), p = w2s(w.x, w.y); hexPath(p.x, p.y, R * 0.97); ctx.strokeStyle = '#ffd98a'; ctx.lineWidth = 2.5; ctx.stroke(); } else UI.sel = null; }
   for (const id of UI.chPath) { const e = s.ents[id]; if (e) { const p = entPos(e); hexPath(p.x, p.y, R * 0.97); ctx.strokeStyle = '#fff6a8'; ctx.lineWidth = 3; ctx.stroke(); } }
@@ -1116,7 +1121,7 @@ function render() {
 function drawEnt(e, p, R, z) {
   if (e.type === 'farm') drawFarm(e, p, R, z);
   else if (e.type === 'barrier') drawBarrier(e, p, R, z);
-  else if (e.type === 'tower') drawTower(e, p, R, z);
+  else if (e.type === 'flower') drawFlower(e, p, R, z);
   else if (e.type === 'anchor') { if (UI.layer !== 'ground') drawAnchor(e, p, R, z); else { hexPath(p.x, p.y, R * 0.45); ctx.fillStyle = '#8a8fb0'; ctx.fill(); } }
   else if (e.type === 'blueprint') drawBlueprint(e, p, R, z);
 }
@@ -1127,17 +1132,18 @@ function toast(msg, kind) { const d = document.createElement('div'); d.className
 // ---------- 面板：目標、工具、側欄 ----------
 function renderGoals() {
   const s = UI.s;
-  const html = '<h3 style="margin-top:0">本章目標</h3>' + s.goals.map(g => {
+  const c0 = UI.collapse.goals, left = s.goals.filter(g => !g.done).length;
+  const html = `<div class="phead" data-act="toggle" data-id="goals"><h3>本章目標（剩 ${left} 項）</h3><span>${c0 ? '▸' : '▾'}</span></div>` + (c0 ? '' : s.goals.map(g => {
     const [c, n] = FG.goalProgress(s, g);
     return `<div class="goal ${g.done ? 'done' : ''}"><span class="chk">${g.done ? '✔' : '○'}</span><span>${esc(g.text)}</span><span class="prog">${Math.min(c, n)}/${n}</span>` +
       (g.kind === 'order' && !g.done ? `<button data-act="order" data-id="${g.id}" ${c >= n ? '' : 'disabled'}>交付</button>` : '') + '</div>';
-  }).join('');
+  }).join(''));
   if (html !== UI.goalsHtml && !UI.drag) { $('#goals').innerHTML = html; UI.goalsHtml = html; }
 }
 function renderTools() {
   const s = UI.s, list = [];
   for (const [k, b] of Object.entries(FG.BUILDS)) if (s.unlocked.includes(k)) list.push([`build:${k}`, b.icon, b.name, FG.costText(b.cost)]);
-  if (s.unlocked.includes('channel')) list.push(['channel', '✨', '流動通道', '連接結界、光之錨、塔']);
+  if (s.unlocked.includes('channel')) list.push(['channel', '✨', '流動通道', '連接結界、光之錨、花']);
   list.push(['demolish', '🧹', '拆除', '藍圖全額退回，建築退一半']);
   $('#tools').innerHTML = list.map(([id, ic, n, sub]) => `<button data-tool="${id}" class="${UI.tool === id ? 'on' : ''}"><span class="ic">${ic}</span><span>${n}<small>${esc(sub)}</small></span></button>`).join('');
 }
@@ -1145,57 +1151,63 @@ const inv = st => { const ks = Object.keys(st).filter(k => st[k] > 0); return ks
 const recipeText = id => { const R = FG.RECIPES[id]; const f = o => Object.entries(o).map(([k, n]) => k + n).join('＋'); return `${R.name}：${f(R.in)} → ${f(R.out)}（${R.time}秒）`; };
 const ACT = { move: '飛行中', gather: '採集中', plant: '播種中', harvest: '採收中', take: '拿取中', drop: '放下中', collect: '收取中', wait: '等待中' };
 function fairyState(f) {
-  if (!f.act) return f.ended ? '腳本已執行完畢（沒有重複積木）' : (f.prog.length ? '思考中' : '沒有腳本，待命中');
+  if (!f.act) return '思考中';
   if (f.act.op === 'refuel') return { go: '回家補給', rest: '休息中', eat: '吃花蜜' }[f.act.phase];
-  if (f.act.failed) return '困惑中';
   return ACT[f.act.op] || f.act.op;
+}
+function taskText(f) {
+  const s = UI.s, t = f.task, a = t.at;
+  const where = !a ? '家' : a.flower ? (s.ents[a.flower] ? s.ents[a.flower].name : '?') : `(${a.q}, ${a.r})`;
+  return FG.TASKS[t.kind].name + (t.item ? ' ' + t.item : '') + (t.kind === 'idle' ? '' : `・目標地點 ${where}・範圍 ${t.radius} 格`);
 }
 function sideFor() {
   const s = UI.s, sel = UI.sel;
   if (UI.tool === 'channel') {
     const names = UI.chPath.map(id => esc(entName(s.ents[id]))).join(' → ') || '（尚未選擇）';
-    return `<h2>✨ 流動通道</h2><p>在約五層樓高的天空架設光之通道，元素會沿著通道自己流動。依序點選：<b>起點</b>（結界或魔法塔）→ <b>光之錨</b>（可略過或多個）→ <b>終點魔法塔</b>。相鄰節點最多 ${FG.CH_HOP} 格。右鍵或 Esc 取消。</p>
-      <div class="kv"><span>起點為塔時運送</span><span><select data-act="chitem">${Object.keys(FG.ITEMS).map(k => `<option ${k === UI.chItem ? 'selected' : ''}>${k}</option>`).join('')}</select></span><span>目前路徑</span><span>${names}</span></div>
+    return `<h2>✨ 流動通道</h2><p>在約五層樓高的天空架設光之通道，元素會沿著通道自己流動。依序點選：<b>起點</b>（結界或魔法之花）→ <b>光之錨</b>（可略過或多個）→ <b>終點魔法之花</b>。相鄰節點最多 ${FG.CH_HOP} 格。右鍵或 Esc 取消。</p>
+      <div class="kv"><span>起點為花時運送</span><span><select data-act="chitem">${Object.keys(FG.ITEMS).map(k => `<option ${k === UI.chItem ? 'selected' : ''}>${k}</option>`).join('')}</select></span><span>目前路徑</span><span>${names}</span></div>
       <h3>已架設的通道</h3>` + (Object.values(s.channels).map(ch => `<div class="row" style="align-items:center"><span>${ch.nodes.map(id => esc(entName(s.ents[id]))).join(' → ')}${ch.item ? '（' + ch.item + '）' : ''}</span><button data-act="rmch" data-id="${ch.id}">拆除</button></div>`).join('') || '<p>（尚無）</p>');
   }
-  if (!sel) return `<h2>Fairy Garden</h2><p>點選魔法塔、精靈、設施或地格查看詳情。</p><h3>操作</h3><p>左鍵：選取／放置　右鍵：取消工具<br>拖曳或 WASD：移動視角　滾輪：縮放<br>空白鍵：暫停　1／2／3：切換圖層　E：編輯所選精靈的腳本</p>`;
+  if (!sel) return `<h2>Fairy Garden</h2><p>點選魔法之花、精靈、設施或地格查看詳情。在左側精靈列表分派每隻精靈的動作、物品、目標地點與範圍。</p><h3>操作</h3><p>左鍵：選取／放置　右鍵：取消工具<br>拖曳或 WASD：移動視角　滾輪：縮放<br>空白鍵：暫停　1／2／3：切換圖層</p>`;
   if (sel.kind === 'fairy') {
     const f = s.fairies[sel.id]; if (!f) { UI.sel = null; return ''; }
-    const towers = FG.towers(s);
+    const home = s.ents[f.home];
     return `<h2>🧚 ${esc(f.name)}</h2>
-      <div class="kv"><span>家</span><span><select data-act="home">${towers.map(t => `<option value="${t.id}" ${t.id === f.home ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select></span>
+      <div class="kv"><span>指令單</span><span>${esc(taskText(f))}</span><span>家</span><span>${esc(home ? home.name : '?')}</span>
       <span>活力</span><span><div class="bar en"><i style="width:${Math.round(f.energy / 5) * 5}%"></i></div></span>
       <span>手上</span><span>${f.hold ? FG.ITEMS[f.hold.item].icon + ' ' + f.hold.item + ' × ' + f.hold.n : '（空）'}</span>
       <span>狀態</span><span>${fairyState(f)}</span></div>
-      ${f.msg ? `<p class="warn">⚠ ${esc(f.msg)}</p>` : ''}
-      <div class="row"><button class="primary" data-act="edit">編輯腳本（E）</button><button data-act="restart">從頭執行腳本</button></div>
-      <p>腳本共 ${countBlocks(f.prog)} 個積木。活力低於 15 時，精靈會自動回家吃 1 份花蜜，然後回到迴圈開頭繼續工作。</p>`;
+      ${f.msg ? `<p>💬 ${esc(f.msg)}</p>` : ''}
+      <p>在左側精靈列表修改指令單。地圖上淡色的區域是牠的工作範圍。活力低於 15 時，精靈會自動回家吃 1 份花蜜，再繼續原本的任務。</p>`;
   }
-  if (sel.kind === 'tile') { const t = s.tiles[sel.id], T = FG.TERRAIN[t.t]; return `<h2>${T.name}</h2><p>座標 (${t.q}, ${t.r})</p>${T.res ? `<p>精靈可在這裡「採集」${FG.ITEMS[T.res].icon} ${T.res}。</p>` : ''}${FG.TERRAIN[t.t] && ({ grass: 1, meadow: 1, rock: 1, forest: 1 })[t.t] && s.unlocked.includes('barrier') ? `<p>在此建造的結界會產出 ${({ grass: '陽光', meadow: '陽光（較快）', rock: '風語', forest: '土息' })[t.t]}。</p>` : ''}`; }
+  if (sel.kind === 'tile') { const t = s.tiles[sel.id], T = FG.TERRAIN[t.t]; return `<h2>${T.name}</h2><p>座標 (${t.q}, ${t.r})</p>${T.res ? `<p>派精靈「收集 ${T.res}」會來這裡採集 ${FG.ITEMS[T.res].icon}。</p>` : ''}${FG.TERRAIN[t.t] && ({ grass: 1, meadow: 1, rock: 1, forest: 1 })[t.t] && s.unlocked.includes('barrier') ? `<p>在此建造的結界會產出 ${({ grass: '陽光', meadow: '陽光（較快）', rock: '風語', forest: '土息' })[t.t]}。</p>` : ''}`; }
   const e = s.ents[sel.id]; if (!e) { UI.sel = null; return ''; }
   const demo = `<div class="row"><button data-act="demolish">${e.type === 'blueprint' ? '取消藍圖' : '拆除'}</button></div>`;
-  if (e.type === 'tower') {
+  if (e.type === 'flower') {
     const fs = Object.values(s.fairies).filter(f => f.home === e.id);
     const slots = e.devices.map((d, i) => {
       if (!d) return `<div class="dev empty">空格 ${i + 1}` + ['transmuter', 'brewer'].filter(k => s.unlocked.includes(k) || (k === 'brewer' && s.level === 1)).map(k => `<button data-act="adddev" data-type="${k}" data-slot="${i}">安裝${FG.DEVICES[k].name}<br><small>${FG.costText(FG.DEVICES[k].cost)}</small></button>`).join('') + '</div>';
       const R = d.recipe && FG.RECIPES[d.recipe], allow = (FG.DEVICES[d.type].recipes || Object.keys(FG.RECIPES)).filter(r => s.recipes.includes(r));
-      const st = { work: '加工中', wait: '等待原料', full: '已達產量上限', idle: '閒置' }[d.state] || '';
+      const st = { work: '加工中', wait: '等待原料', full: '已達產量上限', storefull: '產物已達倉庫上限', idle: '閒置' }[d.state] || '';
       return `<div class="dev"><div class="devh">${FG.DEVICES[d.type].name}<button data-act="rmdev" data-slot="${i}" title="拆除並退回材料">✕</button></div>
         <select data-act="recipe" data-slot="${i}">${allow.map(r => `<option value="${r}" ${r === d.recipe ? 'selected' : ''}>${recipeText(r)}</option>`).join('')}</select>
         <label>產量上限 <input type="number" min="0" max="999" data-act="limit" data-slot="${i}" value="${d.limit}"></label>
         <label title="每種原料至少留下這麼多，不拿去加工">保留原料 <input type="number" min="0" max="999" data-act="keep" data-slot="${i}" value="${d.keep || 0}"></label>
-        <div class="bar"><i style="width:${R ? Math.round(d.prog / R.time * 20) * 5 : 0}%"></i></div><span class="st ${d.state === 'wait' ? 'warn' : ''}">${st}</span></div>`;
+        <div class="bar"><i style="width:${R ? Math.round(d.prog / R.time * 20) * 5 : 0}%"></i></div><span class="st ${d.state === 'wait' || d.state === 'storefull' ? 'warn' : ''}">${st}</span></div>`;
     }).join('');
-    return `<h2 style="color:${e.color}">🗼 ${esc(e.name)}</h2><div class="sub">${e.central ? '德魯伊的據點・' : ''}${fs.length} 隻精靈以此為家</div>
-      <h3>庫存</h3>${inv(e.storage)}
-      <h3>塔內空間（${e.devices.filter(Boolean).length}/${e.slots} 格）</h3><div class="slots">${slots}</div>
-      <div class="row">${s.unlocked.includes('expand') ? `<button data-act="expand">擴充塔內空間<br><small>${FG.costText(FG.cmd.expandCost(e))}</small></button>` : ''}
+    const ks = Object.keys(e.storage).filter(k => e.storage[k] > 0);
+    const store = ks.length ? '<div class="inv">' + ks.map(k => `<span class="it ${e.storage[k] >= e.cap ? 'full' : ''}" title="${esc(FG.ITEMS[k].desc)}">${FG.ITEMS[k].icon} ${k}<b>${e.storage[k]}</b></span>`).join('') + '</div>' : '<p>（空）</p>';
+    return `<h2 style="color:${e.color}">🌷 ${esc(e.name)}</h2><div class="sub">${e.central ? '德魯伊的據點・' : ''}${fs.length} 隻精靈以此為家</div>
+      <h3>倉庫（每種物品上限 ${e.cap}）</h3>${store}
+      <div class="row"><button data-act="expstore">擴建倉庫（上限 +${FG.STORAGE_STEP}）<br><small>${FG.costText(FG.cmd.storageCost(e))}</small></button></div>
+      <h3>乙太空間（${e.devices.filter(Boolean).length}/${e.slots} 格）</h3><div class="slots">${slots}</div>
+      <div class="row">${s.unlocked.includes('expand') ? `<button data-act="expand">擴充乙太空間<br><small>${FG.costText(FG.cmd.etherCost(e))}</small></button>` : ''}
       <button data-act="summon">召喚精靈<br><small>${FG.costText(FG.SUMMON_COST)}</small></button></div>
       <h3>精靈</h3><div class="row">${fs.map(f => `<button data-act="self" data-id="${f.id}">${esc(f.name)}${f.energy < 15 ? ' 😴' : ''}</button>`).join('') || '<p>（沒有）</p>'}</div>`;
   }
   if (e.type === 'farm') return `<h2>🌱 農田</h2><div class="kv"><span>狀態</span><span>${!e.planted ? '空地，等待播種' : e.growth >= 1 ? '成熟，可以採收' : '生長中 ' + Math.floor(e.growth * 100) + '%'}</span>
     ${s.features.fert ? `<span>滋養</span><span>${e.fert} / ${FG.FERT_MAX}${e.fert <= 0 ? '　<b class="warn">土地疲乏：生長變慢 2.5 倍</b>' : ''}</span>` : ''}</div>
-    <p>播種要用掉精靈手上 1 朵法力花，30 秒後成熟，採收得 3 朵。${s.features.fert ? '每次採收消耗 1 點滋養；精靈「放下」滋養露可補 2 點。' : ''}</p>${demo}`;
+    <p>播種要用掉精靈手上 1 朵月光花，30 秒後成熟，採收得 3 朵。${s.features.fert ? '每次採收消耗 1 點滋養；精靈「放下」滋養露可補 2 點。' : ''}</p>${demo}`;
   if (e.type === 'barrier') return `<h2>🔮 魔力收集結界</h2><div class="kv"><span>產出</span><span>${FG.ITEMS[e.elem].icon} ${e.elem}${e.fast ? '（花海加速）' : ''}</span><span>累積</span><span>${e.buf} / 10</span>
     <span>能量</span><span>${e.charge.toFixed(1)} 顆結界晶${e.charge <= 0 ? '　<b class="warn">能量耗盡：產出慢 4 倍</b>' : ''}</span></div>
     <p>精靈用「收取」把累積的元素帶走，或架設流動通道自動送出。每產出 10 單位消耗 1 顆結界晶；精靈「放下」結界晶可補充。</p>${demo}`;
@@ -1206,8 +1218,7 @@ function sideFor() {
   }
   return '';
 }
-const entName = e => !e ? '?' : e.type === 'tower' ? e.name : e.type === 'barrier' ? e.elem + '結界' : e.type === 'anchor' ? '光之錨' : FG.BUILDS[e.type] ? FG.BUILDS[e.type].name : e.type;
-const countBlocks = L => L.reduce((n, b) => n + 1 + (b.body ? countBlocks(b.body) : 0) + (b.else ? countBlocks(b.else) : 0), 0);
+const entName = e => !e ? '?' : e.type === 'flower' ? e.name : e.type === 'barrier' ? e.elem + '結界' : e.type === 'anchor' ? '光之錨' : FG.BUILDS[e.type] ? FG.BUILDS[e.type].name : e.type;
 function renderSide() {
   const el = $('#side'), a = document.activeElement;
   if (UI.drag || (a && el.contains(a) && (a.tagName === 'SELECT' || a.tagName === 'INPUT'))) return;
@@ -1216,17 +1227,17 @@ function renderSide() {
 }
 function renderHint() {
   const s = UI.s; const g = s.goals.find(x => !x.done);
+  if (UI.pickFor) { const h = '📍 在地圖上點選「' + esc(s.fairies[UI.pickFor].name) + '」的目標地點。右鍵或 Esc 取消。'; if ($('#hint').innerHTML !== h) $('#hint').innerHTML = h; return; }
   const html = s.complete ? '🌟 本章所有目標完成！可以繼續經營花園，或從「選單」前往下一章。' : g ? '💡 ' + esc(g.hint) : '';
   if ($('#hint').innerHTML !== html) $('#hint').innerHTML = html;
 }
 function uiTick() {
   const s = UI.s;
-  renderGoals(); renderSide(); renderHint();
+  renderGoals(); renderRoster(); renderSide(); renderHint();
   const m = Math.floor(s.time / 60), sec = Math.floor(s.time % 60);
   $('#clock').textContent = `遊戲時間 ${m}:${String(sec).padStart(2, '0')}・精靈 ${Object.keys(s.fairies).length} 隻`;
   for (const g of s.goals) if (g.done && !UI.doneSeen[g.id]) { UI.doneSeen[g.id] = true; toast('✔ 目標完成：' + g.text, 'good'); }
   if (s.complete && !UI.completeShown) { UI.completeShown = true; saveGame(true); showComplete(); }
-  if (UI.ed) highlightRunning();
 }
 
 // ---------- 面板事件 ----------
@@ -1235,13 +1246,13 @@ function act(name, el) {
   const r = (res, good) => { if (res && !res.ok) toast(res.reason, 'bad'); else if (good) toast(good, 'good'); UI.sideHtml = ''; UI.goalsHtml = ''; };
   switch (name) {
     case 'order': return r(FG.cmd.fulfillOrder(s, el.dataset.id), '訂單已交付！');
+    case 'toggle': UI.collapse.goals = !UI.collapse.goals; return r();
     case 'summon': return r(FG.cmd.summonFairy(s, sel.id), '新的精靈誕生了');
-    case 'expand': return r(FG.cmd.expandTower(s, sel.id), '塔內空間擴大了');
+    case 'expand': return r(FG.cmd.expandEther(s, sel.id), '乙太空間擴大了');
+    case 'expstore': return r(FG.cmd.expandStorage(s, sel.id), '倉庫擴建完成');
     case 'adddev': return r(FG.cmd.addDevice(s, sel.id, slot, el.dataset.type), '設備安裝完成');
     case 'rmdev': return r(FG.cmd.removeDevice(s, sel.id, slot));
     case 'self': UI.sel = { kind: 'fairy', id: el.dataset.id }; return r();
-    case 'edit': return openEditor(sel.id);
-    case 'restart': return r(FG.cmd.setScript(s, sel.id, s.fairies[sel.id].prog), '腳本重新開始');
     case 'demolish': { const res = FG.cmd.demolish(s, sel.id); if (res.ok) UI.sel = null; return r(res); }
     case 'rmch': return r(FG.cmd.removeChannel(s, el.dataset.id));
   }
@@ -1281,6 +1292,7 @@ addEventListener('mousemove', e => {
 addEventListener('mouseup', e => {
   const d = UI.drag; UI.drag = null;
   if (!d || d.moved || e.target !== cv || !UI.s) return;
+  if (d.btn === 2 && UI.pickFor) { UI.pickFor = null; toast('已取消點選'); return; }
   if (d.btn === 2) { if (UI.tool === 'channel' && UI.chPath.length) { UI.chPath.pop(); UI.sideHtml = ''; } else setTool(null); return; }
   if (d.btn === 0) clickMap(e.clientX, e.clientY);
 });
@@ -1293,6 +1305,11 @@ cv.addEventListener('wheel', e => {
 }, { passive: false });
 function clickMap(x, y) {
   const s = UI.s, t = tileAtScreen(x, y);
+  if (UI.pickFor) {
+    const f = s.fairies[UI.pickFor]; UI.pickFor = null;
+    if (f && t) { FG.cmd.setTask(s, f.id, Object.assign({}, f.task, { at: { q: t.q, r: t.r } })); toast(f.name + ' 的目標地點設為 (' + t.q + ', ' + t.r + ')', 'good'); UI.rosterHtml = ''; }
+    return;
+  }
   if (UI.tool && UI.tool.startsWith('build:')) {
     if (!t) return;
     const r = FG.cmd.placeBlueprint(s, UI.tool.slice(6), t.q, t.r);
@@ -1302,13 +1319,13 @@ function clickMap(x, y) {
   const e = t && t.e ? s.ents[t.e] : null;
   if (UI.tool === 'demolish') { if (e) { const r = FG.cmd.demolish(s, e.id); if (!r.ok) toast(r.reason, 'bad'); else toast('已拆除'); } return; }
   if (UI.tool === 'channel') {
-    if (!e || !['barrier', 'tower', 'anchor'].includes(e.type)) return toast('請點選結界、光之錨或魔法塔', 'bad');
-    if (!UI.chPath.length && e.type === 'anchor') return toast('起點必須是結界或魔法塔', 'bad');
+    if (!e || !['barrier', 'flower', 'anchor'].includes(e.type)) return toast('請點選結界、光之錨或魔法之花', 'bad');
+    if (!UI.chPath.length && e.type === 'anchor') return toast('起點必須是結界或魔法之花', 'bad');
     const last = UI.chPath.length ? s.ents[UI.chPath[UI.chPath.length - 1]] : null;
     if (last && last.id === e.id) return;
     if (last && hex.dist(last, e) > FG.CH_HOP) return toast('距離超過 ' + FG.CH_HOP + ' 格，需要中繼的光之錨', 'bad');
     UI.chPath.push(e.id); UI.sideHtml = '';
-    if (UI.chPath.length >= 2 && e.type === 'tower') {
+    if (UI.chPath.length >= 2 && e.type === 'flower') {
       const r = FG.cmd.buildChannel(s, UI.chPath, UI.chItem);
       if (r.ok) { toast('流動通道架設完成', 'good'); UI.chPath = []; } else { toast(r.reason, 'bad'); UI.chPath.pop(); }
     }
@@ -1326,13 +1343,11 @@ function clickMap(x, y) {
 addEventListener('keydown', e => {
   const tag = document.activeElement && document.activeElement.tagName;
   if (tag === 'INPUT' || tag === 'SELECT') return;
-  if (UI.ed) { if (e.key === 'Escape') closeEditor(); return; }
   if (!UI.playing) return;
   UI.keys[e.key.toLowerCase()] = true;
   if (e.key === ' ') { e.preventDefault(); setSpeed(UI.speed ? 0 : 1); }
   if (e.key === '1') setLayer('all'); if (e.key === '2') setLayer('ground'); if (e.key === '3') setLayer('sky');
-  if (e.key === 'Escape') { if (UI.tool) setTool(null); else UI.sel = null; UI.sideHtml = ''; }
-  if (e.key.toLowerCase() === 'e' && UI.sel && UI.sel.kind === 'fairy') openEditor(UI.sel.id);
+  if (e.key === 'Escape') { if (UI.pickFor) UI.pickFor = null; else if (UI.tool) setTool(null); else UI.sel = null; UI.sideHtml = ''; }
 });
 addEventListener('keyup', e => { UI.keys[e.key.toLowerCase()] = false; });
 function panKeys(dt) {
@@ -1341,168 +1356,69 @@ function panKeys(dt) {
   if (k.a || k.arrowleft) UI.cam.x -= v; if (k.d || k.arrowright) UI.cam.x += v;
 }
 
-// ---------- 腳本編輯器 ----------
-const BLOCKS = {
-  forever: { cat: 'flow', name: '永遠重複', make: () => ({ op: 'forever', body: [] }) },
-  repeat:  { cat: 'flow', name: '重複 N 次', make: () => ({ op: 'repeat', n: 3, body: [] }) },
-  until:   { cat: 'flow', name: '重複直到…', make: () => ({ op: 'until', cond: { kind: 'handFull' }, body: [] }) },
-  if:      { cat: 'flow', name: '如果…否則', make: () => ({ op: 'if', cond: { kind: 'handEmpty' }, body: [], else: [] }) },
-  goto:    { cat: 'move', name: '前往…', make: () => ({ op: 'goto', target: { kind: 'home' } }) },
-  refuel:  { cat: 'move', name: '回家補給', make: () => ({ op: 'refuel' }) },
-  gather:  { cat: 'act', name: '採集（裝滿為止）', make: () => ({ op: 'gather' }) },
-  plant:   { cat: 'act', name: '播種', make: () => ({ op: 'plant' }) },
-  harvest: { cat: 'act', name: '採收', make: () => ({ op: 'harvest' }) },
-  take:    { cat: 'act', name: '從塔中拿取', make: () => ({ op: 'take', item: '木枝', n: 5 }) },
-  drop:    { cat: 'act', name: '放下（交給所在處）', make: () => ({ op: 'drop' }) },
-  collect: { cat: 'act', name: '從結界收取', make: () => ({ op: 'collect' }), need: 'barrier' },
-  wait:    { cat: 'act', name: '等待 N 秒', make: () => ({ op: 'wait', s: 2 }) },
-};
-const CONDS = { handEmpty: '手上是空的', handFull: '手上滿了', holding: '手上拿著', energyBelow: '活力低於', homeBelow: '家中庫存少於', exists: '存在' };
-const CAT_NAME = { flow: '流程', move: '移動', act: '動作' };
-function nearestOptions() {
-  const s = UI.s;
-  return Object.entries(FG.NEAREST).filter(([k]) => {
-    if (/barrier/.test(k)) return s.unlocked.includes('barrier');
-    if (k === 'farmNeedNourish') return s.features.fert;
-    return true;
-  });
+// ---------- 精靈列表（指令單）----------
+const taskKinds = () => Object.entries(FG.TASKS).filter(([k]) => k !== 'maintain' || UI.s.unlocked.includes('barrier')).filter(([k]) => k !== 'haul' || UI.s.unlocked.includes('flower'));
+function taskItems(kind) {
+  const L = FG.TASKS[kind].items; if (!L) return null;
+  const elems = ['陽光', '風語', '土息'];
+  return L.filter(i => !elems.includes(i) || UI.s.unlocked.includes('barrier'));
 }
-const getList = (prog, lp) => { let L = prog; for (let i = 0; i < lp.length; i += 2) L = L[lp[i]][lp[i + 1]]; return L; };
-function sel(options, value, onChange) {
-  const el = document.createElement('select');
-  for (const [v, t] of options) { const o = document.createElement('option'); o.value = v; o.textContent = t; if (v === value) o.selected = true; el.append(o); }
-  el.onchange = () => onChange(el.value); el.onmousedown = e => e.stopPropagation();
-  return el;
+const opt = (v, t, cur) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(t)}</option>`;
+function atValue(f) { const a = f.task.at; return !a ? 'home' : a.flower ? 'f:' + a.flower : 'tile'; }
+function rosterRow(f) {
+  const s = UI.s, items = taskItems(f.task.kind), at = atValue(f), fl = FG.flowers(s);
+  const atOpts = opt('home', '家', at) + fl.map(t => opt('f:' + t.id, t.name, at)).join('') + (at === 'tile' ? opt('tile', `地點 (${f.task.at.q}, ${f.task.at.r})`, at) : '') + opt('pick', '地圖上點選…', at);
+  const st = f.msg ? `<span class="note">${esc(f.msg)}</span>` : fairyState(f);
+  return `<tr class="${UI.sel && UI.sel.id === f.id ? 'sel' : ''}"><td><button class="link" data-act="focus" data-fid="${f.id}">${esc(f.name)}</button></td>
+    <td><select data-act="tkind" data-fid="${f.id}">${taskKinds().map(([k, T]) => opt(k, T.name, f.task.kind)).join('')}</select></td>
+    <td>${items ? `<select data-act="titem" data-fid="${f.id}">${items.map(i => opt(i, FG.ITEMS[i].icon + ' ' + i, f.task.item)).join('')}</select>` : '<span class="st">—</span>'}</td>
+    <td><select data-act="tat" data-fid="${f.id}">${atOpts}</select></td>
+    <td><input type="number" min="1" max="40" data-act="trad" data-fid="${f.id}" value="${f.task.radius}"></td>
+    <td><select data-act="thome" data-fid="${f.id}">${fl.map(t => opt(t.id, t.name, f.home)).join('')}</select></td>
+    <td><div class="bar en" title="活力 ${Math.round(f.energy)}"><i style="width:${Math.round(f.energy / 5) * 5}%"></i></div></td>
+    <td>${f.hold ? FG.ITEMS[f.hold.item].icon + '×' + f.hold.n : '<span class="st">—</span>'}</td>
+    <td class="stc">${st}</td></tr>`;
 }
-function num(value, onChange, min, max) {
-  const el = document.createElement('input'); el.type = 'number'; el.value = value; el.min = min; el.max = max;
-  el.onchange = () => onChange(Math.max(min, Math.min(max, +el.value || min))); el.onmousedown = e => e.stopPropagation();
-  return el;
+function renderRoster() {
+  const s = UI.s, fs = Object.values(s.fairies), c = UI.collapse.roster;
+  const html = `<div class="phead" data-act="toggle" data-id="roster"><h3>精靈（${fs.length}）</h3><span>${c ? '▸' : '▾'}</span></div>` + (c ? '' :
+    `<table class="roster"><thead><tr><th>名字</th><th>動作</th><th>物品</th><th>目標地點</th><th>範圍</th><th>家</th><th>活力</th><th>手上</th><th>狀態</th></tr></thead><tbody>${fs.map(rosterRow).join('')}</tbody></table>`);
+  const el = $('#roster'), a = document.activeElement;
+  if (UI.drag || (a && el.contains(a) && (a.tagName === 'SELECT' || a.tagName === 'INPUT'))) return;
+  if (html !== UI.rosterHtml) { el.innerHTML = html; UI.rosterHtml = html; }
 }
-const itemOpts = () => Object.keys(FG.ITEMS).map(k => [k, FG.ITEMS[k].icon + ' ' + k]);
-const txt = t => { const s = document.createElement('span'); s.textContent = t; return s; };
-function condParts(c) {
-  const parts = [sel([['', '是'], ['1', '不是']], c.not ? '1' : '', v => { c.not = !!v; }),
-    sel(Object.entries(CONDS), c.kind, v => { c.kind = v; if ((v === 'holding' || v === 'homeBelow') && !c.item) c.item = '法力花'; if ((v === 'energyBelow' || v === 'homeBelow') && !c.n) c.n = v === 'energyBelow' ? 30 : 5; if (v === 'exists' && !c.what) c.what = 'farmRipe'; renderProgram(); })];
-  if (c.kind === 'holding' || c.kind === 'homeBelow') parts.push(sel(itemOpts(), c.item, v => { c.item = v; }));
-  if (c.kind === 'energyBelow' || c.kind === 'homeBelow') parts.push(num(c.n, v => { c.n = v; }, 0, 999));
-  if (c.kind === 'exists') parts.push(sel(nearestOptions(), c.what, v => { c.what = v; }));
-  return parts;
-}
-function headParts(b) {
-  switch (b.op) {
-    case 'forever': return [txt('永遠重複')];
-    case 'repeat': return [txt('重複'), num(b.n, v => { b.n = v; }, 1, 99), txt('次')];
-    case 'until': return [txt('重複直到'), ...condParts(b.cond)];
-    case 'if': return [txt('如果'), ...condParts(b.cond)];
-    case 'goto': {
-      const t = b.target, val = t.kind === 'home' ? 'home' : t.kind === 'tower' ? 'tower:' + t.id : 'nearest:' + t.what;
-      const opts = [['home', '家（所屬的塔）'], ...FG.towers(UI.s).map(x => ['tower:' + x.id, x.name]), ...nearestOptions().map(([k, n]) => ['nearest:' + k, '最近的' + n])];
-      return [txt('前往'), sel(opts, val, v => { const [k, id] = v.split(':'); b.target = k === 'home' ? { kind: 'home' } : k === 'tower' ? { kind: 'tower', id } : { kind: 'nearest', what: id }; })];
-    }
-    case 'take': return [txt('從塔中拿取'), sel(itemOpts(), b.item, v => { b.item = v; }), num(b.n, v => { b.n = v; }, 1, FG.CAP), txt('個')];
-    case 'wait': return [txt('等待'), num(b.s, v => { b.s = v; }, 0.5, 60), txt('秒')];
-    default: return [txt(BLOCKS[b.op].name)];
+function taskChange(name, el) {
+  const s = UI.s, f = s.fairies[el.dataset.fid]; if (!f) return;
+  const t = Object.assign({}, f.task);
+  if (name === 'tkind') { t.kind = el.value; t.item = null; }
+  else if (name === 'titem') t.item = el.value;
+  else if (name === 'trad') t.radius = +el.value;
+  else if (name === 'thome') { FG.cmd.assignHome(s, f.id, el.value); el.blur(); UI.rosterHtml = ''; return; }
+  else if (name === 'tat') {
+    if (el.value === 'pick') { UI.pickFor = f.id; toast('在地圖上點選「' + f.name + '」的目標地點（右鍵取消）'); el.blur(); UI.rosterHtml = ''; return; }
+    if (el.value === 'tile') { el.blur(); return; }
+    t.at = el.value === 'home' ? null : { flower: el.value.slice(2) };
   }
+  FG.cmd.setTask(s, f.id, t);
+  el.blur(); UI.rosterHtml = ''; UI.sideHtml = '';
 }
-function blockEl(b, path) {
-  const d = document.createElement('div'); d.className = 'blk c-' + BLOCKS[b.op].cat; d.draggable = true; d.dataset.path = JSON.stringify(path);
-  const head = document.createElement('div'); head.className = 'bh'; head.append(...headParts(b));
-  const x = document.createElement('button'); x.className = 'x'; x.textContent = '✕'; x.title = '刪除';
-  x.onclick = () => { getList(UI.ed.prog, path.slice(0, -1)).splice(path[path.length - 1], 1); renderProgram(); };
-  head.append(x); d.append(head);
-  d.addEventListener('dragstart', e => { e.stopPropagation(); e.dataTransfer.setData('text/plain', 'move:' + JSON.stringify(path)); });
-  if (b.body) d.append(listEl(b.body, path.concat('body')));
-  if (b.op === 'if') { const l = document.createElement('div'); l.className = 'else'; l.textContent = '否則'; d.append(l, listEl(b.else, path.concat('else'))); }
-  return d;
-}
-function listEl(arr, lp) {
-  const l = document.createElement('div'); l.className = 'list'; l.dataset.lp = JSON.stringify(lp);
-  arr.forEach((b, i) => l.append(blockEl(b, lp.concat(i))));
-  if (!arr.length) { const p = document.createElement('div'); p.className = 'ph'; p.textContent = '把積木拖到這裡'; l.append(p); }
-  l.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); showMarker(l, e.clientY); });
-  l.addEventListener('dragleave', e => { if (!l.contains(e.relatedTarget)) l.classList.remove('over'); });
-  l.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); dropInto(lp, dropIndex(l, e.clientY), e.dataTransfer.getData('text/plain')); });
-  return l;
-}
-function dropIndex(l, y) { let i = 0; for (const c of l.children) if (c.classList.contains('blk')) { const r = c.getBoundingClientRect(); if (r.top + r.height / 2 < y) i++; } return i; }
-let marker = null;
-function showMarker(l, y) {
-  document.querySelectorAll('.list.over').forEach(x => x !== l && x.classList.remove('over')); l.classList.add('over');
-  if (!marker) { marker = document.createElement('div'); marker.className = 'marker'; }
-  const blks = [...l.children].filter(c => c.classList.contains('blk')), i = dropIndex(l, y);
-  if (i < blks.length) l.insertBefore(marker, blks[i]); else l.append(marker);
-}
-function dropInto(lp, idx, data) {
-  const prog = UI.ed.prog, target = getList(prog, lp);
-  if (data.startsWith('new:')) target.splice(idx, 0, BLOCKS[data.slice(4)].make());
-  else if (data.startsWith('move:')) {
-    const src = JSON.parse(data.slice(5));
-    const isInside = lp.length >= src.length && src.every((v, i) => lp[i] === v);
-    if (!isInside) {
-      const srcList = getList(prog, src.slice(0, -1)), si = src[src.length - 1];
-      const [b] = srcList.splice(si, 1);
-      if (srcList === target && si < idx) idx--;
-      target.splice(idx, 0, b);
-    }
-  }
-  renderProgram();
-}
-function renderProgram() {
-  const box = $('#edProg'); box.innerHTML = '';
-  box.append(listEl(UI.ed.prog, []));
-  UI.ed.shown = '';
-  highlightRunning();
-}
-function highlightRunning() {
-  const ed = UI.ed, f = UI.s.fairies[ed.fid]; if (!f) return;
-  const same = JSON.stringify(f.prog) === JSON.stringify(ed.prog);
-  let key = '';
-  if (same && f.frames.length) { const fr = f.frames[f.frames.length - 1]; if (fr.i > 0) key = JSON.stringify(fr.p.concat(fr.i - 1)); }
-  if (key === ed.shown) return; ed.shown = key;
-  document.querySelectorAll('#edProg .running').forEach(x => x.classList.remove('running'));
-  if (key) { const el = document.querySelector(`#edProg .blk[data-path='${key}']`); if (el) el.classList.add('running'); }
-  $('#edState').textContent = `${f.name}：${fairyState(f)}${f.msg ? '（' + f.msg + '）' : ''}`;
-}
-function openEditor(fid) {
-  const s = UI.s, f = s.fairies[fid];
-  UI.ed = { fid, prog: JSON.parse(JSON.stringify(f.prog)), shown: null };
-  const pal = Object.keys(CAT_NAME).map(c => `<h3>${CAT_NAME[c]}</h3>` + Object.entries(BLOCKS).filter(([k, b]) => b.cat === c && (!b.need || s.unlocked.includes(b.need)))
-    .map(([k, b]) => `<div class="pblock c-${c}" draggable="true" data-new="${k}">${b.name}</div>`).join('')).join('');
-  const tpls = FG.TEMPLATES.filter(t => t.min <= s.level);
-  $('#editor').innerHTML = `<div class="edwin panel"><div class="edhead"><h2>🧚 編輯腳本：${esc(f.name)}</h2>
-    <label>範本 <select id="edTpl"><option value="">（選擇範本）</option>${tpls.map((t, i) => `<option value="${i}">${t.name}</option>`).join('')}</select></label>
-    <label>複製自 <select id="edCopy"><option value="">（其他精靈）</option>${Object.values(s.fairies).filter(x => x.id !== fid).map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></label>
-    <button id="edClear">清空</button><button id="edCancel">取消</button><button id="edApply" class="primary">套用並從頭執行</button></div>
-    <div class="edbody"><div class="palette">${pal}</div><div class="program" id="edProgWrap"><div id="edProg"></div><div class="trash" id="edTrash">🗑 拖到這裡刪除</div></div></div>
-    <div class="edfoot"><span id="edState"></span><br>把左側積木拖進右側；積木可拖曳重排、放進「重複」與「如果」裡面。正在執行的積木會發光（需與目前執行中的腳本相同）。「放下」會依所在處自動判斷：在塔＝存入庫存、在藍圖＝交付材料、在農田＝補滋養露、在結界＝補結界晶。</div></div>`;
-  $('#editor').classList.remove('hidden');
-  document.querySelectorAll('#editor .pblock').forEach(p => p.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', 'new:' + p.dataset.new)));
-  const trash = $('#edTrash');
-  trash.addEventListener('dragover', e => { e.preventDefault(); trash.classList.add('over'); });
-  trash.addEventListener('dragleave', () => trash.classList.remove('over'));
-  trash.addEventListener('drop', e => { e.preventDefault(); trash.classList.remove('over'); const d = e.dataTransfer.getData('text/plain');
-    if (d.startsWith('move:')) { const p = JSON.parse(d.slice(5)); getList(UI.ed.prog, p.slice(0, -1)).splice(p[p.length - 1], 1); } renderProgram(); });
-  document.addEventListener('dragend', () => { if (marker) marker.remove(); document.querySelectorAll('.list.over').forEach(x => x.classList.remove('over')); });
-  $('#edTpl').onchange = e => { if (e.target.value !== '') { UI.ed.prog = JSON.parse(JSON.stringify(tpls[+e.target.value].prog)); renderProgram(); } e.target.value = ''; };
-  $('#edCopy').onchange = e => { if (e.target.value) { UI.ed.prog = JSON.parse(JSON.stringify(s.fairies[e.target.value].prog)); renderProgram(); } e.target.value = ''; };
-  $('#edClear').onclick = () => { UI.ed.prog = []; renderProgram(); };
-  $('#edCancel').onclick = closeEditor;
-  $('#edApply').onclick = () => { FG.cmd.setScript(s, fid, UI.ed.prog); toast(f.name + ' 的腳本已更新', 'good'); closeEditor(); };
-  renderProgram();
-}
-function closeEditor() { UI.ed = null; $('#editor').classList.add('hidden'); $('#editor').innerHTML = ''; UI.sideHtml = ''; }
+$('#roster').addEventListener('change', e => { const t = e.target; if (t.dataset.act) taskChange(t.dataset.act, t); });
+$('#roster').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  if (b.dataset.act === 'toggle') { UI.collapse.roster = !UI.collapse.roster; UI.rosterHtml = ''; renderRoster(); }
+  if (b.dataset.act === 'focus') { const f = UI.s.fairies[b.dataset.fid]; UI.cam.x = f.x * S; UI.cam.y = f.y * S; UI.sel = { kind: 'fairy', id: f.id }; UI.sideHtml = ''; UI.rosterHtml = ''; }
+});
 
 // ---------- 選單、對話框 ----------
 function showMenu() {
-  UI.playing = false; $('#hud').classList.add('hidden'); closeEditor(); $('#dialog').classList.add('hidden');
+  UI.playing = false; $('#hud').classList.add('hidden'); $('#dialog').classList.add('hidden');
   const st = store();
   $('#menu').innerHTML = `<h1>Fairy Garden</h1><div class="tag">精靈花園・用腳本經營的魔法自動化農場</div><div class="cards">` +
     Object.entries(FG.LEVELS).map(([n, L]) => {
       n = +n; const locked = n > st.unlocked, sv = st.saves[n];
       return `<div class="card panel ${locked ? 'locked' : ''}"><h2>${L.title}</h2><div class="meta">${L.minutes}</div><p>${esc(L.intro.split('\n\n')[1] || L.intro)}</p>
         <div class="row">${locked ? '<span class="meta">🔒 完成上一章後解鎖</span>' : (sv ? `<button class="primary" data-go="cont" data-lv="${n}">繼續</button><button data-go="new" data-lv="${n}">重新開始</button>` : `<button class="primary" data-go="new" data-lv="${n}">開始</button>`)}</div></div>`;
-    }).join('') + `</div><div class="help">你是一位自然德魯伊，以中央魔法塔為據點。精靈住在塔裡，依照你寫的腳本採集、搬運、建造與維護設施。<br>進度會自動存在瀏覽器（localStorage）。</div>`;
+    }).join('') + `</div><div class="help">你是一位自然德魯伊，以中央魔法之花為據點。精靈住在花裡，依照你分派的指令單採集、搬運、建造與維護設施。<br>進度會自動存在瀏覽器（localStorage）。</div>`;
   $('#menu').classList.remove('hidden');
 }
 $('#menu').addEventListener('click', e => {
@@ -1517,7 +1433,7 @@ $('#menu').addEventListener('click', e => {
   }
 });
 function startLevel(s, fresh) {
-  UI.s = s; UI.sel = null; UI.tool = null; UI.chPath = []; UI.parts = []; UI.doneSeen = {}; UI.sideHtml = ''; UI.goalsHtml = '';
+  UI.s = s; UI.sel = null; UI.tool = null; UI.chPath = []; UI.pickFor = null; UI.rosterHtml = ''; UI.parts = []; UI.doneSeen = {}; UI.sideHtml = ''; UI.goalsHtml = '';
   for (const g of s.goals) if (g.done) UI.doneSeen[g.id] = true;
   UI.completeShown = s.complete;
   const c = FG.centralOf(s); centerOn(c.q, c.r); UI.cam.z = 1;
@@ -1539,7 +1455,7 @@ function showComplete() {
   const btns = [['繼續在本章遊玩', closeDialog, false]];
   if (next) btns.push(['前往' + next.title, () => { closeDialog(); startLevel(FG.newGame(s.level + 1), true); }]);
   else btns.push(['回到選單', () => { closeDialog(); showMenu(); }]);
-  dialog('🌟 ' + FG.LEVELS[s.level].title + '　完成！', `花了遊戲時間 ${m} 分鐘。\n精靈 ${Object.keys(s.fairies).length} 隻，採收法力花 ${s.stats.produced['法力花'] || 0} 朵。` +
+  dialog('🌟 ' + FG.LEVELS[s.level].title + '　完成！', `花了遊戲時間 ${m} 分鐘。\n精靈 ${Object.keys(s.fairies).length} 隻，採收月光花 ${s.stats.produced['月光花'] || 0} 朵。` +
     (next ? '\n\n下一章已解鎖。' : '\n\n這是目前版本的最後一章。小鎮居民的供需與對外貿易將在後續章節登場。'), btns);
 }
 

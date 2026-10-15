@@ -107,3 +107,59 @@ test('中央魔法之花收到物資時發出事件（給畫面播放音效）',
   FG.ops.deliver(s, c.id, '木枝', 2);
   assert.equal(FG.fx.filter(e => e.type === 'store').length, 0);
 });
+
+// 魔法之花：建造費＝原建造費＋召喚費，完工直接生出一隻住在新花的精靈
+const flowerSite = s => { const t = s.tiles[FG.hex.key(6, 0)]; t.t = 'grass'; for (const id of t.ents) delete s.ents[id]; t.ents = []; return t; };
+const finishFlower = s => {
+  flowerSite(s);
+  const r = FG.cmd.placeBlueprint(s, 'flower', 6, 0); assert.equal(r.ok, true);
+  const bp = s.ents[r.id]; bp.have = { ...bp.need };
+  assert.equal(FG.ops.construct(s, bp.id, bp.time), true);
+  return s.ents[r.id];
+};
+
+test('魔法之花：建造費含召喚一隻精靈的費用', () => {
+  assert.deepEqual(FG.BUILDS.flower.cost, { '木枝': 10, '月石': 10, '結界晶': 2, '花蜜': 3, '月光花': 4 });
+  const s = FG.newGame(2);
+  flowerSite(s);
+  const r = FG.cmd.placeBlueprint(s, 'flower', 6, 0);
+  assert.deepEqual(s.ents[r.id].need, FG.BUILDS.flower.cost);
+});
+
+test('魔法之花：完工直接新增一隻精靈，家是新花', () => {
+  const s = FG.newGame(2);
+  const n = fairies(s).length;
+  const t = finishFlower(s);
+  assert.equal(t.type, 'flower');
+  assert.equal(fairies(s).length, n + 1);
+  const f = fairies(s).find(x => x.home === t.id);
+  assert.ok(f);
+  assert.equal(f.task.kind, 'build');
+  assert.equal(f.task.radius, FG.DEFAULT_RADIUS);
+  assert.equal(t.storage['花蜜'] || 0, 0);
+  assert.equal(t.storage['月光花'] || 0, 0);
+});
+
+test('魔法之花：精靈已滿時照樣完工，召喚費放進新花倉庫', () => {
+  const s = FG.newGame(2);
+  const c = central(s);
+  c.storage = { '花蜜': 99, '月光花': 99 };
+  while (fairies(s).length < FG.FAIRY_MAX - 1) { FG.cmd.summonFairy(s, c.id); c.cast.t = c.cast.dur; FG.tick(s, 0.01); }
+  FG.cmd.summonFairy(s, c.id);   // 第 16 隻施法中，也算進上限
+  assert.equal(fairies(s).length, FG.FAIRY_MAX - 1);
+  const t = finishFlower(s);
+  assert.equal(fairies(s).length, FG.FAIRY_MAX - 1);
+  assert.equal(fairies(s).some(f => f.home === t.id), false);
+  assert.equal(t.storage['花蜜'], FG.SUMMON_COST['花蜜']);
+  assert.equal(t.storage['月光花'], FG.SUMMON_COST['月光花']);
+});
+
+test('魔法之花：精靈差一隻就滿時，完工的精靈是第 16 隻', () => {
+  const s = FG.newGame(2);
+  const c = central(s);
+  c.storage = { '花蜜': 99, '月光花': 99 };
+  while (fairies(s).length < FG.FAIRY_MAX - 1) { FG.cmd.summonFairy(s, c.id); c.cast.t = c.cast.dur; FG.tick(s, 0.01); }
+  const t = finishFlower(s);
+  assert.equal(fairies(s).length, FG.FAIRY_MAX);
+  assert.equal(t.storage['花蜜'] || 0, 0);
+});

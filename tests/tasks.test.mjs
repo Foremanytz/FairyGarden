@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { FG, central, fairies, run, idleAll, noBrew, clearTile, onlyForestAt, atHome } from './helpers.mjs';
 
-test('指令單預設：目標地點為家、範圍 20', () => {
+test('指令單預設：目標地點為家、範圍 10', () => {
   const s = FG.newGame(1);
   const [f] = fairies(s);
   assert.equal(FG.cmd.setTask(s, f.id, { kind: 'collect', item: '木枝' }).ok, true);
@@ -10,7 +10,7 @@ test('指令單預設：目標地點為家、範圍 20', () => {
   assert.equal(f.task.item, '木枝');
   assert.equal(f.task.at, null);
   assert.equal(f.task.radius, FG.DEFAULT_RADIUS);
-  assert.equal(FG.DEFAULT_RADIUS, 20);
+  assert.equal(FG.DEFAULT_RADIUS, 10);
 });
 
 test('選了需要物品的動作，物品先留空，精靈待命並說明；選好物品才開工', () => {

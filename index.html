@@ -931,7 +931,7 @@ const FG = globalThis.FG, hex = FG.hex;
 const $ = q => document.querySelector(q);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const cv = $('#cv'), ctx = cv.getContext('2d');
-const VERSION_TIME = '2026-10-15 15:23';   // commit 前由腳本寫入
+const VERSION_TIME = '2026-10-15 16:13';   // commit 前由腳本寫入
 const S = 34;          // 一個座標單位 = 34px（縮放 1 時）
 const SKY = 120;       // 流動通道的高度（px，縮放 1 時）
 let W = 0, H = 0;
@@ -1604,9 +1604,9 @@ function clickMap(x, y) {
   UI.sideHtml = '';
 }
 addEventListener('keydown', e => {
-  if (e.key === 'F3') { e.preventDefault(); togglePerf(); return; }
   const tag = document.activeElement && document.activeElement.tagName;
   if (tag === 'INPUT' || tag === 'SELECT') return;
+  if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.metaKey && !e.altKey) { togglePerf(); return; }
   if (!UI.playing) return;
   UI.keys[e.key.toLowerCase()] = true;
   if (e.key === ' ') { e.preventDefault(); setSpeed(UI.speed ? 0 : 1); }
@@ -1735,7 +1735,7 @@ function showComplete() {
     (next ? '\n\n下一章已解鎖。' : '\n\n這是目前版本的最後一章。小鎮居民的供需與對外貿易將在後續章節登場。'), btns);
 }
 
-// ---------- 量測面板（F3 開關）----------
+// ---------- 量測面板（P 鍵開關）----------
 // 每格耗時只算 JS 執行時間（遊戲邏輯＋送出繪圖指令），顯示卡實際繪製時間要看 DevTools Performance
 const Perf = { on: false, gaps: [], costs: [], lastShow: 0 };
 function togglePerf() { Perf.on = !Perf.on; Perf.gaps = []; Perf.costs = []; $('#perf').classList.toggle('hidden', !Perf.on); }

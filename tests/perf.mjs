@@ -19,7 +19,7 @@ await page.addInitScript(() => {
 await page.goto(url);
 await page.click('button[data-go="new"][data-lv="1"]');
 await page.click('#dialog button');
-await page.keyboard.press('F3');
+await page.keyboard.press('p');
 
 const SCENES = [
   ['開局', () => {}],

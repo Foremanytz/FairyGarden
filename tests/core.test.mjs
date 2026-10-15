@@ -93,6 +93,7 @@ test('召喚精靈與擴充乙太空間會扣資源', () => {
   const t = central(s);
   t.storage['花蜜'] = 10; t.storage['月光花'] = 10;
   assert.equal(FG.cmd.summonFairy(s, t.id).ok, true);
+  run(s, 10.1);
   assert.equal(fairies(s).length, 3);
   assert.ok(t.storage['花蜜'] < 10);
 
@@ -164,15 +165,15 @@ test('訂單交付扣庫存；全部目標完成即過關', () => {
   assert.equal(s.complete, true);
 });
 
-test('存檔版本 3；讀檔後模擬結果一致；拒絕舊版存檔', () => {
+test('存檔版本 4；讀檔後模擬結果一致；拒絕舊版存檔', () => {
   const s = FG.newGame(1);
   clearTile(s, 1, 0, 'forest');
   const [f] = fairies(s);
   FG.cmd.setTask(s, f.id, { kind: 'collect', item: '木枝' });
   run(s, 7);
-  assert.equal(s.v, 3);
+  assert.equal(s.v, 4);
   const s2 = FG.load(FG.save(s));
   run(s, 20); run(s2, 20);
   assert.equal(FG.save(s), FG.save(s2));
-  assert.throws(() => FG.load(JSON.stringify({ v: 2, tiles: {} })));
+  assert.throws(() => FG.load(JSON.stringify({ v: 3, tiles: {} })));
 });

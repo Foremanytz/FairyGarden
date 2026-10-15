@@ -227,7 +227,7 @@ assert.equal(await page.locator('#resbar .res.full').count(), 1, 'resbar full it
 await page.click('#resbar .lbl');
 assert.equal(await page.evaluate(() => FGUI.sel && FGUI.sel.id), await page.evaluate(() => FG.centralOf(FGUI.s).id), 'resbar selects central');
 // 物資列顯示「數量／保留量」；點物品跳出保留量小視窗
-assert.match(await page.textContent('#resbar .res[data-item="木枝"]'), /木枝\s*\d+\/0/, 'resbar shows reserve');
+assert.match(await page.textContent('#resbar .res[data-item="木枝"]'), /木枝\s*\d+\/6/, 'resbar shows reserve');
 await page.click('#resbar .res[data-item="木枝"]');
 assert.ok(await page.isVisible('#resEdit'), 'reserve editor shown');
 await page.fill('#resEdit input', '7'); await page.keyboard.press('Enter');
@@ -235,6 +235,17 @@ assert.equal(await page.evaluate(() => FG.centralOf(FGUI.s).reserve['木枝']), 
 assert.ok(!(await page.isVisible('#resEdit')), 'reserve editor closed');
 await page.waitForTimeout(400);
 assert.match(await page.textContent('#resbar .res[data-item="木枝"]'), /\/7/, 'resbar reserve updated');
+// 右下角大按鈕：選取中央魔法之花並移動鏡頭
+await page.evaluate(() => { FGUI.sel = null; FGUI.cam.x = 500; FGUI.cam.y = 300; });
+await page.click('#btnCentral');
+assert.deepEqual(await page.evaluate(() => [FGUI.sel && FGUI.sel.id, Math.round(FGUI.cam.x), Math.round(FGUI.cam.y)]), [await page.evaluate(() => FG.centralOf(FGUI.s).id), 0, 0], 'central button');
+// 建築列有「藍圖」標籤；精靈列表的「?」顯示各動作說明
+assert.equal(await page.textContent('#tools .tlabel'), '藍圖', 'blueprint label');
+await page.click('#roster button[data-act="taskhelp"]'); await page.waitForTimeout(400);
+assert.match(await page.textContent('#roster .taskhelp'), /維護：負責蓋建築/, 'task help shown');
+await page.click('#roster button[data-act="taskhelp"]'); await page.waitForTimeout(400);
+assert.equal(await page.locator('#roster .taskhelp').count(), 0, 'task help hidden');
+await page.click('#btnCentral'); await page.waitForTimeout(400);
 // 花的側欄：倉庫每項都有保留量欄位，設備沒有產量上限欄位
 assert.equal(await page.inputValue('#side input[data-act="reserve"][data-item="木枝"]'), '7', 'side reserve input');
 await page.fill('#side input[data-act="reserve"][data-item="木枝"]', '3'); await page.press('#side input[data-act="reserve"][data-item="木枝"]', 'Tab');

@@ -42,7 +42,11 @@ button.link { background: none; border: 0; padding: 0; color: var(--gold); text-
 .goal:last-child { border-bottom: 0; } .goal.done { color: var(--dim); } .goal.done .chk { color: var(--ok); }
 .goal .prog { color: var(--dim); font-size: 13px; font-variant-numeric: tabular-nums; } .goal button { padding: 2px 10px; grid-column: 2 / 4; justify-self: start; }
 #tools { position: fixed; left: 50%; transform: translateX(-50%); bottom: 12px; display: flex; gap: 6px; padding: 8px; }
-#tools { gap: 8px; }
+#tools { gap: 8px; align-items: center; } #tools .tlabel { color: var(--gold); font-weight: 700; font-size: 15px; padding: 0 6px; white-space: nowrap; }
+#btnCentral { position: fixed; right: 12px; bottom: 12px; padding: 12px 20px; font-size: 17px; font-weight: 700; border-radius: 14px; display: flex; align-items: center; gap: 8px; }
+#btnCentral .ic { font-size: 28px; }
+.roster th button.qhelp { display: inline-block; vertical-align: middle; } button.qhelp { padding: 0 6px; min-width: 0; font-size: 12px; line-height: 1.4; border-radius: 50%; margin-left: 2px; }
+.taskhelp { margin-top: 8px; font-size: 13px; line-height: 1.6; max-width: 640px; white-space: normal; } .taskhelp b { color: var(--gold); }
 #tools button { display: grid; grid-template-columns: 32px 1fr; column-gap: 6px; text-align: left; align-items: center; padding: 8px 12px; min-width: 172px; max-width: 230px; line-height: 1.4; }
 #tools button .ic { font-size: 22px; } #tools button .tn { display: flex; align-items: center; gap: 6px; font-weight: 600; white-space: nowrap; }
 #tools button small { display: block; color: var(--dim); font-size: 12px; line-height: 1.5; margin-top: 3px; }
@@ -107,6 +111,7 @@ button.link { background: none; border: 0; padding: 0; color: var(--gold); text-
   </div>
   <div id="left"><div id="goals" class="panel"></div><div id="roster" class="panel"></div></div>
   <div id="tools" class="panel"></div>
+  <button id="btnCentral" class="panel" title="選取中央魔法之花並把鏡頭移過去"><span class="ic">🌷</span>中央魔法之花</button>
   <div id="side" class="panel"></div>
   <div id="hint" class="panel"></div>
   <div id="toasts"></div>
@@ -181,7 +186,7 @@ const DEVICES = {
 const CROPS = { '月光花幼苗': '月光花' };
 const cropOf = farm => CROPS[farm.seed] || '月光花';
 // 每朵魔法之花的預設保留量：加工、運送、通道只動用超過保留量的部分
-const DEFAULT_RESERVE = { '花蜜': 4, '月光花': 2 };
+const DEFAULT_RESERVE = { '花蜜': 4, '月光花': 2, '木枝': 6 };
 const SUMMON_COST = { '花蜜': 3, '月光花': 4 };
 const FAIRY_MAX = 16;
 const BUILDS = {
@@ -197,11 +202,11 @@ const TERRAIN = {
 const BARRIER_ELEM = { grass: '陽光', meadow: '陽光', rock: '土息', forest: '風語' };
 // 指令單的動作；item 為該動作可選的物品（null＝不需要物品）
 const TASKS = {
-  idle:     { name: '待命', items: null },
-  collect:  { name: '收集', items: ['木枝', '月石', '露水', '月光花', '陽光', '風語', '土息'] },
-  farm:     { name: '農業', items: Object.keys(CROPS) },
-  build:    { name: '維護', items: null },
-  haul:     { name: '運送', items: Object.keys(ITEMS) },
+  idle:     { name: '待命', items: null, desc: '待在家附近，不做事。' },
+  collect:  { name: '收集', items: ['木枝', '月石', '露水', '月光花', '陽光', '風語', '土息'], desc: '到範圍內採集選定的物品帶回家：森林有木枝、岩地有月石、水邊有露水、花海有野生月光花；結界累積的陽光、風語、土息也用收集取回。' },
+  farm:     { name: '農業', items: Object.keys(CROPS), desc: '把選定的幼苗種進範圍內的空花田，成熟後採收作物帶回家。幼苗由乙太空間的育苗室培育。' },
+  build:    { name: '維護', items: null, desc: '負責蓋建築：範圍內有藍圖時，把缺的材料從家裡搬過去並施工。沒有藍圖時，把滋養露送到缺養分的花田、把結界晶送到缺能量的結界。' },
+  haul:     { name: '運送', items: Object.keys(ITEMS), desc: '把家裡超過保留量的物品，搬到「送往」選的那朵魔法之花。' },
 };
 const CAP = 5;               // 精靈一次能拿的數量
 const SPEED = 3.5;           // 精靈飛行速度（單位/秒，相鄰格距 √3）
@@ -961,7 +966,7 @@ const FG = globalThis.FG, hex = FG.hex;
 const $ = q => document.querySelector(q);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const cv = $('#cv'), ctx = cv.getContext('2d');
-const VERSION_TIME = '2026-10-15 19:03';   // commit 前由腳本寫入
+const VERSION_TIME = '2026-10-15 19:24';   // commit 前由腳本寫入
 const S = 34;          // 一個座標單位 = 34px（縮放 1 時）
 const SKY = 120;       // 流動通道的高度（px，縮放 1 時）
 const AIR_LIFT = 7;    // 低空物件畫在地格上方幾 px（縮放 1 時）
@@ -1393,7 +1398,7 @@ function renderTools() {
   for (const [k, b] of Object.entries(FG.BUILDS)) if (s.unlocked.includes(k)) list.push([`build:${k}`, b.icon, b.name, FG.LAYER[k], FG.costText(b.cost)]);
   if (s.unlocked.includes('channel')) list.push(['channel', '✨', '流動通道', 'sky', '連接結界、光之錨、花']);
   list.push(['demolish', '🧹', '拆除', 'any', '藍圖全額退回，建築退一半']);
-  $('#tools').innerHTML = list.map(([id, ic, n, L, sub]) => `<button data-tool="${id}" class="${UI.tool === id ? 'on' : ''}"><span class="ic">${ic}</span><span><span class="tn">${n}<span class="lyr ${L}">${LAYER_NAME[L]}</span></span><small>${esc(sub)}</small></span></button>`).join('');
+  $('#tools').innerHTML = '<span class="tlabel">藍圖</span>' + list.map(([id, ic, n, L, sub]) => `<button data-tool="${id}" class="${UI.tool === id ? 'on' : ''}"><span class="ic">${ic}</span><span><span class="tn">${n}<span class="lyr ${L}">${LAYER_NAME[L]}</span></span><small>${esc(sub)}</small></span></button>`).join('');
 }
 const inv = st => { const ks = Object.keys(st).filter(k => st[k] > 0); return ks.length ? '<div class="inv">' + ks.map(k => `<span class="it" title="${esc(FG.ITEMS[k].desc)}">${FG.ITEMS[k].icon} ${k}<b>${st[k]}</b></span>`).join('') + '</div>' : '<p>（空）</p>'; };
 const recipeFormula = id => { const R = FG.RECIPES[id]; const f = o => Object.entries(o).map(([k, n]) => k + n).join('＋'); return `${f(R.in)} → ${f(R.out)}（${R.time}秒）`; };
@@ -1452,7 +1457,7 @@ function sideFor() {
     const f = s.fairies[sel.id]; if (!f) { UI.sel = null; return ''; }
     const home = s.ents[f.home];
     return `<h2>🧚 ${esc(f.name)}</h2>
-      <div class="kv"><span>指令單</span><span>${esc(taskText(f))}</span><span>家</span><span>${esc(home ? home.name : '?')}</span>
+      <div class="kv"><span>指令單</span><span>${esc(taskText(f))}</span><span>動作說明</span><span>${esc(FG.TASKS[f.task.kind].desc)}</span><span>家</span><span>${esc(home ? home.name : '?')}</span>
       <span>活力</span><span><div class="bar en"><i style="width:${Math.round(f.energy / 5) * 5}%"></i></div></span>
       <span>手上</span><span>${f.hold ? FG.ITEMS[f.hold.item].icon + ' ' + f.hold.item + ' × ' + f.hold.n : '（空）'}</span>
       <span>狀態</span><span>${fairyState(f)}</span></div>
@@ -1622,6 +1627,7 @@ function renderResbar() {
   if (html !== UI.resHtml) { $('#resbar').innerHTML = html; UI.resHtml = html; }
 }
 $('#btnMenu').onclick = () => { saveGame(true); showMenu(); };
+$('#btnCentral').onclick = () => { const c = FG.centralOf(UI.s); showLayer('ground'); centerOn(c.q, c.r); UI.sel = { kind: 'ent', id: c.id }; UI.sideHtml = ''; };
 
 // ---------- 地圖輸入 ----------
 cv.addEventListener('contextmenu', e => e.preventDefault());
@@ -1746,7 +1752,7 @@ function rosterRow(f) {
   const to = f.task.kind !== 'haul' ? '' : ` <span class="st">送往</span> <select data-act="tto" data-fid="${f.id}">${f.task.to ? '' : opt('', '（請選擇）', '')}${others.map(t => opt(t.id, t.name, f.task.to)).join('')}</select>`;
   const st = f.msg ? `<span class="note">${esc(f.msg)}</span>` : fairyState(f);
   return `<tr class="${UI.sel && UI.sel.id === f.id ? 'sel' : ''}"><td><button class="link" data-act="focus" data-fid="${f.id}">${esc(f.name)}</button></td>
-    <td><select data-act="tkind" data-fid="${f.id}">${taskKinds().map(([k, T]) => opt(k, T.name, f.task.kind)).join('')}</select></td>
+    <td><select data-act="tkind" data-fid="${f.id}">${taskKinds().map(([k, T]) => `<option value="${k}" title="${esc(T.desc)}" ${k === f.task.kind ? 'selected' : ''}>${esc(T.name)}</option>`).join('')}</select></td>
     <td>${items ? `<select data-act="titem" data-fid="${f.id}">${f.task.item ? '' : opt('', '（請選擇）', '')}${items.map(i => opt(i, FG.ITEMS[i].icon + ' ' + i, f.task.item)).join('')}</select>` : '<span class="st">—</span>'}${to}</td>
     <td><input type="number" min="1" max="40" data-act="trad" data-fid="${f.id}" value="${f.task.radius}"></td>
     <td><select data-act="thome" data-fid="${f.id}">${fl.map(t => opt(t.id, t.name, f.home)).join('')}</select></td>
@@ -1757,7 +1763,8 @@ function rosterRow(f) {
 function renderRoster() {
   const s = UI.s, fs = Object.values(s.fairies), c = UI.collapse.roster;
   const html = `<div class="phead" data-act="toggle" data-id="roster"><h3>精靈（${fs.length}）</h3><span>${c ? '▸' : '▾'}</span></div>` + (c ? '' :
-    `<table class="roster"><thead><tr><th>名字</th><th>動作</th><th>物品</th><th>範圍</th><th>家</th><th>活力</th><th>手上</th><th>狀態</th></tr></thead><tbody>${fs.map(rosterRow).join('')}</tbody></table>`);
+    `<table class="roster"><thead><tr><th>名字</th><th>動作 <button class="qhelp" data-act="taskhelp" title="各動作的說明">?</button></th><th>物品</th><th>範圍</th><th>家</th><th>活力</th><th>手上</th><th>狀態</th></tr></thead><tbody>${fs.map(rosterRow).join('')}</tbody></table>` +
+    (UI.taskHelp ? `<div class="taskhelp">${taskKinds().map(([, T]) => `<div><b>${T.name}</b>：${esc(T.desc)}</div>`).join('')}</div>` : ''));
   const el = $('#roster'), a = document.activeElement;
   if (UI.drag || UI.pressed || (a && el.contains(a) && (a.tagName === 'SELECT' || a.tagName === 'INPUT'))) return;
   if (html !== UI.rosterHtml) { el.innerHTML = html; UI.rosterHtml = html; }
@@ -1778,6 +1785,7 @@ $('#roster').addEventListener('pointerdown', e => {
   if (e.button !== 0) return;
   const b = e.target.closest('button[data-act], .phead[data-act]'); if (!b) return;
   if (b.dataset.act === 'toggle') { UI.collapse.roster = !UI.collapse.roster; UI.rosterHtml = ''; renderRoster(); }
+  if (b.dataset.act === 'taskhelp') { UI.taskHelp = !UI.taskHelp; UI.rosterHtml = ''; renderRoster(); }
   if (b.dataset.act === 'focus') { const f = UI.s.fairies[b.dataset.fid]; UI.cam.x = f.x * S; UI.cam.y = f.y * S; showLayer('folk'); UI.sel = { kind: 'fairy', id: f.id }; UI.sideHtml = ''; UI.rosterHtml = ''; }
 });
 

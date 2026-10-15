@@ -21,8 +21,6 @@ function common(s, maxFairies) {
   for (const g of s.goals) if (g.kind === 'order' && !g.done) FG.cmd.fulfillOrder(s, g.id);
   for (const t of FG.flowers(s)) {
     if (Object.values(t.storage).some(n => n >= t.cap - 5)) FG.cmd.expandStorage(s, t.id);
-    // 木枝要留著蓋藍圖，不讓育苗室全部拿去做幼苗
-    FG.cmd.setReserve(s, t.id, '木枝', 10);
   }
   const c = central(s);
   if (fairies(s).length < maxFairies && (c.storage['花蜜'] || 0) >= 6 && (c.storage['月光花'] || 0) >= 8) FG.cmd.summonFairy(s, c.id);

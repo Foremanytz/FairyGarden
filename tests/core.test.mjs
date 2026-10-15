@@ -103,6 +103,7 @@ test('育苗室：木枝 1 + 月光花 1 → 月光花幼苗 1（8 秒）；開�
   idleAll(s);
   const t = central(s);
   t.devices.forEach(d => { if (d && d.type !== 'nursery') d.recipe = null; });
+  FG.cmd.setReserve(s, t.id, '木枝', 0);
   t.storage = { '木枝': 3, '月光花': 5 };
   run(s, 7.5);
   assert.equal(t.storage['月光花幼苗'] || 0, 0);
@@ -112,9 +113,9 @@ test('育苗室：木枝 1 + 月光花 1 → 月光花幼苗 1（8 秒）；開�
   assert.deepEqual([t.storage['月光花幼苗'], t.storage['木枝'], t.storage['月光花']], [3, 0, 2]);
 });
 
-test('保留量：預設花蜜 4、月光花 2；可設定、不接受負數與不存在的物品', () => {
+test('保留量：預設花蜜 4、月光花 2、木枝 6；可設定、不接受負數與不存在的物品', () => {
   const s = FG.newGame(1), t = central(s);
-  assert.deepEqual(t.reserve, { '花蜜': 4, '月光花': 2 });
+  assert.deepEqual(t.reserve, { '花蜜': 4, '月光花': 2, '木枝': 6 });
   assert.equal(FG.cmd.setReserve(s, t.id, '木枝', 7.8).ok, true);
   assert.equal(t.reserve['木枝'], 7);
   FG.cmd.setReserve(s, t.id, '木枝', -3);

@@ -124,5 +124,5 @@ test('玩家蓋好的魔法之花：乙太空間 1 格空格，倉庫上限 30�
   assert.deepEqual(t.devices, [null]);
   assert.equal(t.slots, 1);
   assert.equal(t.cap, 30);
-  assert.deepEqual(t.reserve, { '花蜜': 4, '月光花': 2 });
+  assert.deepEqual(t.reserve, { '花蜜': 4, '月光花': 2, '木枝': 6 });
 });

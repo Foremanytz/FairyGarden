@@ -2,13 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { FG, central, fairies, run, idleAll, noBrew, clearTile, onlyForestAt, atHome } from './helpers.mjs';
 
-test('指令單預設：目標地點為家、範圍 10', () => {
+test('指令單預設：以家為中心（沒有目標地點）、範圍 10', () => {
   const s = FG.newGame(1);
   const [f] = fairies(s);
   assert.equal(FG.cmd.setTask(s, f.id, { kind: 'collect', item: '木枝' }).ok, true);
   assert.equal(f.task.kind, 'collect');
   assert.equal(f.task.item, '木枝');
-  assert.equal(f.task.at, null);
+  assert.equal('at' in f.task, false);
+  assert.equal(f.task.to, null);
   assert.equal(f.task.radius, FG.DEFAULT_RADIUS);
   assert.equal(FG.DEFAULT_RADIUS, 10);
 });
@@ -138,7 +139,7 @@ test('維護：沒有藍圖時自動送滋養露給花田、結界晶給結界',
   assert.ok(bar.charge > 1);
 });
 
-test('運送：搬到目標那朵魔法之花；目標不是花時待命', () => {
+test('運送：搬到「送往」那朵魔法之花；沒選送往時待命', () => {
   const s = FG.newGame(3);
   idleAll(s); noBrew(s);
   const c = central(s), lake = FG.flowers(s).find(e => !e.central);
@@ -146,9 +147,9 @@ test('運送：搬到目標那朵魔法之花；目標不是花時待命', () =>
   const f = fairies(s).find(x => x.home === c.id);
   FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石' });
   run(s, 3);
-  assert.match(f.msg, /目標/);
+  assert.match(f.msg, /送往/);
   assert.equal(c.storage['月石'], 14);
-  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', at: { flower: lake.id } });
+  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', to: lake.id });
   run(s, 60);
   assert.ok(lake.storage['月石'] >= 5);
   assert.ok(c.storage['月石'] <= 9);
@@ -183,4 +184,17 @@ test('活力：低活力回家吃花蜜，之後繼續原任務', () => {
   assert.equal(t.storage['花蜜'], 3);
   run(s, 20);
   assert.ok((t.storage['木枝'] || 0) >= 5);
+});
+
+test('舊參數 at 一律忽略：工作以家為中心；運送以外的工作不保留 to', () => {
+  const s = FG.newGame(3);
+  idleAll(s);
+  const c = central(s), lake = FG.flowers(s).find(e => !e.central), f = fairies(s).find(x => x.home === c.id);
+  FG.cmd.setTask(s, f.id, { kind: 'collect', item: '木枝', at: { q: 9, r: -4 }, to: lake.id });
+  assert.equal('at' in f.task, false);
+  assert.equal(f.task.to, null);
+  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', to: 'e999' });
+  assert.equal(f.task.to, null);
+  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', to: lake.id });
+  assert.equal(f.task.to, lake.id);
 });

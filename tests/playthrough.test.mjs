@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { FG, central, fairies } from './helpers.mjs';
 
 const LIMIT = 2400;
-const same = (a, b) => a.kind === b.kind && (a.item || null) === (b.item || null) && JSON.stringify(a.at || null) === JSON.stringify(b.at || null);
+const same = (a, b) => a.kind === b.kind && (a.item || null) === (b.item || null) && (a.to || null) === (b.to || null);
 function assign(s, roles, homeId) {
   const fs = fairies(s).filter(f => !homeId || f.home === homeId);
   fs.forEach((f, i) => { const r = roles[i % roles.length]; if (!same(f.task, r)) FG.cmd.setTask(s, f.id, r); });

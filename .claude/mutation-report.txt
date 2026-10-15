@@ -1,21 +1,6 @@
-SURVIVED " < " → " <= " | const isAtTile = (f, t) => { const p = hex.toXY(t.q, t.r); return f.atKey === hex.key(t.q,
-SURVIVED " < " → " <= " | if (d <= rad && (d < rad || R() < 0.6)) tile.t = t;
-SURVIVED " < " → " <= " | if (t.t === 'meadow' && t.wild < WILD_MAX) { t.wt = (t.wt || 0) + h; if (t.wt >= WILD_REGR
-SURVIVED " < " → " <= " | const isAtTile = (f, t) => { const p = hex.toXY(t.q, t.r); return f.atKey === hex.key(t.q,
-SURVIVED " || " → " && " | if (d.prog === 0 && (blocked || !ready)) { d.state = blocked || 'wait'; continue; }
-SURVIVED " && " → " || " | else if (c.kind === 'device' && t.devices[c.slot]) delete t.devices[c.slot].install;
-SURVIVED " || " → " && " | if (!bp || bp.type !== 'blueprint' || !ready(bp) || !isAtTile(f, bp)) return done();
-SURVIVED " >= " → " > " | if (a.t >= per - 1e-9) {
-SURVIVED " <= " → " < " | if (k <= 0) return actFail(s, f, '對方不需要' + f.hold.item);
-SURVIVED " || " → " && " | if (!d || !RECIPES[rid] || !s.recipes.includes(rid)) return no('無法使用這個配方');
-SURVIVED "true" → "false" | else f.act = { op: 'wait', t: 0, dur: 1, idle: true };
-SURVIVED " < " → " <= " | for (let i = 0; i < ls.length; i++) { const k = ls.key(i); if (k !== null && k.startsWith(
-SURVIVED " - 1" → " + 1" | if (a.t >= per - 1e-9) {
-SURVIVED "true" → "false" | if (Math.hypot(sp.x - f.x, sp.y - f.y) > 1e-6) f.act = { op: 'move', tx: sp.x, ty: sp.y, k
-SURVIVED " === " → " !== " | const farms = entsWhere(s, f, e => e.type === 'farm').length;
-SURVIVED " && " → " || " | const needsCrystal = e => e.type === 'barrier' && e.charge < 1;
+SURVIVED " > " → " >= " | if (Math.hypot(sp.x - f.x, sp.y - f.y) > 1e-6) f.act = { op: 'move', tx: sp.x, ty: sp.y, k
 SURVIVED " >= " → " > " | while (ch.transit.length && ch.transit[0].d >= len) store(dst, ch.transit.shift().item, 1)
 SURVIVED " > " → " >= " | while (dt > 1e-9) { const h = Math.min(0.1, dt); stepWorld(s, h); dt -= h; }
-SURVIVED " > " → " >= " | for (let i = 1; i < es.length; i++) if (hex.dist(es[i - 1], es[i]) > CH_HOP) return no('相鄰
-candidates 422, sampled 120, killed 101, survived 19
-GATE_RESULT: {"tool":"tests/mutation.mjs","mutants":120,"killed":101,"rate":0.842,"threshold":0.8,"pass":true}
+candidates 429, sampled 120, killed 100, survived 20
+GATE_RESULT: {"tool":"tests/mutation.mjs","mutants":120,"killed":100,"rate":0.833,"threshold":0.8,"pass":true}
+

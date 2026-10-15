@@ -178,3 +178,14 @@ test('存檔版本 5；讀檔後模擬結果一致；拒絕舊版存檔', () => 
   assert.equal(FG.save(s), FG.save(s2));
   assert.throws(() => FG.load(JSON.stringify({ v: 4, tiles: {} })));
 });
+
+test('讀舊存檔：目標地點移除，運送的目的花轉成「送往」', () => {
+  const s = FG.newGame(3);
+  const lake = FG.flowers(s).find(e => !e.central), [a, b] = Object.values(s.fairies);
+  const o = JSON.parse(FG.save(s));
+  o.fairies[a.id].task = { kind: 'haul', item: '月石', at: { flower: lake.id }, radius: 10 };
+  o.fairies[b.id].task = { kind: 'collect', item: '木枝', at: { q: 3, r: 1 }, radius: 10 };
+  const s2 = FG.load(JSON.stringify(o));
+  assert.deepEqual(s2.fairies[a.id].task, { kind: 'haul', item: '月石', to: lake.id, radius: 10 });
+  assert.deepEqual(s2.fairies[b.id].task, { kind: 'collect', item: '木枝', radius: 10, to: null });
+});

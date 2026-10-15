@@ -187,7 +187,7 @@ test('運送：目的地該物品已達上限時待命', () => {
   const c = central(s), lake = FG.flowers(s).find(e => !e.central);
   c.storage = { '月石': 10 }; lake.storage = { '月石': lake.cap };
   const f = fairies(s).find(x => x.home === c.id);
-  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', at: { flower: lake.id } });
+  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', to: lake.id });
   run(s, 3);
   assert.match(f.msg, /上限/);
   assert.equal(c.storage['月石'], 10);
@@ -453,7 +453,7 @@ test('運送：目標設成自己的家也算無效', () => {
   idleAll(s);
   const c = central(s), f = fairies(s).find(x => x.home === c.id);
   c.storage = { '月石': 5 };
-  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', at: { flower: c.id } });
+  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', to: c.id });
   run(s, 2);
   assert.match(f.msg, /另一朵/);
   assert.equal(c.storage['月石'], 5);

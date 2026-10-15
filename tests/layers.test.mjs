@@ -9,17 +9,36 @@ test('層級：花田、魔法之花在地面層；結界、光之錨在低空�
   assert.equal(FG.LAYER.anchor, 'air');
 });
 
-test('結界可以和花田、魔法之花疊在同一格', () => {
+test('結界可以和花田疊在同一格', () => {
   const s = FG.newGame(3);
   clearTile(s, 3, 0);
   const farm = FG.spawnBuilding(s, 'farm', 3, 0);
   const r1 = FG.cmd.placeBlueprint(s, 'barrier', 3, 0);
   assert.equal(r1.ok, true);
-  const r2 = FG.cmd.placeBlueprint(s, 'barrier', 0, 0);
-  assert.equal(r2.ok, true);
   assert.equal(FG.entOn(s, 3, 0, 'ground'), farm);
   assert.equal(FG.entOn(s, 3, 0, 'air'), r1.id);
-  assert.equal(FG.entOn(s, 0, 0, 'ground'), central(s).id);
+});
+
+test('魔法之花所在的格子不能再蓋任何建築（中央與其他花都一樣）', () => {
+  const s = FG.newGame(3);
+  const lake = FG.flowers(s).find(e => !e.central);
+  for (const f of [central(s), lake]) for (const type of ['barrier', 'anchor', 'farm', 'flower']) {
+    const r = FG.cmd.placeBlueprint(s, type, f.q, f.r);
+    assert.equal(r.ok, false, type);
+    assert.match(r.reason, /魔法之花/);
+  }
+  assert.deepEqual(s.tiles[K(0, 0)].ents, [central(s).id]);
+});
+
+test('魔法之花藍圖所在的格子也不能再蓋；低空有東西的格子不能蓋魔法之花', () => {
+  const s = FG.newGame(3);
+  clearTile(s, -6, 6); clearTile(s, 6, 3);
+  assert.equal(FG.cmd.placeBlueprint(s, 'flower', -6, 6).ok, true);
+  assert.equal(FG.cmd.placeBlueprint(s, 'barrier', -6, 6).ok, false);
+  FG.spawnBuilding(s, 'anchor', 6, 3);
+  const r = FG.cmd.placeBlueprint(s, 'flower', 6, 3);
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /低空/);
 });
 
 test('同一格同一層不能放兩個；花田藍圖可以放在已有結界的格子', () => {

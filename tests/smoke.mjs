@@ -134,16 +134,81 @@ await page.click('#speed button[data-speed="0"]');
 await page.mouse.click(sx, sy); const sel1 = await page.evaluate(() => FGUI.sel && FGUI.sel.id);
 await page.mouse.click(sx, sy); const sel2 = await page.evaluate(() => FGUI.sel && FGUI.sel.id);
 assert.deepEqual([sel1, sel2].sort(), [farmId, barId].sort(), 'click cycles layers');
-// 圖層按鈕決定點到哪一層
+// 圖層開關：各層獨立、可同時開多層；關掉的圖層點不到
 const clickSel = async () => { await page.mouse.click(sx, sy); return page.evaluate(() => FGUI.sel && FGUI.sel.id); };
-await page.click('#layers button[data-layer="ground"]');
-assert.equal(await clickSel(), farmId, 'ground layer picks farm');
-assert.equal(await clickSel(), farmId, 'ground layer stays on farm');
+const layersOn = () => page.evaluate(() => Object.keys(FGUI.layers).filter(k => FGUI.layers[k]).sort().join(','));
+assert.equal(await layersOn(), 'air,folk,ground,sky', 'all layers on by default');
 await page.click('#layers button[data-layer="air"]');
-assert.equal(await clickSel(), barId, 'air layer picks barrier');
-await page.click('#layers button[data-layer="sky"]');
-assert.equal(await clickSel(), barId, 'channel layer picks channel node');
-await page.click('#layers button[data-layer="all"]');
+assert.equal(await page.locator('#layers button.on').count(), 3, 'air toggled off');
+assert.equal(await clickSel(), farmId, 'air off picks farm');
+assert.equal(await clickSel(), farmId, 'air off stays on farm');
+await page.click('#layers button[data-layer="air"]'); await page.click('#layers button[data-layer="ground"]');
+assert.equal(await clickSel(), barId, 'ground off picks barrier');
+await page.click('#layers button[data-layer="air"]');
+await page.mouse.click(sx, sy);
+assert.equal(await page.evaluate(() => FGUI.sel && FGUI.sel.kind), 'tile', 'both off picks tile');
+await page.keyboard.press('1'); await page.keyboard.press('2');
+assert.equal(await layersOn(), 'air,folk,ground,sky', 'keys 1/2 turn layers back on');
+// 關掉圖層時，選取中的東西若在那一層就取消選取
+await clickSel(); const selBefore = await page.evaluate(() => FGUI.sel && FGUI.sel.id);
+await page.keyboard.press(selBefore === barId ? '2' : '1');
+assert.equal(await page.evaluate(() => FGUI.sel), null, 'hiding layer clears selection');
+await page.keyboard.press(selBefore === barId ? '2' : '1');
+// 魔法之花上有精靈時：第一下選花，再點一下換精靈；關掉地面層才直接點到精靈
+const [cx, cy, fid] = await page.evaluate(() => {
+  const s = FGUI.s, c = FG.centralOf(s), f = Object.values(s.fairies)[0], w = FG.hex.toXY(c.q, c.r), z = FGUI.cam.z;
+  f.x = w.x; f.y = w.y - 0.6; f.act = null;
+  const p = FGUI.fairyScreen(f); return [p.x, p.y, f.id];
+});
+await page.mouse.click(cx, cy);
+const cid = await page.evaluate(() => FG.centralOf(FGUI.s).id);
+assert.equal(await page.evaluate(() => FGUI.sel && FGUI.sel.id), cid, 'flower before fairy');
+await page.mouse.click(cx, cy);
+assert.equal(await page.evaluate(() => FGUI.sel && FGUI.sel.id), fid, 'second click picks fairy');
+await page.keyboard.press('1'); await page.evaluate(() => FGUI.sel = null);
+await page.mouse.click(cx, cy);
+assert.equal(await page.evaluate(() => FGUI.sel && FGUI.sel.id), fid, 'ground off picks fairy directly');
+await page.keyboard.press('1');
+// 通道：點弧線選取通道；關掉通道層就點不到
+const [chId, mx, my] = await page.evaluate(() => { const ch = Object.values(FGUI.s.channels)[0]; const p = FGUI.channelMid(ch); return [ch.id, p.x, p.y]; });
+await page.mouse.click(mx, my);
+assert.deepEqual(await page.evaluate(() => FGUI.sel), { kind: 'channel', id: chId }, 'click channel arc selects channel');
+await page.waitForTimeout(400);
+assert.match(await page.textContent('#side'), /流動通道/, 'channel side panel');
+await page.keyboard.press('3');
+assert.equal(await page.evaluate(() => FGUI.sel), null, 'sky off clears channel selection');
+await page.mouse.click(mx, my);
+assert.notEqual(await page.evaluate(() => FGUI.sel && FGUI.sel.kind), 'channel', 'sky off: channel not pickable');
+await page.keyboard.press('3');
+// 建築列表標出圖層；選建造工具會打開該圖層
+assert.match(await page.textContent('#tools button[data-tool="build:barrier"]'), /低空層/, 'tool layer badge');
+await page.keyboard.press('2');
+await page.click('#tools button[data-tool="build:barrier"]');
+assert.equal(await page.evaluate(() => FGUI.layers.air), true, 'build tool turns its layer on');
+await page.keyboard.press('Escape');
+// 用通道工具架完一條通道：工具收起、選取新通道，之後點結界是選取而不是開始下一條
+const [bx, by, b2] = await page.evaluate(() => {
+  const s = FGUI.s, c = FG.centralOf(s), used = new Set(Object.values(s.channels).map(ch => ch.nodes[0]));
+  const b = Object.values(s.ents).find(e => e.type === 'barrier' && FG.hex.dist(e, c) <= 7 && !used.has(e.id)) || Object.values(s.ents).find(e => e.type === 'barrier' && FG.hex.dist(e, c) <= 7);
+  const w = FG.hex.toXY(b.q, b.r), z = FGUI.cam.z;
+  return [(w.x * 34 - FGUI.cam.x) * z + innerWidth / 2, (w.y * 34 - FGUI.cam.y) * z + innerHeight / 2 - 7 * z, b.id];
+});
+const [fx, fy] = await page.evaluate(() => { const c = FG.centralOf(FGUI.s), w = FG.hex.toXY(c.q, c.r), z = FGUI.cam.z; return [(w.x * 34 - FGUI.cam.x) * z + innerWidth / 2, (w.y * 34 - FGUI.cam.y) * z + innerHeight / 2]; });
+await page.click('#tools button[data-tool="channel"]');
+await page.mouse.click(bx, by); await page.mouse.click(fx, fy);
+assert.equal(await page.evaluate(() => FGUI.tool), null, 'channel tool closes after building');
+assert.equal(await page.evaluate(() => FGUI.sel && FGUI.sel.kind), 'channel', 'new channel selected');
+await page.mouse.click(bx, by);
+assert.equal(await page.evaluate(() => FGUI.sel && FGUI.sel.id), b2, 'barrier selectable after channel');
+// 精靈列表：沒有目標地點欄；選「運送」時物品旁出現「送往」
+assert.ok(!(await page.textContent('#roster thead')).includes('目標地點'), 'no target column');
+const hf = await page.evaluate(() => Object.values(FGUI.s.fairies).find(f => f.home === FG.centralOf(FGUI.s).id).id);
+await page.selectOption(`#roster select[data-act="tkind"][data-fid="${hf}"]`, 'haul');
+await page.waitForTimeout(300);
+const lakeId = await page.evaluate(() => FG.flowers(FGUI.s).find(e => !e.central).id);
+await page.selectOption(`#roster select[data-act="tto"][data-fid="${hf}"]`, lakeId);
+assert.equal(await page.evaluate(id => FGUI.s.fairies[id].task.to, hf), lakeId, 'haul destination set');
+await page.screenshot({ path: out + '/2b-tools.png' });
 // 上方工具列：精靈列表、目標面板的開合
 await page.click('#btnRoster');
 assert.equal(await page.locator('#roster table').count(), 0, 'roster collapsed');
@@ -164,9 +229,10 @@ assert.equal(await page.evaluate(() => FGUI.sel && FGUI.sel.id), await page.eval
 await page.click('#speed button[data-speed="2"]');
 await page.waitForTimeout(3000);
 await page.screenshot({ path: out + '/2-level3.png' });
-await page.click('#layers button[data-layer="sky"]');
+await page.keyboard.press('1'); await page.keyboard.press('2'); await page.keyboard.press('4');
 await page.waitForTimeout(500);
 await page.screenshot({ path: out + '/3-sky.png' });
+await page.keyboard.press('1'); await page.keyboard.press('2'); await page.keyboard.press('4');
 // 安全清空存檔：存檔帶說明欄位；清空只刪 fairygarden. 開頭的鍵，其他網站的資料留著
 await page.click('#btnMenu');
 const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('fairygarden.v1')));

@@ -91,6 +91,36 @@
       "impl": {
         "index.html": "866c9b974ee218f81a3680e7e8c51a6793d7f54942f99bf96feff6b52ad014b4"
       }
+    },
+    "stage-4": {
+      "recorded_at_utc": "2026-10-15T03:33:48+00:00",
+      "forced_rerecord": false,
+      "mode": "pre-impl",
+      "tests": {
+        "tests/helpers.mjs": "6558aff2362e0b5f20bd1cab89c14f6599bc3fde47c9c0d50bfcba13167fdcaa",
+        "tests/core.test.mjs": "da39bc176e3ff1da3acb87e8463de82f81467cd1420ef5596b0fa92760a704b0",
+        "tests/tasks.test.mjs": "80eaf1c59c0002fa017d6fd6138b3f79bc48dbc3ac39b5c989bd03bd500c5882",
+        "tests/edges.test.mjs": "06a5dbf6fadf418c8ae86708af92045dd4ace5dabaecd481da1162ec25fda38d",
+        "tests/summon.test.mjs": "defe84fa9af41962dae05cc8491ffd8297e197046d246536828d26820fb3a9ac"
+      },
+      "impl": {
+        "index.html": "5093cdffd58ffbe7485b7b0c4939bc66e12558de41e036e406e0c4aa5f405e0a"
+      }
+    },
+    "stage-4-fix": {
+      "recorded_at_utc": "2026-10-15T03:34:43+00:00",
+      "forced_rerecord": false,
+      "mode": "test-only",
+      "tests": {
+        "tests/helpers.mjs": "6558aff2362e0b5f20bd1cab89c14f6599bc3fde47c9c0d50bfcba13167fdcaa",
+        "tests/core.test.mjs": "da39bc176e3ff1da3acb87e8463de82f81467cd1420ef5596b0fa92760a704b0",
+        "tests/tasks.test.mjs": "80eaf1c59c0002fa017d6fd6138b3f79bc48dbc3ac39b5c989bd03bd500c5882",
+        "tests/edges.test.mjs": "fba11585e342d6598fae8655d1ffedc42780167b7a7b692199f1f261e3ffcf2c",
+        "tests/summon.test.mjs": "defe84fa9af41962dae05cc8491ffd8297e197046d246536828d26820fb3a9ac"
+      },
+      "impl": {
+        "index.html": "a921019f5550649d7eb3055fc3b50d61a1268bb38b046932fd297ec7449f6786"
+      }
     }
   }
 }

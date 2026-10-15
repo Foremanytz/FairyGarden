@@ -36,8 +36,11 @@ test('召喚的新精靈預設任務是營造', () => {
   const s = FG.newGame(2);
   const t = central(s);
   t.storage = { '花蜜': 10, '月光花': 10 };
-  const r = FG.cmd.summonFairy(s, t.id);
-  assert.equal(s.fairies[r.id].task.kind, 'build');
+  const before = new Set(Object.keys(s.fairies));
+  assert.equal(FG.cmd.summonFairy(s, t.id).ok, true);
+  run(s, 10.1);
+  const id = Object.keys(s.fairies).find(k => !before.has(k));
+  assert.equal(s.fairies[id].task.kind, 'build');
   assert.equal(FG.TASKS.build.name, '營造');
   assert.equal(FG.TASKS.maintain, undefined);
 });

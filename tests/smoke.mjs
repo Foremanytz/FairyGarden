@@ -43,19 +43,35 @@ await page.evaluate(id => { const f = FGUI.s.fairies[id]; f.x = 5; f.y = 3; }, f
 await page.click(`#roster button[data-act="focus"][data-fid="${f1}"]`);
 const cam = await page.evaluate(() => [FGUI.cam.x, FGUI.cam.y, FGUI.sel && FGUI.sel.id]);
 assert.ok(Math.abs(cam[0] - 5 * 34) < 1 && Math.abs(cam[1] - 3 * 34) < 1 && cam[2] === f1, 'focus camera');
-// 按鈕：按下與放開之間面板內容會變（精靈數增加），連按 3 次都要生效
-await page.evaluate(() => { const t = FG.centralOf(FGUI.s); t.storage['花蜜'] = 30; t.storage['月光花'] = 30; FGUI.sel = { kind: 'ent', id: t.id }; FGUI.sideHtml = ''; });
+// 按鈕：按下與放開之間面板內容會變，連按 3 次「擴建倉庫」都要生效
+await page.evaluate(() => { const t = FG.centralOf(FGUI.s); t.storage['花蜜'] = 30; t.storage['月光花'] = 30; t.storage['月石'] = 60; t.storage['木枝'] = 60; FGUI.sel = { kind: 'ent', id: t.id }; FGUI.sideHtml = ''; });
 await page.waitForTimeout(400);
-const n0 = await page.evaluate(() => Object.keys(FGUI.s.fairies).length);
-for (let i = 0; i < 3; i++) {
-  const box = await page.locator('#side button[data-act="summon"]').boundingBox();
+const cap0 = await page.evaluate(() => FG.centralOf(FGUI.s).cap);
+const pressWithRerender = async sel => {
+  const box = await page.locator(sel).boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
-  await page.evaluate(() => { FG.centralOf(FGUI.s).storage['木枝'] = (FG.centralOf(FGUI.s).storage['木枝'] || 0) + 1; });
+  await page.evaluate(() => { FG.centralOf(FGUI.s).storage['露水'] = (FG.centralOf(FGUI.s).storage['露水'] || 0) + 1; });
   await page.waitForTimeout(300); await page.mouse.up();
   await page.waitForTimeout(300);
-}
-assert.equal(await page.evaluate(() => Object.keys(FGUI.s.fairies).length), n0 + 3, 'summon x3');
+};
+for (let i = 0; i < 3; i++) await pressWithRerender('#side button[data-act="expstore"]');
+assert.equal(await page.evaluate(() => FG.centralOf(FGUI.s).cap), cap0 + 3 * 30, 'expand storage x3');
+// 召喚：開始施法，按鈕換成進度條；施法完成後精靈多一隻
+const n0 = await page.evaluate(() => Object.keys(FGUI.s.fairies).length);
+await pressWithRerender('#side button[data-act="summon"]');
+assert.ok(await page.evaluate(() => !!FG.centralOf(FGUI.s).summon), 'summon casting');
+await page.waitForTimeout(300);
+assert.equal(await page.locator('#side .cast').count(), 1, 'cast progress shown');
+await page.screenshot({ path: out + '/1b-summon.png' });
+await page.evaluate(() => FG.tick(FGUI.s, 10.5));
+assert.equal(await page.evaluate(() => Object.keys(FGUI.s.fairies).length), n0 + 1, 'summoned');
+// 音效開關
+const snd0 = await page.textContent('#btnSound');
+await page.click('#btnSound');
+assert.notEqual(await page.textContent('#btnSound'), snd0, 'sound toggle');
+assert.equal(await page.evaluate(() => FGUI.sfx.on), snd0.includes('🔕'), 'sound state flipped');
+await page.click('#btnSound');
 await page.click('#speed button[data-speed="4"]');
 await page.waitForTimeout(6000);
 const built = await page.evaluate(() => FGUI.s.stats.built.farm || 0);

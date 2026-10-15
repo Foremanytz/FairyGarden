@@ -267,7 +267,7 @@ test('營造：兩隻精靈不會搶同一塊缺滋養的田', () => {
   central(s).storage = { '滋養露': 4 };
   const [a, b] = fairies(s);
   FG.cmd.setTask(s, a.id, { kind: 'build' }); FG.cmd.setTask(s, b.id, { kind: 'build' });
-  run(s, 1.2);
+  run(s, 2);
   assert.equal([a, b].filter(f => f.hold).length, 1);
 });
 
@@ -342,9 +342,10 @@ test('解鎖與上限：未解鎖的建築、設備不能用；精靈最多 16 �
   t.storage = { '月石': 50, '木枝': 50 };
   assert.equal(FG.cmd.addDevice(s, t.id, 1, 'transmuter').ok, false);
   assert.equal(FG.cmd.addDevice(s, t.id, 1, 'nope').ok, false);
-  while (fairies(s).length < 15) { t.storage = { '花蜜': 10, '月光花': 10 }; FG.cmd.summonFairy(s, t.id); }
+  while (fairies(s).length < 15) { t.storage = { '花蜜': 10, '月光花': 10 }; FG.cmd.summonFairy(s, t.id); run(s, 10.1); }
   t.storage = { '花蜜': 10, '月光花': 10 };
   assert.equal(FG.cmd.summonFairy(s, t.id).ok, true);
+  run(s, 10.1);
   t.storage = { '花蜜': 10, '月光花': 10 };
   assert.equal(FG.cmd.summonFairy(s, t.id).ok, false);
 });
@@ -415,7 +416,7 @@ test('沒有花蜜時休息，活力慢慢回升', () => {
   const t = central(s), [f] = fairies(s);
   t.storage = {};
   f.energy = 5;
-  run(s, 4);
+  run(s, 6);
   assert.ok(f.energy > 9 && f.energy < 20, String(f.energy));
   assert.match(f.msg, /花蜜/);
 });

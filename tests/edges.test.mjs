@@ -76,7 +76,7 @@ test('拆除：藍圖全額退回、建築退一半、相關通道一起移除',
   assert.equal(t.storage['月石'], 2 + 1);
   assert.equal(t.storage['木枝'], 1);
   assert.equal(Object.keys(s.channels).length, 0);
-  assert.equal(s.tiles[K(0, 3)].e, undefined);
+  assert.equal(s.tiles[K(0, 3)].ents.length, 0);
 });
 
 test('交付：數量為 0 或對象不存在時不收；農田只收滋養露且不超過上限', () => {
@@ -140,14 +140,14 @@ test('採集中資源被蓋掉：精靈停止並說明', () => {
   assert.notEqual(f.act && f.act.op, 'gather');
 });
 
-test('種植：手上 2 朵時仍可採收（湊滿 5 朵）', () => {
+test('種植：手上 1 朵時仍可採收（湊滿 5 朵）', () => {
   const s = FG.newGame(1);
   idleAll(s); noBrew(s);
   clearTile(s, 2, 0);
   const farm = s.ents[FG.spawnBuilding(s, 'farm', 2, 0)];
   farm.planted = true; farm.growth = 1;
   const [f] = fairies(s);
-  putAt(s, f, 2, 0); f.hold = { item: '月光花', n: 2 };
+  putAt(s, f, 2, 0); f.hold = { item: '月光花', n: 1 };
   FG.cmd.setTask(s, f.id, { kind: 'farm' });
   run(s, 1.5);
   assert.deepEqual(f.hold, { item: '月光花', n: 5 });
@@ -258,7 +258,7 @@ test('同一個目標只派一隻精靈（成熟的田、缺滋養的田、結�
   assert.equal([c, d].filter(f => f.act && f.act.op === 'move' && f.act.key === K(-5, 0)).length, 1);
 });
 
-test('維護：兩隻精靈不會搶同一塊缺滋養的田', () => {
+test('營造：兩隻精靈不會搶同一塊缺滋養的田', () => {
   const s = FG.newGame(2);
   idleAll(s); noBrew(s);
   for (const e of Object.values(s.ents)) if (e.type === 'farm') e.fert = FG.FERT_MAX;
@@ -266,7 +266,7 @@ test('維護：兩隻精靈不會搶同一塊缺滋養的田', () => {
   const farm = s.ents[FG.spawnBuilding(s, 'farm', -3, 0)]; farm.fert = 0;
   central(s).storage = { '滋養露': 4 };
   const [a, b] = fairies(s);
-  FG.cmd.setTask(s, a.id, { kind: 'maintain', item: '滋養露' }); FG.cmd.setTask(s, b.id, { kind: 'maintain', item: '滋養露' });
+  FG.cmd.setTask(s, a.id, { kind: 'build' }); FG.cmd.setTask(s, b.id, { kind: 'build' });
   run(s, 1.2);
   assert.equal([a, b].filter(f => f.hold).length, 1);
 });
@@ -282,7 +282,7 @@ test('收集：站在空草地上不會誤採，會飛去森林', () => {
   assert.ok((t.storage['木枝'] || 0) > 4);
 });
 
-test('採集中森林被藍圖佔用：停止採集', () => {
+test('採集中森林上方放了結界藍圖：照樣繼續採集', () => {
   const s = FG.newGame(2);
   idleAll(s);
   onlyForestAt(s, 1, 0);
@@ -290,9 +290,9 @@ test('採集中森林被藍圖佔用：停止採集', () => {
   FG.cmd.setTask(s, f.id, { kind: 'collect', item: '木枝' });
   run(s, 1);
   assert.equal(f.act.op, 'gather');
-  FG.cmd.placeBlueprint(s, 'barrier', 1, 0);
+  assert.equal(FG.cmd.placeBlueprint(s, 'barrier', 1, 0).ok, true);
   run(s, 0.2);
-  assert.notEqual(f.act && f.act.op, 'gather');
+  assert.equal(f.act.op, 'gather');
 });
 
 test('L2 設備指令：空格不能設配方；負數或超出的格子不能安裝', () => {
@@ -383,15 +383,15 @@ test('農田：沒播種不會長；有滋養的田 30 秒成熟（第 2 章）'
   assert.equal(b.growth, 1);
 });
 
-test('維護：滋養 4 的田也算缺滋養', () => {
+test('營造：滋養剩 6 的田也算缺滋養（剛好放得下一瓶）', () => {
   const s = FG.newGame(2);
   idleAll(s); noBrew(s);
   for (const e of Object.values(s.ents)) if (e.type === 'farm') e.fert = FG.FERT_MAX;
   clearTile(s, -3, 0);
-  const farm = s.ents[FG.spawnBuilding(s, 'farm', -3, 0)]; farm.fert = FG.FERT_MAX - 2;
+  const farm = s.ents[FG.spawnBuilding(s, 'farm', -3, 0)]; farm.fert = FG.FERT_MAX - FG.NOURISH_HARVESTS;
   central(s).storage = { '滋養露': 2 };
   const [f] = fairies(s);
-  FG.cmd.setTask(s, f.id, { kind: 'maintain', item: '滋養露' });
+  FG.cmd.setTask(s, f.id, { kind: 'build' });
   run(s, 10);
   assert.equal(farm.fert, FG.FERT_MAX);
 });

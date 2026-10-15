@@ -55,6 +55,42 @@
       "impl": {
         "index.html": "6f80f3e963df48816553c873c36d5ce254f04741ac33705d696262534c355d35"
       }
+    },
+    "stage-3": {
+      "recorded_at_utc": "2026-10-15T00:57:16+00:00",
+      "forced_rerecord": true,
+      "mode": "pre-impl",
+      "tests": {
+        "tests/helpers.mjs": "a5e824c8d052cfe91e0e3249eb4799e775a768f6d3bcd1d9ded9cf3639bc7dfb",
+        "tests/core.test.mjs": "8ce31cf3af007bcaa83f009648ddfd6f1bdd82982c6305d8dba8865b8d9830a6",
+        "tests/tasks.test.mjs": "51c331b6f1b139fc05d284239609c1e702b43e03645f59a8ccad9a31242f04fc",
+        "tests/storage.test.mjs": "0dec1462669eabee2477f6de21bc9606b3b8acb80601acbf1d9ace88c57450af",
+        "tests/edges.test.mjs": "54a2ee4a5f0543911f9bd8d795f724f2a59db315db60522fdfe0ca03b16e9821",
+        "tests/layers.test.mjs": "b2ce7904d2d677ddaf4095b17f53a0bb98882a90f7818ced26b43ea79bc70d94",
+        "tests/economy.test.mjs": "5df421c6645d365a58e86ddf640f19ce632d7187bc8286d357a6475d3eea8523",
+        "tests/playthrough.test.mjs": "a80596e02e2814f2b41e63bcdcc9f9bb93b09126103ef40e53a511a4a71c07a4"
+      },
+      "impl": {
+        "index.html": "6f80f3e963df48816553c873c36d5ce254f04741ac33705d696262534c355d35"
+      }
+    },
+    "stage-3-fix": {
+      "recorded_at_utc": "2026-10-15T00:59:14+00:00",
+      "forced_rerecord": false,
+      "mode": "test-only",
+      "tests": {
+        "tests/helpers.mjs": "a5e824c8d052cfe91e0e3249eb4799e775a768f6d3bcd1d9ded9cf3639bc7dfb",
+        "tests/core.test.mjs": "8ce31cf3af007bcaa83f009648ddfd6f1bdd82982c6305d8dba8865b8d9830a6",
+        "tests/tasks.test.mjs": "70366ff9573968ff7b2f3a0c0c9744e8aa0f0092024cc77a43e00eb2ad586d33",
+        "tests/storage.test.mjs": "0dec1462669eabee2477f6de21bc9606b3b8acb80601acbf1d9ace88c57450af",
+        "tests/edges.test.mjs": "54a2ee4a5f0543911f9bd8d795f724f2a59db315db60522fdfe0ca03b16e9821",
+        "tests/layers.test.mjs": "b2ce7904d2d677ddaf4095b17f53a0bb98882a90f7818ced26b43ea79bc70d94",
+        "tests/economy.test.mjs": "c70bea6bae2dce7a8094cb544cbdeccff395d6c8b45e5c06bc9a772ea048a667",
+        "tests/playthrough.test.mjs": "a80596e02e2814f2b41e63bcdcc9f9bb93b09126103ef40e53a511a4a71c07a4"
+      },
+      "impl": {
+        "index.html": "866c9b974ee218f81a3680e7e8c51a6793d7f54942f99bf96feff6b52ad014b4"
+      }
     }
   }
 }

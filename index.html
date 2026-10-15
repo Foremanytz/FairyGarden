@@ -67,6 +67,7 @@ button.link { background: none; border: 0; padding: 0; color: var(--gold); text-
 @keyframes tf { 0% { opacity: 0; transform: translateY(-6px); } 8% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; } }
 #tip { position: fixed; pointer-events: none; background: rgba(10,14,24,.9); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; font-size: 13px; color: var(--dim); }
 #tip:empty { display: none; }
+#perf { position: fixed; left: 12px; bottom: 12px; z-index: 50; pointer-events: none; padding: 8px 10px; font: 12px/1.6 ui-monospace, Consolas, monospace; color: #cfe; background: rgba(10,14,24,.85); border: 1px solid var(--line); border-radius: 6px; white-space: pre; }
 .modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(5,8,16,.6); }
 #menu { background: radial-gradient(ellipse at 50% 30%, #2a3d55 0%, #101828 60%, #070b14 100%); flex-direction: column; }
 #menu h1 { font-size: 84px; margin: 0; letter-spacing: 4px; background: linear-gradient(90deg, #ffd98a, #ff9df0, #c9a7ff, #7fd8ff); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 40px rgba(201,167,255,.25); }
@@ -101,6 +102,7 @@ button.link { background: none; border: 0; padding: 0; color: var(--gold); text-
   <div id="toasts"></div>
 </div>
 <div id="tip"></div>
+<div id="perf" class="hidden"></div>
 <div id="menu" class="modal"></div>
 <div id="dialog" class="modal hidden"></div>
 
@@ -866,7 +868,7 @@ function goalProgress(s, g) {
   switch (g.kind) {
     case 'build': return [s.stats.built[g.type] || 0, n];
     case 'buildNear': {
-      const c = Object.values(s.ents).filter(e => e.type === g.type && e.built &&
+      const c = Object.values(s.ents).filter(e => e.type !== g.type && e.built &&
         Object.values(s.tiles).some(t => t.t === g.near && hex.dist(t, e) <= g.range)).length;
       return [c, n];
     }
@@ -907,7 +909,7 @@ const FG = globalThis.FG, hex = FG.hex;
 const $ = q => document.querySelector(q);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const cv = $('#cv'), ctx = cv.getContext('2d');
-const VERSION_TIME = '2026-10-15 13:45';   // commit 前由腳本寫入
+const VERSION_TIME = '2026-10-15 15:20';   // commit 前由腳本寫入
 const S = 34;          // 一個座標單位 = 34px（縮放 1 時）
 const SKY = 120;       // 流動通道的高度（px，縮放 1 時）
 let W = 0, H = 0;
@@ -1580,6 +1582,7 @@ function clickMap(x, y) {
   UI.sideHtml = '';
 }
 addEventListener('keydown', e => {
+  if (e.key === 'F3') { e.preventDefault(); togglePerf(); return; }
   const tag = document.activeElement && document.activeElement.tagName;
   if (tag === 'INPUT' || tag === 'SELECT') return;
   if (!UI.playing) return;
@@ -1700,9 +1703,28 @@ function showComplete() {
     (next ? '\n\n下一章已解鎖。' : '\n\n這是目前版本的最後一章。小鎮居民的供需與對外貿易將在後續章節登場。'), btns);
 }
 
+// ---------- 量測面板（F3 開關）----------
+// 每格耗時只算 JS 執行時間（遊戲邏輯＋送出繪圖指令），顯示卡實際繪製時間要看 DevTools Performance
+const Perf = { on: false, gaps: [], costs: [], lastShow: 0 };
+function togglePerf() { Perf.on = !Perf.on; Perf.gaps = []; Perf.costs = []; $('#perf').classList.toggle('hidden', !Perf.on); }
+function perfRecord(gap, cost, ts) {
+  Perf.gaps.push(gap); Perf.costs.push(cost);
+  if (Perf.gaps.length > 120) { Perf.gaps.shift(); Perf.costs.shift(); }
+  if (ts - Perf.lastShow < 250) return; Perf.lastShow = ts;
+  Perf.stats = perfStats();
+  const st = Perf.stats;
+  $('#perf').textContent = `FPS          ${st.fps.toFixed(1)}\n平均每格耗時  ${st.avg.toFixed(2)} ms\n最慢 5%      ${st.p95.toFixed(2)} ms\n粒子數        ${st.parts}\n畫布解析度    ${st.res}`;
+}
+function perfStats() {
+  const n = Perf.costs.length, sorted = [...Perf.costs].sort((a, b) => a - b), gap = Perf.gaps.reduce((a, b) => a + b, 0) / Math.max(1, n);
+  return { fps: gap > 0 ? 1000 / gap : 0, avg: Perf.costs.reduce((a, b) => a + b, 0) / Math.max(1, n), p95: n ? sorted[Math.min(n - 1, Math.floor(n * 0.95))] : 0,
+    parts: UI.parts.length, res: `${cv.width}×${cv.height}（像素比 ${(window.devicePixelRatio || 1).toFixed(2)}）` };
+}
+
 // ---------- 主迴圈 ----------
 let last = performance.now();
 function frame(ts) {
+  const gap = ts - last, t0 = performance.now();
   const dt = Math.min(0.1, (ts - last) / 1000); last = ts;
   if (UI.s && UI.playing) {
     UI.t += dt;
@@ -1715,6 +1737,7 @@ function frame(ts) {
     if (t) { const es = t.ents.map(id => UI.s.ents[id]).filter(Boolean), bp = es.find(e => e.type === 'blueprint'), names = es.filter(e => e !== bp).map(entName);
       tip.textContent = (names.length ? names.join('＋') + '・' : '') + FG.TERRAIN[t.t].name + (t.t === 'meadow' ? `（野生月光花 ${t.wild}）` : '') + (bp ? '　' + bpStatus(bp) : ''); tip.style.left = UI.mouse.x + 16 + 'px'; tip.style.top = UI.mouse.y + 16 + 'px'; }
     else tip.textContent = '';
+    if (Perf.on) perfRecord(gap, performance.now() - t0, ts);
   }
   requestAnimationFrame(frame);
 }
@@ -1724,6 +1747,7 @@ addEventListener('beforeunload', () => { if (UI.s && UI.playing) saveGame(true);
 showMenu();
 requestAnimationFrame(frame);
 globalThis.FGUI = UI;
+UI.perf = Perf;
 UI.sfx = Sfx;
 })();
 </script>

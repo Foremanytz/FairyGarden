@@ -22,6 +22,12 @@ await page.waitForTimeout(400);
 const rows = await page.locator('#roster tbody tr').count();
 const nf = await page.evaluate(() => Object.keys(FGUI.s.fairies).length);
 assert.equal(rows, nf, 'roster rows');
+// 量測面板：F3 打開會顯示數字，再按一次關閉
+await page.keyboard.press('F3'); await page.waitForTimeout(400);
+assert.ok(await page.isVisible('#perf'), 'perf panel shown');
+assert.match(await page.textContent('#perf'), /FPS\s+\d/, 'perf panel numbers');
+await page.keyboard.press('F3');
+assert.ok(!(await page.isVisible('#perf')), 'perf panel hidden');
 // 放農田藍圖，用列表分派任務
 await page.click('#tools button[data-tool="build:farm"]');
 for (const [dx, dy] of [[90, 60], [-90, 60], [0, 120]]) await page.mouse.click(960 + dx, 540 + dy);

@@ -121,6 +121,41 @@
       "impl": {
         "index.html": "a921019f5550649d7eb3055fc3b50d61a1268bb38b046932fd297ec7449f6786"
       }
+    },
+    "stage-5": {
+      "recorded_at_utc": "2026-10-15T05:11:52+00:00",
+      "forced_rerecord": true,
+      "mode": "pre-impl",
+      "tests": {
+        "tests/core.test.mjs": "e4c6488df611aef265c17adf1fd5b8c88d6228ee92c5f46c0856619c2f6e158e",
+        "tests/storage.test.mjs": "21439e0380771d4d85f03eb58313662af1160b06a46b81cbbd782491e1920134",
+        "tests/edges.test.mjs": "4f40e65bde51699418a1ff50c18450a32fc5378b279be193b4a7423a478adb92",
+        "tests/tasks.test.mjs": "cda1fa6081539c84a55042a8ec395f6a60474d0e679a2c42534b13994c2c2a64",
+        "tests/economy.test.mjs": "ddb45f71e0aea0dfd8d3876aef7f1aa8465a4cd7f156b4680ce2ae38289a1dcf",
+        "tests/summon.test.mjs": "f36358ef4681b3b86123f6de66f44b5ea19fb92477dbc0fb8edc84b28ab493cd",
+        "tests/casting.test.mjs": "4d0666f5893dfa7275009af69c78dfb315f276bd3ae78b530cb4c4892d32a8aa"
+      },
+      "impl": {
+        "index.html": "a84c09212db71cd0cd809c3e28fd5094aa2d08ab5307f5e6131367ad75fd917c"
+      }
+    },
+    "stage-5-fix": {
+      "recorded_at_utc": "2026-10-15T05:12:48+00:00",
+      "forced_rerecord": false,
+      "mode": "test-only",
+      "tests": {
+        "tests/core.test.mjs": "e4c6488df611aef265c17adf1fd5b8c88d6228ee92c5f46c0856619c2f6e158e",
+        "tests/storage.test.mjs": "21439e0380771d4d85f03eb58313662af1160b06a46b81cbbd782491e1920134",
+        "tests/edges.test.mjs": "4f40e65bde51699418a1ff50c18450a32fc5378b279be193b4a7423a478adb92",
+        "tests/tasks.test.mjs": "cda1fa6081539c84a55042a8ec395f6a60474d0e679a2c42534b13994c2c2a64",
+        "tests/economy.test.mjs": "ddb45f71e0aea0dfd8d3876aef7f1aa8465a4cd7f156b4680ce2ae38289a1dcf",
+        "tests/summon.test.mjs": "f36358ef4681b3b86123f6de66f44b5ea19fb92477dbc0fb8edc84b28ab493cd",
+        "tests/casting.test.mjs": "4d0666f5893dfa7275009af69c78dfb315f276bd3ae78b530cb4c4892d32a8aa",
+        "tests/playthrough.test.mjs": "744ab2808a57c304844f64eed3b09d42e90538e0ad9a2add2e5df07d54da3eaf"
+      },
+      "impl": {
+        "index.html": "dbae3de420b1199f6019e27485151d5964a787d1f1ade4f7baba67f11cc2016d"
+      }
     }
   }
 }

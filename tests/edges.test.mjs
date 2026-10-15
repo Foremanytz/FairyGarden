@@ -46,7 +46,7 @@ test('設備：設定配方會重置進度；拆設備退回材料', () => {
 test('乙太空間最多 9 格', () => {
   const s = FG.newGame(2);
   const t = central(s);
-  while (t.slots < 9) { t.storage = { '月石': 60, '月光花': 60 }; assert.equal(FG.cmd.expandEther(s, t.id).ok, true); }
+  while (t.slots < 9) { t.storage = { '月石': 60, '月光花': 60 }; assert.equal(FG.cmd.expandEther(s, t.id).ok, true); run(s, 8.1); }
   t.storage = { '月石': 60, '月光花': 60 };
   assert.equal(FG.cmd.expandEther(s, t.id).ok, false);
   assert.equal(t.slots, 9);
@@ -258,7 +258,7 @@ test('同一個目標只派一隻精靈（成熟的田、缺滋養的田、結�
   assert.equal([c, d].filter(f => f.act && f.act.op === 'move' && f.act.key === K(-5, 0)).length, 1);
 });
 
-test('營造：兩隻精靈不會搶同一塊缺滋養的田', () => {
+test('維護：兩隻精靈不會搶同一塊缺滋養的田', () => {
   const s = FG.newGame(2);
   idleAll(s); noBrew(s);
   for (const e of Object.values(s.ents)) if (e.type === 'farm') e.fert = FG.FERT_MAX;
@@ -384,7 +384,7 @@ test('農田：沒播種不會長；有滋養的田 30 秒成熟（第 2 章）'
   assert.equal(b.growth, 1);
 });
 
-test('營造：滋養剩 6 的田也算缺滋養（剛好放得下一瓶）', () => {
+test('維護：滋養剩 6 的田也算缺滋養（剛好放得下一瓶）', () => {
   const s = FG.newGame(2);
   idleAll(s); noBrew(s);
   for (const e of Object.values(s.ents)) if (e.type === 'farm') e.fert = FG.FERT_MAX;

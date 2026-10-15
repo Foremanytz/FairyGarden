@@ -82,7 +82,7 @@ test('收益：10 分鐘內 1 隻精靈顧 3 塊花田，月光花淨產量至�
   assert.ok(farmed >= 2 * wild, `farmed ${farmed} wild ${wild}`);
 });
 
-test('營造：材料到齊後要有精靈在場施工；兩隻一起施工比較快', () => {
+test('維護：材料到齊後要有精靈在場施工；兩隻一起施工比較快', () => {
   assert.deepEqual([FG.BUILD_TIME.farm, FG.BUILD_TIME.barrier, FG.BUILD_TIME.anchor, FG.BUILD_TIME.flower], [5, 10, 10, 30]);
   const s = FG.newGame(1);
   idleAll(s);

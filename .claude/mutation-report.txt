@@ -1,75 +1,81 @@
-SURVIVED " || " → " && " | if (d.prog === 0 && (blocked || !ready)) { d.state = blocked || 'wait'; continue; }
 SURVIVED " < " → " <= " | if (d <= rad && (d < rad || R() < 0.6)) tile.t = t;
-SURVIVED " < " → " <= " | if (t.t === 'meadow' && t.wild < WILD_MAX) { t.wt = (t.wt || 0) + h; if (t.wt >= WILD_REGR
-SURVIVED " > " → " >= " | while (dt > 1e-9) { const h = Math.min(0.1, dt); stepWorld(s, h); dt -= h; }
-SURVIVED " !== " → " === " | if (k <= 0 || (f.hold && f.hold.item !== e.elem)) return actFail(s, f, '收不了');
-SURVIVED " || " → " && " | if (e.type !== 'farm' || e.planted || !f.hold || f.hold.item !== '月光花') return actFail(s, 
-SURVIVED " >= " → " > " | if (a.t >= 0.5) { f.energy = 100; f.msg = ''; done(); }
-SURVIVED " && " → " || " | const needsCrystal = e => e.type === 'barrier' && e.charge < 1;
-SURVIVED " < " → " <= " | if (a.t < a.dur) return;
-SURVIVED " >= " → " > " | if ((home.storage['花蜜'] || 0) >= 1) { home.storage['花蜜'] -= 1; a.phase = 'eat'; a.t = 0; f
-SURVIVED "true" → "false" | const empty = nearest(s, f, entsWhere(s, f, e => e.type === 'farm' && !e.planted, true));
-SURVIVED " <= " → " < " | if (d <= sp) { f.x = a.tx; f.y = a.ty; f.atKey = a.key; done(); } else { f.x += dx / d * s
-SURVIVED "true" → "false" | else f.act = { op: 'wait', t: 0, dur: 1, idle: true };
-SURVIVED " >= " → " > " | if (f.energy >= 100) { f.msg = ''; done(); }
-SURVIVED "true" → "false" | if (Math.hypot(sp.x - f.x, sp.y - f.y) > 1e-6) f.act = { op: 'move', tx: sp.x, ty: sp.y, k
-SURVIVED " || " → " && " | if (!bp || bp.type !== 'blueprint' || !ready(bp) || !isAtTile(f, bp)) return done();
-SURVIVED " && " → " || " | if (t.t === 'meadow' && t.wild < WILD_MAX) { t.wt = (t.wt || 0) + h; if (t.wt >= WILD_REGR
-SURVIVED " || " → " && " | if (blocked || !ready) { d.prog = R.time; d.state = blocked || 'wait'; continue; }
-SURVIVED " && " → " || " | const isAtTile = (f, t) => { const p = hex.toXY(t.q, t.r); return f.atKey === hex.key(t.q,
-SURVIVED " > " → " >= " | const claimedByOther = (s, f, id) => { const c = s.claims[id]; return c && c.f !== f.id &&
-SURVIVED " < " → " <= " | if (e.type === 'farm' && e.planted && e.growth < 1) {
-SURVIVED " && " → " || " | const src = nearest(s, f, entsWhere(s, f, e => e.type === 'barrier' && e.elem === item && 
-SURVIVED " < " → " <= " | if (slot < 0 || slot >= t.slots || t.devices[slot]) return no('這一格不能安裝');
-SURVIVED " >= " → " > " | while (ch.transit.length && ch.transit[0].d >= len) store(dst, ch.transit.shift().item, 1)
+SURVIVED " >= " → " > " | if (e.t >= rate) {
 SURVIVED " > " → " >= " | if (e.buf < 10) { e.buf++; addStat(s, e.elem, 1); if (e.charge > 0) e.charge = Math.max(0,
-SURVIVED " || " → " && " | if (k <= 0 || (f.hold && f.hold.item !== e.elem)) return actFail(s, f, '收不了');
-SURVIVED " && " → " || " | function releaseClaim(s, f) { if (f.claim && s.claims[f.claim] && s.claims[f.claim].f === 
+SURVIVED " > " → " >= " | while (dt > 1e-9) { const h = Math.min(0.1, dt); stepWorld(s, h); dt -= h; }
 SURVIVED " || " → " && " | if (e.type !== 'farm' || e.planted || !f.hold || f.hold.item !== '月光花') return actFail(s, 
-SURVIVED " <= " → " < " | const dx = a.tx - f.x, dy = a.ty - f.y, d = Math.hypot(dx, dy), sp = SPEED * (f.energy <= 
-SURVIVED " === " → " !== " | if (entOn(s, q, r, LAYER[type])) return no(LAYER[type] === 'air' ? '這格的低空已經有東西了' : '這格的地面已
-SURVIVED " >= " → " > " | if (a.t >= per - 1e-9) {
-SURVIVED " < " → " <= " | if (bp.work < bp.time - 1e-9) return false;
-SURVIVED " < " → " <= " | if (hex.dist({ q: 0, r: 0 }, { q, r }) > 3) { const x = R(); if (x < 0.05) t = 'forest'; e
-SURVIVED " <= " → " < " | if (k <= 0 || (f.hold && f.hold.item !== e.elem)) return actFail(s, f, '收不了');
-SURVIVED " <= " → " < " | if (d <= sp) { f.x = p.x; f.y = p.y; f.atKey = hex.key(home.q, home.r); a.phase = 'rest'; 
-SURVIVED " <= " → " < " | if ((home.storage[item] || 0) <= 0) return idleAt(s, f, '家裡沒有' + item);
-SURVIVED " < " → " <= " | const needsCrystal = e => e.type === 'barrier' && e.charge < 1;
-SURVIVED " < " → " <= " | if (d.prog < R.time) continue;
-SURVIVED " < " → " <= " | const isAtTile = (f, t) => { const p = hex.toXY(t.q, t.r); return f.atKey === hex.key(t.q,
-SURVIVED " >= " → " > " | case 'wait': a.t += h; if (a.t >= a.dur) done(); return;
 SURVIVED " || " → " && " | case 'order': return [g.done ? n : flowers(s).reduce((k, t) => k + (t.storage[g.item] || 0
-SURVIVED " <= " → " < " | for (const k in s.tiles) if (hex.dist(s.tiles[k], { q: 0, r: 0 }) <= 2) s.tiles[k].t = 'gr
-SURVIVED " || " → " && " | if (!d || !RECIPES[rid] || !s.recipes.includes(rid)) return no('無法使用這個配方');
+SURVIVED " || " → " && " | if (blocked || !ready) { d.prog = R.time; d.state = blocked || 'wait'; continue; }
+SURVIVED " === " → " !== " | if (entOn(s, q, r, LAYER[type])) return no(LAYER[type] === 'air' ? '這格的低空已經有東西了' : '這格的地面已
+SURVIVED " <= " → " < " | if (d <= sp) { f.x = p.x; f.y = p.y; f.atKey = hex.key(home.q, home.r); a.phase = 'rest'; 
+SURVIVED " !== " → " === " | if (k <= 0 || (f.hold && f.hold.item !== e.elem)) return actFail(s, f, '收不了');
+SURVIVED " < " → " <= " | const needsCrystal = e => e.type === 'barrier' && e.charge < 1;
+SURVIVED " || " → " && " | if (k <= 0 || (f.hold && f.hold.item !== e.elem)) return actFail(s, f, '收不了');
+SURVIVED " || " → " && " | if (d.prog === 0 && (blocked || !ready)) { d.state = blocked || 'wait'; continue; }
+SURVIVED " && " → " || " | const isAtTile = (f, t) => { const p = hex.toXY(t.q, t.r); return f.atKey === hex.key(t.q,
+SURVIVED " || " → " && " | if (blocked || !ready) { d.prog = R.time; d.state = blocked || 'wait'; continue; }
+SURVIVED " || " → " && " | if (!bp || bp.type !== 'blueprint' || !ready(bp) || !isAtTile(f, bp)) return done();
+SURVIVED "true" → "false" | if (Math.hypot(sp.x - f.x, sp.y - f.y) > 1e-6) f.act = { op: 'move', tx: sp.x, ty: sp.y, k
+SURVIVED " && " → " || " | function releaseClaim(s, f) { if (f.claim && s.claims[f.claim] && s.claims[f.claim].f === 
+SURVIVED " >= " → " > " | if (a.t >= per - 1e-9) {
+SURVIVED " < " → " <= " | const isAtTile = (f, t) => { const p = hex.toXY(t.q, t.r); return f.atKey === hex.key(t.q,
+SURVIVED " || " → " && " | if (d.prog === 0 && (blocked || !ready)) { d.state = blocked || 'wait'; continue; }
+SURVIVED " < " → " <= " | if (e.type === 'farm' && e.planted && e.growth < 1) {
+SURVIVED " >= " → " > " | case 'wait': a.t += h; if (a.t >= a.dur) done(); return;
+SURVIVED " <= " → " < " | if (k <= 0) return actFail(s, f, '對方不需要' + f.hold.item);
+SURVIVED " === " → " !== " | if (d.prog === 0 && (blocked || !ready)) { d.state = blocked || 'wait'; continue; }
+SURVIVED " || " → " && " | if (!e || !isAtTile(f, e)) return actFail(s, f, '目標不見了');
+SURVIVED " || " → " && " | if (!bp || bp.type !== 'blueprint' || !ready(bp) || !isAtTile(f, bp)) return done();
+SURVIVED " <= " → " < " | if (k <= 0 || (f.hold && f.hold.item !== e.elem)) return actFail(s, f, '收不了');
+SURVIVED " <= " → " < " | if ((home.storage[item] || 0) <= 0) return idleAt(s, f, '家裡沒有' + item);
+SURVIVED " >= " → " > " | if (f.energy >= 100) { f.msg = ''; done(); }
+SURVIVED " < " → " <= " | if (f.energy < 15) { releaseClaim(s, f); f.act = { op: 'refuel', phase: 'go', t: 0 }; }
+SURVIVED "(!" → "(" | f.hold.n--; if (!f.hold.n) f.hold = null; ops.plant(s, e); break;
+SURVIVED " && " → " || " | const needsCrystal = e => e.type === 'barrier' && e.charge < 1;
+SURVIVED " <= " → " < " | if (k <= 0) return actFail(s, f, '家裡沒有' + a.item);
+SURVIVED " >= " → " > " | if ((home.storage['花蜜'] || 0) >= 1) { home.storage['花蜜'] -= 1; a.phase = 'eat'; a.t = 0; f
+SURVIVED " < " → " <= " | if (t.t === 'meadow' && t.wild < WILD_MAX) { t.wt = (t.wt || 0) + h; if (t.wt >= WILD_REGR
 SURVIVED " || " → " && " | if (e.type !== 'farm' || e.planted || !f.hold || f.hold.item !== '月光花') return actFail(s, 
+SURVIVED " < " → " <= " | if (bp.work < bp.time - 1e-9) return false;
+SURVIVED " >= " → " > " | if (a.t >= 0.5) { f.energy = 100; f.msg = ''; done(); }
+SURVIVED " === " → " !== " | const farms = entsWhere(s, f, e => e.type === 'farm').length;
+SURVIVED " > " → " >= " | if (Math.hypot(sp.x - f.x, sp.y - f.y) > 1e-6) f.act = { op: 'move', tx: sp.x, ty: sp.y, k
+SURVIVED " < " → " <= " | if (hex.dist({ q: 0, r: 0 }, { q, r }) > 3) { const x = R(); if (x < 0.05) t = 'forest'; e
+SURVIVED " || " → " && " | if (e.type !== 'farm' || e.planted || !f.hold || f.hold.item !== '月光花') return actFail(s, 
+SURVIVED " > " → " >= " | const claimedByOther = (s, f, id) => { const c = s.claims[id]; return c && c.f !== f.id &&
 SURVIVED " > " → " >= " | for (let i = 1; i < es.length; i++) if (hex.dist(es[i - 1], es[i]) > CH_HOP) return no('相鄰
-SURVIVED " < " → " <= " | for (const o of list) { const p = hex.toXY(o.q, o.r), d = (p.x - f.x) ** 2 + (p.y - f.y) *
+SURVIVED " < " → " <= " | const isAtTile = (f, t) => { const p = hex.toXY(t.q, t.r); return f.atKey === hex.key(t.q,
+SURVIVED " >= " → " > " | if (t.cast) { t.cast.t += h; if (t.cast.t >= t.cast.dur - 1e-9) finishCast(s, t); }
+SURVIVED "true" → "false" | if (f.hold) return workAt(s, f, empty, 'plant', { dur: 1 }, true);
+SURVIVED " <= " → " < " | for (const k in s.tiles) if (hex.dist(s.tiles[k], { q: 0, r: 0 }) <= 2) s.tiles[k].t = 'gr
+SURVIVED "true" → "false" | const empty = nearest(s, f, entsWhere(s, f, e => e.type === 'farm' && !e.planted, true));
+SURVIVED " < " → " <= " | if (slot < 0 || slot >= t.slots || t.devices[slot]) return no('這一格不能安裝');
+SURVIVED " - 1" → " + 1" | if (a.t >= per - 1e-9) {
+SURVIVED " > " → " >= " | const bps = entsWhere(s, f, e => e.type === 'blueprint' && Object.keys(e.need).some(k => m
 SURVIVED " || " → " && " | if (farm.type !== 'farm' || !farm.planted || farm.growth < 1) return 0;
 SURVIVED " < " → " <= " | if (d <= rad && (d < rad || R() < 0.6)) tile.t = t;
+SURVIVED "true" → "false" | else f.act = { op: 'wait', t: 0, dur: 1, idle: true };
 SURVIVED " || " → " && " | if (!bp || bp.type !== 'blueprint' || !has(bp.have, bp.need)) return false;
-SURVIVED " <= " → " < " | if (k <= 0) return actFail(s, f, '對方不需要' + f.hold.item);
-SURVIVED " < " → " <= " | if (f.energy < 15) { releaseClaim(s, f); f.act = { op: 'refuel', phase: 'go', t: 0 }; }
-SURVIVED " >= " → " > " | if (t.t === 'meadow' && t.wild < WILD_MAX) { t.wt = (t.wt || 0) + h; if (t.wt >= WILD_REGR
-SURVIVED " || " → " && " | if (!bp || bp.type !== 'blueprint' || !ready(bp) || !isAtTile(f, bp)) return done();
-SURVIVED " === " → " !== " | const farms = entsWhere(s, f, e => e.type === 'farm').length;
+SURVIVED " || " → " && " | color: FLOWER_COLORS[n % FLOWER_COLORS.length], storage: opts.storage || {}, cap: STORAGE_
+SURVIVED " === " → " !== " | const casting = flowers(s).filter(x => x.cast && x.cast.kind === 'summon').length;
+SURVIVED " && " → " || " | if (t.cast && t.cast.kind === 'device' && t.cast.slot === slot) t.cast = null;
+SURVIVED " <= " → " < " | if (d <= sp) { f.x = a.tx; f.y = a.ty; f.atKey = a.key; done(); } else { f.x += dx / d * s
 SURVIVED " < " → " <= " | if (hex.dist({ q: 0, r: 0 }, { q, r }) > 3) { const x = R(); if (x < 0.05) t = 'forest'; e
+SURVIVED " && " → " || " | else if (c.kind === 'device' && t.devices[c.slot]) delete t.devices[c.slot].install;
+SURVIVED " || " → " && " | if (!d || !RECIPES[rid] || !s.recipes.includes(rid)) return no('無法使用這個配方');
 SURVIVED " > " → " >= " | if (k > 0) e.have[item] = (e.have[item] || 0) + k;
-SURVIVED " || " → " && " | if (!e || !isAtTile(f, e)) return actFail(s, f, '目標不見了');
-SURVIVED "(!" → "(" | f.hold.n--; if (!f.hold.n) f.hold = null; ops.plant(s, e); break;
+SURVIVED " || " → " && " | if (!bp || bp.type !== 'blueprint' || !ready(bp) || !isAtTile(f, bp)) return done();
 SURVIVED " || " → " && " | const tileRes = (s, t) => { const res = TERRAIN[t.t].res; if (!res || !groundFree(s, t)) r
-SURVIVED " < " → " <= " | const isAtTile = (f, t) => { const p = hex.toXY(t.q, t.r); return f.atKey === hex.key(t.q,
+SURVIVED " < " → " <= " | if (d.prog < R.time) continue;
+SURVIVED " && " → " || " | const src = nearest(s, f, entsWhere(s, f, e => e.type === 'barrier' && e.elem === item && 
+SURVIVED " >= " → " > " | if (t.t === 'meadow' && t.wild < WILD_MAX) { t.wt = (t.wt || 0) + h; if (t.wt >= WILD_REGR
+SURVIVED " < " → " <= " | for (const o of list) { const p = hex.toXY(o.q, o.r), d = (p.x - f.x) ** 2 + (p.y - f.y) *
 SURVIVED " === " → " !== " | for (const k in s.tiles) if (s.tiles[k].t === 'meadow') s.tiles[k].wild = WILD_MAX;
-SURVIVED " <= " → " < " | if (k <= 0) return actFail(s, f, '家裡沒有' + a.item);
-SURVIVED " || " → " && " | if (blocked || !ready) { d.prog = R.time; d.state = blocked || 'wait'; continue; }
-SURVIVED " >= " → " > " | if (e.t >= rate) {
+SURVIVED " < " → " <= " | if (a.t < a.dur) return;
+SURVIVED " >= " → " > " | while (ch.transit.length && ch.transit[0].d >= len) store(dst, ch.transit.shift().item, 1)
+SURVIVED " - 1" → " + 1" | if (t.cast) { t.cast.t += h; if (t.cast.t >= t.cast.dur - 1e-9) finishCast(s, t); }
 SURVIVED " < " → " <= " | if (hex.dist({ q: 0, r: 0 }, { q, r }) > 3) { const x = R(); if (x < 0.05) t = 'forest'; e
 SURVIVED " <= " → " < " | const e = s.ents[id]; if (!e || n <= 0) return 0;
-SURVIVED " > " → " >= " | if (Math.hypot(sp.x - f.x, sp.y - f.y) > 1e-6) f.act = { op: 'move', tx: sp.x, ty: sp.y, k
-SURVIVED " === " → " !== " | if (d.prog === 0 && (blocked || !ready)) { d.state = blocked || 'wait'; continue; }
-SURVIVED " > " → " >= " | const bps = entsWhere(s, f, e => e.type === 'blueprint' && Object.keys(e.need).some(k => m
-SURVIVED " || " → " && " | if (d.prog === 0 && (blocked || !ready)) { d.state = blocked || 'wait'; continue; }
-SURVIVED "true" → "false" | if (f.hold) return workAt(s, f, empty, 'plant', { dur: 1 }, true);
-SURVIVED " - 1" → " + 1" | if (a.t >= per - 1e-9) {
-SURVIVED " || " → " && " | if (!bp || bp.type !== 'blueprint' || !ready(bp) || !isAtTile(f, bp)) return done();
-candidates 400, sampled 400, killed 327, survived 73
-GATE_RESULT: {"tool":"tests/mutation.mjs","mutants":400,"killed":327,"rate":0.818,"threshold":0.8,"pass":true}
+SURVIVED " && " → " || " | if (t.t === 'meadow' && t.wild < WILD_MAX) { t.wt = (t.wt || 0) + h; if (t.wt >= WILD_REGR
+SURVIVED " <= " → " < " | const dx = a.tx - f.x, dy = a.ty - f.y, d = Math.hypot(dx, dy), sp = SPEED * (f.energy <= 
+candidates 415, sampled 415, killed 336, survived 79
+GATE_RESULT: {"tool":"tests/mutation.mjs","mutants":415,"killed":336,"rate":0.81,"threshold":0.8,"pass":true}

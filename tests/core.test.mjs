@@ -12,12 +12,12 @@ test('六角格：距離、鄰居、直線', () => {
 
 test('改名：不再出現魔法塔、法力花、塔內空間；月光花圖示為 🌙', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  for (const w of ['魔法塔', '法力花', '塔內空間', '農田']) assert.equal(html.includes(w), false, w);
+  for (const w of ['魔法塔', '法力花', '塔內空間', '農田', '營造']) assert.equal(html.includes(w), false, w);
   assert.equal(FG.ITEMS['月光花'].icon, '🌙');
   assert.equal(central(FG.newGame(1)).name, '中央魔法之花');
 });
 
-test('第 1 關：中央魔法之花在原點、兩隻精靈以它為家且預設營造', () => {
+test('第 1 關：中央魔法之花在原點、兩隻精靈以它為家且預設維護', () => {
   const s = FG.newGame(1);
   const t = central(s);
   assert.deepEqual([t.q, t.r], [0, 0]);
@@ -104,6 +104,7 @@ test('召喚精靈與擴充乙太空間會扣資源', () => {
   assert.equal(FG.cmd.expandEther(s2, t2.id).ok, false);
   t2.storage = { '月石': 20, '月光花': 20 };
   assert.equal(FG.cmd.expandEther(s2, t2.id).ok, true);
+  run(s2, 8.1);
   assert.equal(t2.slots, slots + 1);
   assert.ok(t2.storage['月石'] < 20);
 });
@@ -165,15 +166,15 @@ test('訂單交付扣庫存；全部目標完成即過關', () => {
   assert.equal(s.complete, true);
 });
 
-test('存檔版本 4；讀檔後模擬結果一致；拒絕舊版存檔', () => {
+test('存檔版本 5；讀檔後模擬結果一致；拒絕舊版存檔', () => {
   const s = FG.newGame(1);
   clearTile(s, 1, 0, 'forest');
   const [f] = fairies(s);
   FG.cmd.setTask(s, f.id, { kind: 'collect', item: '木枝' });
   run(s, 7);
-  assert.equal(s.v, 4);
+  assert.equal(s.v, 5);
   const s2 = FG.load(FG.save(s));
   run(s, 20); run(s2, 20);
   assert.equal(FG.save(s), FG.save(s2));
-  assert.throws(() => FG.load(JSON.stringify({ v: 3, tiles: {} })));
+  assert.throws(() => FG.load(JSON.stringify({ v: 4, tiles: {} })));
 });

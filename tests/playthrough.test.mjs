@@ -83,7 +83,8 @@ test('第 3 章可在 40 分鐘內完成', () => {
     }
     common(s, 8);
     if (c.slots < 5 && (c.storage['月光花'] || 0) >= 16) FG.cmd.expandEther(s, c.id);
-    const want = ['crystal', 'prism', 'nourish'];
+    // 一次只能施一道法，設備會分批裝好：每次挑還沒有的配方
+    const want = ['crystal', 'prism', 'nourish'].filter(r => !c.devices.some(d => d && d.recipe === r));
     c.devices.forEach((d, i) => { if (!d && FG.cmd.addDevice(s, c.id, i, 'transmuter').ok) FG.cmd.setRecipe(s, c.id, i, want.shift() || 'crystal'); });
     if (!ctx.ch && count(s, 'anchor') >= 3) {
       ctx.ch = 1;

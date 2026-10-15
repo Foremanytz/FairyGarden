@@ -20,7 +20,7 @@ for (const line of orig.slice(start, end).split('\n')) {
 }
 let r = seed0; const rnd = () => (r = (r * 1103515245 + 12345) % 2147483648) / 2147483648;
 const pick = mutants.map(m => [rnd(), m]).sort((x, y) => x[0] - y[0]).slice(0, N).map(x => x[1]);
-const tests = ['tests/core.test.mjs', 'tests/tasks.test.mjs', 'tests/storage.test.mjs', 'tests/edges.test.mjs', 'tests/layers.test.mjs', 'tests/economy.test.mjs', 'tests/summon.test.mjs', 'tests/playthrough.test.mjs'];
+const tests = ['tests/core.test.mjs', 'tests/tasks.test.mjs', 'tests/storage.test.mjs', 'tests/edges.test.mjs', 'tests/layers.test.mjs', 'tests/economy.test.mjs', 'tests/summon.test.mjs', 'tests/casting.test.mjs', 'tests/playthrough.test.mjs'];
 let killed = 0; const survived = [];
 try {
   for (const m of pick) {

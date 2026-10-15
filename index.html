@@ -52,7 +52,7 @@ button.link { background: none; border: 0; padding: 0; color: var(--gold); text-
 .dev { background: rgba(201,167,255,.08); border: 1px solid rgba(201,167,255,.3); border-radius: 10px; padding: 8px; font-size: 13px; display: flex; flex-direction: column; gap: 5px; }
 .dev.empty { background: rgba(255,255,255,.03); border-style: dashed; border-color: var(--line); color: var(--dim); }
 .dev .devh { display: flex; justify-content: space-between; font-weight: 700; color: var(--text); } .dev .devh button { padding: 0 6px; }
-.dev select { width: 100%; font-size: 12px; } .dev button small { color: var(--dim); }
+.dev select { width: 100%; font-size: 12px; } .dev .formula { font-size: 12px; color: var(--dim); line-height: 1.4; } .dev button small { color: var(--dim); }
 .bar { height: 8px; background: rgba(255,255,255,.1); border-radius: 4px; overflow: hidden; } .bar i { display: block; height: 100%; background: linear-gradient(90deg, #a98bff, #ff9df0); }
 .bar.en i { background: linear-gradient(90deg, #ffc94a, #8ff0b0); }
 .st { color: var(--dim); } .warn { color: var(--bad); } .note { color: #ffe9a8; }
@@ -165,10 +165,12 @@ const DEVICES = {
   brewer:     { name: '花蜜釀造台', cost: { '木枝': 3, '月光花': 2 }, recipes: ['nectar'], limit: 5, keep: 4 },
   transmuter: { name: '元素轉化器', cost: { '月石': 3, '木枝': 3 }, recipes: ['nourish', 'crystal', 'stardust', 'prism'], limit: 10, keep: 0 },
 };
+const SUMMON_COST = { '花蜜': 3, '月光花': 4 };
+const FAIRY_MAX = 16;
 const BUILDS = {
   farm:    { name: '花田',         icon: '🌱', cost: { '木枝': 2 }, terrain: ['grass', 'meadow'] },
   barrier: { name: '魔力收集結界', icon: '🔮', cost: { '月石': 3, '木枝': 2 }, terrain: ['grass', 'meadow', 'rock', 'forest'] },
-  flower:  { name: '魔法之花',     icon: '🌷', cost: { '木枝': 10, '月石': 10, '結界晶': 2 }, terrain: ['grass', 'meadow'] },
+  flower:  { name: '魔法之花',     icon: '🌷', cost: Object.assign({ '木枝': 10, '月石': 10, '結界晶': 2 }, SUMMON_COST), terrain: ['grass', 'meadow'] },
   anchor:  { name: '光之錨',       icon: '🕯️', cost: { '月石': 2, '結界晶': 1 }, terrain: ['grass', 'meadow', 'rock', 'forest', 'water'] },
 };
 const TERRAIN = {
@@ -198,9 +200,8 @@ const LAYER = { farm: 'ground', flower: 'ground', barrier: 'air', anchor: 'air' 
 const CH_HOP = 7;
 const CH_SPEED = 4;
 const CH_INTERVAL = 1.5;
-const DEFAULT_RADIUS = 20;
+const DEFAULT_RADIUS = 10;
 const STORAGE_BASE = 60, STORAGE_STEP = 30;
-const SUMMON_COST = { '花蜜': 3, '月光花': 4 };
 const CAST_TIME = { summon: 10, ether: 8, device: 5, storage: 6 };   // 魔法之花各種施法的秒數
 const SUMMON_TIME = CAST_TIME.summon;
 const CAST_NAME = { summon: '召喚精靈', ether: '擴充乙太空間', device: '安裝設備', storage: '擴建倉庫' };
@@ -417,6 +418,13 @@ function completeBlueprint(s, bp) {
   s.ents[id].built = true;
   s.stats.built[target] = (s.stats.built[target] || 0) + 1;
   const p = hex.toXY(q, r); emit('build', p.x, p.y);
+  if (target === 'flower') flowerFairy(s, s.ents[id]);
+}
+// 魔法之花的建造費含召喚費：完工直接生出一隻住在新花的精靈；精靈已滿就把召喚費放進新花倉庫
+function flowerFairy(s, t) {
+  const casting = flowers(s).filter(x => x.cast && x.cast.kind === 'summon').length;
+  if (Object.keys(s.fairies).length + casting >= FAIRY_MAX) { for (const [k, n] of Object.entries(SUMMON_COST)) store(t, k, n); return; }
+  const f = newFairy(s, t.id); emit('summoned', f.x, f.y, { id: f.id, color: t.color });
 }
 
 // ---------- 指令（玩家操作）----------
@@ -484,7 +492,7 @@ const cmd = {
     const t = s.ents[tid];
     if (t.cast) return no(castBusy(t));
     const casting = flowers(s).filter(x => x.cast && x.cast.kind === 'summon').length;
-    if (Object.keys(s.fairies).length + casting >= 16) return no('精靈已達上限 16 隻');
+    if (Object.keys(s.fairies).length + casting >= FAIRY_MAX) return no('精靈已達上限 ' + FAIRY_MAX + ' 隻');
     if (!pay(t.storage, SUMMON_COST)) return no('需要 ' + costText(SUMMON_COST));
     startCast(t, 'summon');
     return ok();
@@ -916,7 +924,7 @@ function clearOwnKeys(ls) {
 function withSaveInfo(st) { return Object.assign({}, SAVE_INFO, st, SAVE_INFO); }
 
 globalThis.FG = {
-  hex, ITEMS, RECIPES, DEVICES, BUILDS, TERRAIN, TASKS, LEVELS, CAP, CH_HOP, FERT_MAX, SUMMON_COST, DEFAULT_RADIUS, STORAGE_BASE, STORAGE_STEP,
+  hex, ITEMS, RECIPES, DEVICES, BUILDS, TERRAIN, TASKS, LEVELS, CAP, CH_HOP, FERT_MAX, SUMMON_COST, FAIRY_MAX, DEFAULT_RADIUS, STORAGE_BASE, STORAGE_STEP,
   LAYER, BUILD_TIME, SUMMON_TIME, CAST_TIME, CAST_NAME, standbyXY, NOURISH_HARVESTS, CRYSTAL_UNITS, WILD_MAX, WILD_TIME, WILD_REGROW, HARVEST_YIELD, entOn, layerOf, tileRes, groundFree,
   newGame, tick, save, load, spawnBuilding, ops, cmd, goalProgress, channelPoints, channelLength,
   costText, flowers, centralOf, posOf, room, fx, SAVE_PREFIX, SAVE_INFO, ownKeys, clearOwnKeys, withSaveInfo,
@@ -931,7 +939,7 @@ const FG = globalThis.FG, hex = FG.hex;
 const $ = q => document.querySelector(q);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const cv = $('#cv'), ctx = cv.getContext('2d');
-const VERSION_TIME = '2026-10-15 16:30';   // commit 前由腳本寫入
+const VERSION_TIME = '2026-10-15 17:16';   // commit 前由腳本寫入
 const S = 34;          // 一個座標單位 = 34px（縮放 1 時）
 const SKY = 120;       // 流動通道的高度（px，縮放 1 時）
 let W = 0, H = 0;
@@ -1174,13 +1182,15 @@ function drawBlueprint(e, p, R, z) {
 }
 
 // ---------- 精靈 ----------
+// 精靈舞的粒子顏色，依正在建造的建築
+const DANCE_COLOR = { farm: '#9cffb0', barrier: '#7fd8ff', flower: '#ff9df0', anchor: '#ffe08a' };
 function fairyScreen(f) {
   const p = w2s(f.x, f.y), z = UI.cam.z;
-  // 精靈舞：施工中只在畫面上繞著藍圖轉圈，實際位置不變
-  // 三葉結（2,3 環面結）軌跡，約 3 秒一圈；k 是深度，越遠越小越暗
+  // 精靈舞：施工中只在畫面上繞著藍圖迴旋，實際位置不變
+  // 每圈 1.5 秒，三圈半徑由小到大、再三圈由大到小，往返循環；k 是深度，轉到後方時變小變暗
   if (f.act && f.act.op === 'construct') {
-    const u = UI.t * 2.094 + f.slot * 2.1, r = 2 + Math.cos(3 * u), k = Math.sin(3 * u);
-    return { x: p.x + r * Math.cos(2 * u) * 9 * z, y: p.y - (34 + k * 12) * z + r * Math.sin(2 * u) * 4.5 * z, s: 0.75 + 0.25 * k, a: 0.7 + 0.3 * k };
+    const t = UI.t + f.slot * 1.7, u = t * 4.189, h = (t / 4.5) % 2, r = 4 + 24 * (h < 1 ? h : 2 - h), k = Math.sin(u);
+    return { x: p.x + r * Math.cos(u) * z, y: p.y - 34 * z + r * k * 0.45 * z, s: 0.75 + 0.25 * k, a: 0.7 + 0.3 * k };
   }
   const bob = Math.sin(UI.t * 4 + f.id.length + f.x) * 2; return { x: p.x, y: p.y - (18 + bob) * z, s: 1, a: 1 };
 }
@@ -1197,7 +1207,10 @@ function drawFairy(f) {
   if (f.bubble) label(f.bubble, p.x, p.y - 14 * z, f.bubble === '?' ? '#ffb0b0' : '#fff6c0', 13);
   if (UI.sel && UI.sel.kind === 'fairy' && UI.sel.id === f.id) { ctx.strokeStyle = '#ffd98a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, 11 * z, 0, 7); ctx.stroke(); label(f.name, p.x, p.y + 18 * z, '#ffd98a', 12); }
   if (f.act && f.act.op === 'move') for (let i = emitCount(21); i > 0; i--) part(f.x, f.y, { lift: 18, vl: -4, life: 0.7, max: 0.7, size: 1.3, color: c });
-  if (f.act && f.act.op === 'construct') for (let i = emitCount(36); i > 0; i--) { const w = s2w(p.x, p.y + 30 * UI.cam.z); part(w.x, w.y, { lift: 30, vl: 12 + Math.random() * 18, vx: (Math.random() - .5) * .3, life: 1, max: 1, size: 1.8, color: Math.random() < 0.5 ? '#fff6c0' : c }); }
+  if (f.act && f.act.op === 'construct') {
+    const bp = UI.s.ents[f.act.id], dc = DANCE_COLOR[bp && bp.target] || '#fff6c0';
+    for (let i = emitCount(18); i > 0; i--) { const w = s2w(p.x, p.y + 30 * UI.cam.z); part(w.x, w.y, { lift: 30, vl: 12 + Math.random() * 18, vx: (Math.random() - .5) * .3, life: 1, max: 1, size: 1.8, color: dc }); }
+  }
 }
 
 // ---------- 天空層：流動通道 ----------
@@ -1266,6 +1279,13 @@ function render() {
   for (const [t, p] of vis) drawTile(t, p, R, z);
   // 懸停與選取框
   const ht = UI.mouse.in ? tileAtScreen(UI.mouse.x, UI.mouse.y) : null;
+  // 光之錨的工作範圍：放置藍圖時跟著滑鼠，選取光之錨或它的藍圖時以它為中心；範圍內可接上通道的節點加框
+  const selE = UI.sel && UI.sel.kind === 'ent' ? s.ents[UI.sel.id] : null;
+  const ac = UI.tool === 'build:anchor' ? ht : selE && (selE.type === 'anchor' || selE.target === 'anchor') ? selE : null;
+  if (ac) for (const [t, p] of vis) if (hex.dist(t, ac) <= FG.CH_HOP) {
+    hexPath(p.x, p.y, R * 0.98); ctx.fillStyle = 'rgba(255,224,138,.25)'; ctx.fill();
+    if (t.ents.some(id => s.ents[id] && ['barrier', 'flower', 'anchor'].includes(s.ents[id].type) && id !== ac.id)) { hexPath(p.x, p.y, R * 0.9); ctx.strokeStyle = 'rgba(255,224,138,.8)'; ctx.lineWidth = 2; ctx.stroke(); }
+  }
   if (ht) {
     const w = hex.toXY(ht.q, ht.r), p = w2s(w.x, w.y);
     if (UI.tool && UI.tool.startsWith('build:')) { const c = FG.cmd.canPlace(s, UI.tool.slice(6), ht.q, ht.r);
@@ -1352,7 +1372,7 @@ function renderTools() {
   $('#tools').innerHTML = list.map(([id, ic, n, sub]) => `<button data-tool="${id}" class="${UI.tool === id ? 'on' : ''}"><span class="ic">${ic}</span><span>${n}<small>${esc(sub)}</small></span></button>`).join('');
 }
 const inv = st => { const ks = Object.keys(st).filter(k => st[k] > 0); return ks.length ? '<div class="inv">' + ks.map(k => `<span class="it" title="${esc(FG.ITEMS[k].desc)}">${FG.ITEMS[k].icon} ${k}<b>${st[k]}</b></span>`).join('') + '</div>' : '<p>（空）</p>'; };
-const recipeText = id => { const R = FG.RECIPES[id]; const f = o => Object.entries(o).map(([k, n]) => k + n).join('＋'); return `${R.name}：${f(R.in)} → ${f(R.out)}（${R.time}秒）`; };
+const recipeFormula = id => { const R = FG.RECIPES[id]; const f = o => Object.entries(o).map(([k, n]) => k + n).join('＋'); return `${f(R.in)} → ${f(R.out)}（${R.time}秒）`; };
 // 精靈狀態文字：依動作、手上物品與目的地組成具體的描述
 function fairyState(f) {
   const s = UI.s, a = f.act, hold = f.hold ? f.hold.item : null, home = s.ents[f.home];
@@ -1426,7 +1446,8 @@ function sideFor() {
       const R = d.recipe && FG.RECIPES[d.recipe], allow = (FG.DEVICES[d.type].recipes || Object.keys(FG.RECIPES)).filter(r => s.recipes.includes(r));
       const st = { work: '加工中', wait: '等待原料', full: '已達產量上限', storefull: '產物已達倉庫上限', idle: '閒置' }[d.state] || '';
       return `<div class="dev"><div class="devh">${FG.DEVICES[d.type].name}<button data-act="rmdev" data-slot="${i}" title="拆除並退回材料">✕</button></div>
-        <select data-act="recipe" data-slot="${i}">${allow.map(r => `<option value="${r}" ${r === d.recipe ? 'selected' : ''}>${recipeText(r)}</option>`).join('')}</select>
+        <select data-act="recipe" data-slot="${i}">${allow.map(r => `<option value="${r}" ${r === d.recipe ? 'selected' : ''}>${FG.RECIPES[r].name}</option>`).join('')}</select>
+        ${R ? `<div class="formula">${recipeFormula(d.recipe)}</div>` : ''}
         <label>產量上限 <input type="number" min="0" max="999" data-act="limit" data-slot="${i}" value="${d.limit}"></label>
         <label title="每種原料至少留下這麼多，不拿去加工">保留原料 <input type="number" min="0" max="999" data-act="keep" data-slot="${i}" value="${d.keep || 0}"></label>
         ${d.install && e.cast ? `<div class="cast">✨ 安裝中 ${Math.floor(e.cast.t)} / ${e.cast.dur} 秒<div class="bar"><i style="width:${Math.round(e.cast.t / e.cast.dur * 20) * 5}%"></i></div></div>` :

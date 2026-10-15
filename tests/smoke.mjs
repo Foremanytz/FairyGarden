@@ -13,6 +13,8 @@ page.on('pageerror', e => errors.push('pageerror: ' + e.message));
 page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
 await page.goto(url);
 await page.screenshot({ path: out + '/0-menu.png' });
+const ver = await page.textContent('#menu .ver');
+assert.match(ver, /版本更新：\d{4}-\d{2}-\d{2} \d{2}:\d{2}（台北時間）/, 'version stamp');
 await page.click('button[data-go="new"][data-lv="1"]');
 await page.click('#dialog button');
 await page.waitForTimeout(400);
@@ -29,6 +31,8 @@ await page.selectOption(`#roster select[data-act="tkind"][data-fid="${f1}"]`, 'b
 await page.waitForTimeout(300);
 await page.selectOption(`#roster select[data-act="tkind"][data-fid="${f2}"]`, 'collect');
 await page.waitForTimeout(300);
+assert.equal(await page.inputValue(`#roster select[data-act="titem"][data-fid="${f2}"]`), '', 'item blank after choosing action');
+assert.equal(await page.evaluate(id => FGUI.s.fairies[id].task.item, f2), null);
 await page.selectOption(`#roster select[data-act="titem"][data-fid="${f2}"]`, '木枝');
 const tasks = await page.evaluate(([a, b]) => [FGUI.s.fairies[a].task, FGUI.s.fairies[b].task], [f1, f2]);
 assert.equal(tasks[0].kind, 'build');
@@ -39,6 +43,19 @@ await page.evaluate(id => { const f = FGUI.s.fairies[id]; f.x = 5; f.y = 3; }, f
 await page.click(`#roster button[data-act="focus"][data-fid="${f1}"]`);
 const cam = await page.evaluate(() => [FGUI.cam.x, FGUI.cam.y, FGUI.sel && FGUI.sel.id]);
 assert.ok(Math.abs(cam[0] - 5 * 34) < 1 && Math.abs(cam[1] - 3 * 34) < 1 && cam[2] === f1, 'focus camera');
+// 按鈕：按下與放開之間面板內容會變（精靈數增加），連按 3 次都要生效
+await page.evaluate(() => { const t = FG.centralOf(FGUI.s); t.storage['花蜜'] = 30; t.storage['月光花'] = 30; FGUI.sel = { kind: 'ent', id: t.id }; FGUI.sideHtml = ''; });
+await page.waitForTimeout(400);
+const n0 = await page.evaluate(() => Object.keys(FGUI.s.fairies).length);
+for (let i = 0; i < 3; i++) {
+  const box = await page.locator('#side button[data-act="summon"]').boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.evaluate(() => { FG.centralOf(FGUI.s).storage['木枝'] = (FG.centralOf(FGUI.s).storage['木枝'] || 0) + 1; });
+  await page.waitForTimeout(300); await page.mouse.up();
+  await page.waitForTimeout(300);
+}
+assert.equal(await page.evaluate(() => Object.keys(FGUI.s.fairies).length), n0 + 3, 'summon x3');
 await page.click('#speed button[data-speed="4"]');
 await page.waitForTimeout(6000);
 const built = await page.evaluate(() => FGUI.s.stats.built.farm || 0);
@@ -58,6 +75,44 @@ await page.evaluate(() => {
   FGUI.sel = { kind: 'fairy', id: Object.keys(s.fairies)[0] };
   FG.cmd.setTask(s, Object.keys(s.fairies)[0], { kind: 'farm', radius: 5 });
 });
+// 同一格的花田與結界：重複點擊輪流選取
+const [farmId, barId, sx, sy] = await page.evaluate(() => {
+  const s = FGUI.s, t = s.tiles['2,1']; t.t = 'grass'; for (const id of t.ents) delete s.ents[id]; t.ents = [];
+  const a = FG.spawnBuilding(s, 'farm', 2, 1), b = FG.spawnBuilding(s, 'barrier', 2, 1);
+  const w = FG.hex.toXY(2, 1), z = FGUI.cam.z;
+  return [a, b, (w.x * 34 - FGUI.cam.x) * z + innerWidth / 2, (w.y * 34 - FGUI.cam.y) * z + innerHeight / 2 + 8];
+});
+await page.click('#speed button[data-speed="0"]');
+await page.mouse.click(sx, sy); const sel1 = await page.evaluate(() => FGUI.sel && FGUI.sel.id);
+await page.mouse.click(sx, sy); const sel2 = await page.evaluate(() => FGUI.sel && FGUI.sel.id);
+assert.deepEqual([sel1, sel2].sort(), [farmId, barId].sort(), 'click cycles layers');
+// 圖層按鈕決定點到哪一層
+const clickSel = async () => { await page.mouse.click(sx, sy); return page.evaluate(() => FGUI.sel && FGUI.sel.id); };
+await page.click('#layers button[data-layer="ground"]');
+assert.equal(await clickSel(), farmId, 'ground layer picks farm');
+assert.equal(await clickSel(), farmId, 'ground layer stays on farm');
+await page.click('#layers button[data-layer="air"]');
+assert.equal(await clickSel(), barId, 'air layer picks barrier');
+await page.click('#layers button[data-layer="sky"]');
+assert.equal(await clickSel(), barId, 'channel layer picks channel node');
+await page.click('#layers button[data-layer="all"]');
+// 上方工具列：精靈列表、目標面板的開合
+await page.click('#btnRoster');
+assert.equal(await page.locator('#roster table').count(), 0, 'roster collapsed');
+await page.click('#btnRoster');
+await page.waitForTimeout(300);
+assert.equal(await page.locator('#roster table').count(), 1, 'roster expanded');
+await page.click('#btnGoals');
+await page.waitForTimeout(300);
+assert.equal(await page.locator('#goals .goal').count(), 0, 'goals collapsed');
+await page.click('#btnGoals');
+// 第二列：中央之花物資
+await page.evaluate(() => { const c = FG.centralOf(FGUI.s); c.storage = { '木枝': c.cap, '月石': 3 }; FGUI.sel = null; });
+await page.waitForTimeout(400);
+assert.equal(await page.locator('#resbar .res').count(), 2, 'resbar items');
+assert.equal(await page.locator('#resbar .res.full').count(), 1, 'resbar full item');
+await page.click('#resbar');
+assert.equal(await page.evaluate(() => FGUI.sel && FGUI.sel.id), await page.evaluate(() => FG.centralOf(FGUI.s).id), 'resbar selects central');
 await page.click('#speed button[data-speed="2"]');
 await page.waitForTimeout(3000);
 await page.screenshot({ path: out + '/2-level3.png' });

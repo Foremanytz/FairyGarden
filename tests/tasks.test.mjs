@@ -2,13 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { FG, central, fairies, run, idleAll, noBrew, clearTile, onlyForestAt, atHome } from './helpers.mjs';
 
-test('指令單預設：目標地點為家、範圍 10', () => {
+test('指令單預設：以家為中心（沒有目標地點）、範圍 10', () => {
   const s = FG.newGame(1);
   const [f] = fairies(s);
   assert.equal(FG.cmd.setTask(s, f.id, { kind: 'collect', item: '木枝' }).ok, true);
   assert.equal(f.task.kind, 'collect');
   assert.equal(f.task.item, '木枝');
-  assert.equal(f.task.at, null);
+  assert.equal('at' in f.task, false);
+  assert.equal(f.task.to, null);
   assert.equal(f.task.radius, FG.DEFAULT_RADIUS);
   assert.equal(FG.DEFAULT_RADIUS, 10);
 });
@@ -88,19 +89,65 @@ test('範圍限制：範圍外的資源不去，待命並說明原因', () => {
   assert.ok((t.storage['木枝'] || 0) > before);
 });
 
-test('種植：從家拿月光花播種、採收、送回家（每次收 4 朵）', () => {
+test('農業：從家拿幼苗播種、採收、送回家（每次收 4 朵）', () => {
   const s = FG.newGame(1);
   idleAll(s); noBrew(s);
   const t = central(s);
-  t.storage = { '月光花': 6 };
+  t.storage = { '月光花': 6, '月光花幼苗': 2 };
   clearTile(s, 2, 0);
   const farm = s.ents[FG.spawnBuilding(s, 'farm', 2, 0)];
   const [f] = fairies(s);
-  FG.cmd.setTask(s, f.id, { kind: 'farm' });
+  FG.cmd.setTask(s, f.id, { kind: 'farm', item: '月光花幼苗' });
   run(s, 40);
   assert.ok((s.stats.produced['月光花'] || 0) >= 4);
-  assert.ok(t.storage['月光花'] >= 8);
+  assert.ok(t.storage['月光花'] >= 10);
+  assert.equal(t.storage['月光花幼苗'], 0);
   assert.equal(farm.planted, true);
+  assert.equal(farm.seed, '月光花幼苗');
+});
+
+test('農業：沒選幼苗時待命並說明；手上拿的是別的東西時先放回家', () => {
+  const s = FG.newGame(1);
+  idleAll(s); noBrew(s);
+  clearTile(s, 2, 0); FG.spawnBuilding(s, 'farm', 2, 0);
+  const t = central(s), [f] = fairies(s);
+  t.storage = { '月光花幼苗': 3 };
+  FG.cmd.setTask(s, f.id, { kind: 'farm' });
+  assert.equal(f.task.item, null);
+  run(s, 2);
+  assert.match(f.msg, /請選擇物品/);
+  f.hold = { item: '木枝', n: 2 };
+  FG.cmd.setTask(s, f.id, { kind: 'farm', item: '月光花幼苗' });
+  run(s, 0.1);
+  assert.equal(f.act.op, 'move');
+  assert.equal(f.act.key, FG.hex.key(0, 0));
+  assert.equal(FG.TASKS.farm.name, '農業');
+  assert.deepEqual(FG.TASKS.farm.items, ['月光花幼苗']);
+});
+
+test('保留量：運送只帶走超過保留量的部分；保留量以上沒有東西時說明', () => {
+  const s = FG.newGame(3);
+  idleAll(s); noBrew(s);
+  const c = central(s), lake = FG.flowers(s).find(e => !e.central), f = fairies(s).find(x => x.home === c.id);
+  c.storage = { '月石': 7 }; lake.storage = {};
+  FG.cmd.setReserve(s, c.id, '月石', 4);
+  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', to: lake.id });
+  run(s, 60);
+  assert.equal(c.storage['月石'], 4);
+  assert.equal(lake.storage['月石'], 3);
+  assert.match(f.msg, /保留量/);
+});
+
+test('保留量：精靈吃花蜜可以動用保留量', () => {
+  const s = FG.newGame(1);
+  idleAll(s); noBrew(s);
+  const t = central(s), [f] = fairies(s);
+  t.storage = { '花蜜': 2 };
+  assert.equal(t.reserve['花蜜'], 4);
+  f.energy = 5;
+  run(s, 10);
+  assert.equal(t.storage['花蜜'], 1);
+  assert.ok(f.energy > 50);
 });
 
 test('維護：自己判斷藍圖缺什麼材料，分批搬過去並施工到完工', () => {
@@ -138,7 +185,7 @@ test('維護：沒有藍圖時自動送滋養露給花田、結界晶給結界',
   assert.ok(bar.charge > 1);
 });
 
-test('運送：搬到目標那朵魔法之花；目標不是花時待命', () => {
+test('運送：搬到「送往」那朵魔法之花；沒選送往時待命', () => {
   const s = FG.newGame(3);
   idleAll(s); noBrew(s);
   const c = central(s), lake = FG.flowers(s).find(e => !e.central);
@@ -146,9 +193,9 @@ test('運送：搬到目標那朵魔法之花；目標不是花時待命', () =>
   const f = fairies(s).find(x => x.home === c.id);
   FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石' });
   run(s, 3);
-  assert.match(f.msg, /目標/);
+  assert.match(f.msg, /送往/);
   assert.equal(c.storage['月石'], 14);
-  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', at: { flower: lake.id } });
+  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', to: lake.id });
   run(s, 60);
   assert.ok(lake.storage['月石'] >= 5);
   assert.ok(c.storage['月石'] <= 9);
@@ -183,4 +230,17 @@ test('活力：低活力回家吃花蜜，之後繼續原任務', () => {
   assert.equal(t.storage['花蜜'], 3);
   run(s, 20);
   assert.ok((t.storage['木枝'] || 0) >= 5);
+});
+
+test('舊參數 at 一律忽略：工作以家為中心；運送以外的工作不保留 to', () => {
+  const s = FG.newGame(3);
+  idleAll(s);
+  const c = central(s), lake = FG.flowers(s).find(e => !e.central), f = fairies(s).find(x => x.home === c.id);
+  FG.cmd.setTask(s, f.id, { kind: 'collect', item: '木枝', at: { q: 9, r: -4 }, to: lake.id });
+  assert.equal('at' in f.task, false);
+  assert.equal(f.task.to, null);
+  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', to: 'e999' });
+  assert.equal(f.task.to, null);
+  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', to: lake.id });
+  assert.equal(f.task.to, lake.id);
 });

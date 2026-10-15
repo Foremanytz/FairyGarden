@@ -15,8 +15,6 @@ test('指令拒絕不合法的操作', () => {
   assert.equal(FG.cmd.assignHome(s, f.id, t.id).ok, true);
   const empty = t.devices.findIndex(d => !d);
   assert.equal(FG.cmd.removeDevice(s, t.id, empty).ok, false);
-  assert.equal(FG.cmd.setLimit(s, t.id, empty, 3).ok, false);
-  assert.equal(FG.cmd.setKeep(s, t.id, empty, 3).ok, false);
   assert.equal(FG.cmd.addDevice(s, t.id, empty, 'transmuter').ok, false);
   const brew = t.devices.findIndex(d => d && d.type === 'brewer');
   assert.equal(FG.cmd.setRecipe(s, t.id, brew, 'crystal').ok, false);
@@ -148,7 +146,7 @@ test('種植：手上 1 朵時仍可採收（湊滿 5 朵）', () => {
   farm.planted = true; farm.growth = 1;
   const [f] = fairies(s);
   putAt(s, f, 2, 0); f.hold = { item: '月光花', n: 1 };
-  FG.cmd.setTask(s, f.id, { kind: 'farm' });
+  FG.cmd.setTask(s, f.id, { kind: 'farm', item: '月光花幼苗' });
   run(s, 1.5);
   assert.deepEqual(f.hold, { item: '月光花', n: 5 });
 });
@@ -161,7 +159,7 @@ test('種植：月光花達上限但沒有成熟的田時，說明是在等收�
   farm.planted = true; farm.growth = 0.1;
   const t = central(s), [f] = fairies(s);
   t.storage = { '月光花': t.cap };
-  FG.cmd.setTask(s, f.id, { kind: 'farm' });
+  FG.cmd.setTask(s, f.id, { kind: 'farm', item: '月光花幼苗' });
   run(s, 1);
   assert.match(f.msg, /生長中/);
 });
@@ -187,7 +185,7 @@ test('運送：目的地該物品已達上限時待命', () => {
   const c = central(s), lake = FG.flowers(s).find(e => !e.central);
   c.storage = { '月石': 10 }; lake.storage = { '月石': lake.cap };
   const f = fairies(s).find(x => x.home === c.id);
-  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', at: { flower: lake.id } });
+  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', to: lake.id });
   run(s, 3);
   assert.match(f.msg, /上限/);
   assert.equal(c.storage['月石'], 10);
@@ -247,7 +245,7 @@ test('同一個目標只派一隻精靈（成熟的田、缺滋養的田、結�
   const farm = s.ents[FG.spawnBuilding(s, 'farm', -3, 0)];
   farm.planted = true; farm.growth = 1;
   const [a, b, c, d] = fairies(s);
-  FG.cmd.setTask(s, a.id, { kind: 'farm' }); FG.cmd.setTask(s, b.id, { kind: 'farm' });
+  FG.cmd.setTask(s, a.id, { kind: 'farm', item: '月光花幼苗' }); FG.cmd.setTask(s, b.id, { kind: 'farm', item: '月光花幼苗' });
   run(s, 0.3);
   const goingFarm = [a, b].filter(f => f.act && f.act.op === 'move' && f.act.key === K(-3, 0)).length;
   assert.equal(goingFarm, 1);
@@ -438,14 +436,14 @@ test('種植：收成 3 朵就先送回家；家裡沒種子時說明', () => {
   FG.spawnBuilding(s, 'farm', 2, 0); FG.spawnBuilding(s, 'farm', 3, 0);
   const t = central(s), [f, g] = fairies(s);
   putAt(s, f, 2, 0); f.hold = { item: '月光花', n: 3 };
-  FG.cmd.setTask(s, f.id, { kind: 'farm' });
+  FG.cmd.setTask(s, f.id, { kind: 'farm', item: '月光花幼苗' });
   run(s, 0.1);
   assert.equal(f.act.op, 'move');
   assert.equal(f.act.key, K(0, 0));
   t.storage = {};
-  FG.cmd.setTask(s, g.id, { kind: 'farm' });
+  FG.cmd.setTask(s, g.id, { kind: 'farm', item: '月光花幼苗' });
   run(s, 0.2);
-  assert.match(g.msg, /可以播種/);
+  assert.match(g.msg, /月光花幼苗.*育苗室/);
 });
 
 test('運送：目標設成自己的家也算無效', () => {
@@ -453,7 +451,7 @@ test('運送：目標設成自己的家也算無效', () => {
   idleAll(s);
   const c = central(s), f = fairies(s).find(x => x.home === c.id);
   c.storage = { '月石': 5 };
-  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', at: { flower: c.id } });
+  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', to: c.id });
   run(s, 2);
   assert.match(f.msg, /另一朵/);
   assert.equal(c.storage['月石'], 5);
@@ -462,8 +460,9 @@ test('運送：目標設成自己的家也算無效', () => {
 test('設備：原料剛好夠（保留 0）就會開工', () => {
   const s = FG.newGame(1);
   idleAll(s);
-  const t = central(s), d = t.devices.find(x => x && x.type === 'brewer');
-  d.keep = 0; d.limit = 10;
+  const t = central(s);
+  t.devices.forEach(d => { if (d && d.type !== 'brewer') d.recipe = null; });
+  FG.cmd.setReserve(s, t.id, '月光花', 0);
   t.storage = { '月光花': 2 };
   run(s, 5);
   assert.equal(t.storage['花蜜'], 1);
@@ -477,7 +476,7 @@ test('預訂：採收完成後釋放，別的精靈可以接手', () => {
   const farm = s.ents[FG.spawnBuilding(s, 'farm', 2, 0)];
   farm.planted = true; farm.growth = 1;
   const [f] = fairies(s);
-  FG.cmd.setTask(s, f.id, { kind: 'farm' });
+  FG.cmd.setTask(s, f.id, { kind: 'farm', item: '月光花幼苗' });
   run(s, 3);
   assert.equal(Object.keys(s.claims).length, 0);
 });

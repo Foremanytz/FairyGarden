@@ -861,7 +861,7 @@ const FG = globalThis.FG, hex = FG.hex;
 const $ = q => document.querySelector(q);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const cv = $('#cv'), ctx = cv.getContext('2d');
-const VERSION_TIME = '2026-10-15 09:29';   // commit 前由腳本寫入
+const VERSION_TIME = '2026-10-15 09:30';   // commit 前由腳本寫入
 const S = 34;          // 一個座標單位 = 34px（縮放 1 時）
 const SKY = 120;       // 流動通道的高度（px，縮放 1 時）
 let W = 0, H = 0;
@@ -1077,6 +1077,10 @@ function drawFairy(f) {
 function chColor(ch) { const src = UI.s.ents[ch.nodes[0]]; const it = src && src.type === 'barrier' ? src.elem : ch.item; return FG.ITEMS[it] ? FG.ITEMS[it].color : '#fff'; }
 function skyPts(ids) { return ids.map(id => { const p = entPos(UI.s.ents[id]); return { x: p.x, y: p.y - SKY * UI.cam.z, gy: p.y }; }); }
 function strokePath(pts) { ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke(); }
+// 通道節點之間畫成向上拱起的弧線：控制點在兩點中間、往上抬，抬高量隨距離增加
+function arcCtrl(a, b) { const d = Math.hypot(b.x - a.x, b.y - a.y); return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - (d * 0.28 + 8 * UI.cam.z) }; }
+function strokeArcs(pts) { ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); for (let i = 1; i < pts.length; i++) { const c = arcCtrl(pts[i - 1], pts[i]); ctx.quadraticCurveTo(c.x, c.y, pts[i].x, pts[i].y); } ctx.stroke(); }
+function arcPoint(a, b, f) { const c = arcCtrl(a, b), g = 1 - f; return { x: g * g * a.x + 2 * g * f * c.x + f * f * b.x, y: g * g * a.y + 2 * g * f * c.y + f * f * b.y }; }
 function drawChannels(strong) {
   const z = UI.cam.z;
   ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
@@ -1087,18 +1091,23 @@ function drawChannels(strong) {
       ctx.strokeStyle = g; ctx.globalAlpha = 0.5; ctx.lineWidth = 3 * z; ctx.beginPath(); ctx.moveTo(p.x, p.gy - 20 * z); ctx.lineTo(p.x, p.y); ctx.stroke();
     }
     ctx.strokeStyle = c;
-    ctx.globalAlpha = strong ? 0.22 : 0.13; ctx.lineWidth = 14 * z; strokePath(pts);
-    ctx.globalAlpha = strong ? 0.45 : 0.3; ctx.lineWidth = 5 * z; strokePath(pts);
-    ctx.setLineDash([3 * z, 16 * z]); ctx.lineDashOffset = -UI.t * 50 * z; ctx.globalAlpha = 0.9; ctx.lineWidth = 2.2 * z; ctx.strokeStyle = '#fffbe8'; strokePath(pts); ctx.setLineDash([]);
+    ctx.globalAlpha = strong ? 0.2 : 0.12; ctx.lineWidth = 16 * z; strokeArcs(pts);
+    ctx.globalAlpha = strong ? 0.45 : 0.3; ctx.lineWidth = 5 * z; strokeArcs(pts);
+    ctx.setLineDash([3 * z, 16 * z]); ctx.lineDashOffset = -UI.t * 50 * z; ctx.globalAlpha = 0.9; ctx.lineWidth = 2.2 * z; ctx.strokeStyle = '#fffbe8'; strokeArcs(pts); ctx.setLineDash([]);
     ctx.globalAlpha = 1;
+    // 弧線上緩緩流動的細碎光點
+    for (let i = 1; i < pts.length; i++) for (let k = 0; k < 4; k++) {
+      const f = ((UI.t * 0.35 + k / 4 + i * 0.13) % 1), q = arcPoint(pts[i - 1], pts[i], f);
+      glow(q.x, q.y, 6 * z, c, 0.35 + 0.25 * Math.sin(UI.t * 3 + k));
+    }
     for (const p of pts) glow(p.x, p.y, 12 * z, c, 0.7);
     // 運送中的光點
     const wp = FG.channelPoints(UI.s, ch), segs = [];
     let total = 0; for (let i = 1; i < wp.length; i++) { const L = Math.hypot(wp[i].x - wp[i - 1].x, wp[i].y - wp[i - 1].y); segs.push(L); total += L; }
     for (const it of ch.transit) {
       let d = it.d, i = 0; while (i < segs.length - 1 && d > segs[i]) { d -= segs[i]; i++; }
-      const f = Math.min(1, d / segs[i]), a = pts[i], b = pts[i + 1];
-      const x = a.x + (b.x - a.x) * f, y = a.y + (b.y - a.y) * f, ic = FG.ITEMS[it.item].color;
+      const f = Math.min(1, d / segs[i]), q = arcPoint(pts[i], pts[i + 1], f);
+      const x = q.x, y = q.y, ic = FG.ITEMS[it.item].color;
       glow(x, y, 16 * z, ic, 0.9); glow(x, y, 5 * z, '#ffffff', 1);
       if (Math.random() < 0.5) { const w = s2w(x, y + SKY * z); part(w.x, w.y, { lift: SKY + (Math.random() - .5) * 8, vl: (Math.random() - .5) * 10, vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .3, life: 0.9, max: 0.9, size: 1.6, color: ic }); }
     }
@@ -1109,10 +1118,10 @@ function drawChannelPreview() {
   if (UI.tool !== 'channel' || !UI.chPath.length) return;
   const z = UI.cam.z, pts = skyPts(UI.chPath);
   const last = UI.s.ents[UI.chPath[UI.chPath.length - 1]], t = UI.mouse.in ? tileAtScreen(UI.mouse.x, UI.mouse.y) : null;
-  ctx.strokeStyle = '#fff6a8'; ctx.lineWidth = 3 * z; ctx.setLineDash([8 * z, 6 * z]); strokePath(pts);
+  ctx.strokeStyle = '#fff6a8'; ctx.lineWidth = 3 * z; ctx.setLineDash([8 * z, 6 * z]); if (pts.length > 1) strokeArcs(pts);
   if (t && last) {
     const okd = hex.dist(last, t) <= FG.CH_HOP, mp = w2s(hex.toXY(t.q, t.r).x, hex.toXY(t.q, t.r).y);
-    ctx.strokeStyle = okd ? '#8ff0b0' : '#ff8f8f'; ctx.beginPath(); ctx.moveTo(pts[pts.length - 1].x, pts[pts.length - 1].y); ctx.lineTo(mp.x, mp.y - SKY * z); ctx.stroke();
+    ctx.strokeStyle = okd ? '#8ff0b0' : '#ff8f8f'; strokeArcs([pts[pts.length - 1], { x: mp.x, y: mp.y - SKY * z }]);
     label(hex.dist(last, t) + ' / ' + FG.CH_HOP + ' 格', mp.x, mp.y - SKY * z - 14, okd ? '#8ff0b0' : '#ff8f8f');
   }
   ctx.setLineDash([]);

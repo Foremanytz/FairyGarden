@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fairy Garden</title>
+<title>花靈物語 Fairy Garden</title>
 <style>
 :root { --panel: rgba(18, 24, 38, .88); --line: rgba(255,255,255,.12); --text: #eef0f8; --dim: #a8b0c8; --accent: #c9a7ff; --gold: #ffd98a; --ok: #8ff0b0; --bad: #ff8f8f; }
 * { box-sizing: border-box; }
@@ -69,6 +69,7 @@ button.link { background: none; border: 0; padding: 0; color: var(--gold); text-
 .modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(5,8,16,.6); }
 #menu { background: radial-gradient(ellipse at 50% 30%, #2a3d55 0%, #101828 60%, #070b14 100%); flex-direction: column; }
 #menu h1 { font-size: 84px; margin: 0; letter-spacing: 4px; background: linear-gradient(90deg, #ffd98a, #ff9df0, #c9a7ff, #7fd8ff); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 40px rgba(201,167,255,.25); }
+#menu .en { color: var(--dim); font-size: 20px; letter-spacing: 6px; margin-top: 4px; }
 #menu .ver { color: var(--accent); font-size: 14px; margin-top: 6px; letter-spacing: 1px; }
 #menu .tag { color: var(--dim); margin: 6px 0 36px; font-size: 18px; letter-spacing: 2px; }
 .cards { display: flex; gap: 22px; }
@@ -861,7 +862,7 @@ const FG = globalThis.FG, hex = FG.hex;
 const $ = q => document.querySelector(q);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const cv = $('#cv'), ctx = cv.getContext('2d');
-const VERSION_TIME = '2026-10-15 09:30';   // commit 前由腳本寫入
+const VERSION_TIME = '2026-10-15 10:41';   // commit 前由腳本寫入
 const S = 34;          // 一個座標單位 = 34px（縮放 1 時）
 const SKY = 120;       // 流動通道的高度（px，縮放 1 時）
 let W = 0, H = 0;
@@ -1485,7 +1486,7 @@ $('#roster').addEventListener('pointerdown', e => {
 function showMenu() {
   UI.playing = false; $('#hud').classList.add('hidden'); $('#dialog').classList.add('hidden');
   const st = store();
-  $('#menu').innerHTML = `<h1>Fairy Garden</h1><div class="ver">版本更新：${VERSION_TIME}（台北時間）</div><div class="tag">精靈花園・用指令單經營的魔法自動化農場</div><div class="cards">` +
+  $('#menu').innerHTML = `<h1>花靈物語</h1><div class="en">Fairy Garden</div><div class="ver">版本更新：${VERSION_TIME}（台北時間）</div><div class="tag">用指令單經營的魔法自動化花園</div><div class="cards">` +
     Object.entries(FG.LEVELS).map(([n, L]) => {
       n = +n; const locked = n > st.unlocked, sv = st.saves[n];
       return `<div class="card panel ${locked ? 'locked' : ''}"><h2>${L.title}</h2><div class="meta">${L.minutes}</div><p>${esc(L.intro.split('\n\n')[1] || L.intro)}</p>

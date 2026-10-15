@@ -46,7 +46,7 @@ test('該物品達上限時收集與種植的精靈不出門；有空位就恢�
   t.storage = { '木枝': 40, '月石': 60, '月光花': 40 };
   run(s, 20);
   assert.ok(t.storage['木枝'] > 40);
-  assert.ok((s.stats.produced['月光花'] || 0) >= 3);
+  assert.ok((s.stats.produced['月光花'] || 0) >= 4);
 });
 
 test('擴建倉庫：扣資源、上限 +30、成本遞增；資源不足失敗', () => {

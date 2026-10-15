@@ -10,7 +10,7 @@ function assign(s, roles, homeId) {
   fs.forEach((f, i) => { const r = roles[i % roles.length]; if (!same(f.task, r)) FG.cmd.setTask(s, f.id, r); });
 }
 function tilesNear(s, c, dmin, dmax, types, pred) {
-  return Object.values(s.tiles).filter(t => !t.e && types.includes(t.t) && FG.hex.dist(t, c) >= dmin && FG.hex.dist(t, c) <= dmax && (!pred || pred(t)))
+  return Object.values(s.tiles).filter(t => !t.ents.length && types.includes(t.t) && FG.hex.dist(t, c) >= dmin && FG.hex.dist(t, c) <= dmax && (!pred || pred(t)))
     .sort((a, b) => FG.hex.dist(a, c) - FG.hex.dist(b, c));
 }
 function place(s, type, list) { for (const t of list) { const r = FG.cmd.placeBlueprint(s, type, t.q, t.r); if (r.ok) return r.id; } return null; }
@@ -56,7 +56,7 @@ test('第 2 章可在 40 分鐘內完成', () => {
       ctx.init = 1;
       place(s, 'barrier', tilesNear(s, c, 3, 5, ['grass']));
       place(s, 'barrier', tilesNear(s, c, 3, 6, ['grass']));
-      place(s, 'barrier', tilesNear(s, c, 2, 8, ['forest']));
+      place(s, 'barrier', tilesNear(s, c, 2, 8, ['rock']));
     }
     common(s, 7);
     if (c.slots < 4 && (c.storage['月光花'] || 0) >= 14) FG.cmd.expandEther(s, c.id);
@@ -66,7 +66,7 @@ test('第 2 章可在 40 分鐘內完成', () => {
       ctx.flower = place(s, 'flower', tilesNear(s, c, 4, 12, ['grass'], t => water.some(w => FG.hex.dist(w, t) <= 3)));
     }
     assign(s, [{ kind: 'farm' }, bps(s) ? { kind: 'build' } : pick(c, [['月光花', 3], ['陽光', 12], ['木枝', 15]]), pick(c, [['月石', 15], ['木枝', 15]]),
-      pick(c, [['露水', 6], ['陽光', 12]]), pick(c, [['土息', 6], ['陽光', 12]]), { kind: 'maintain', item: '滋養露' }, pick(c, [['木枝', 15], ['月石', 15]])], c.id);
+      pick(c, [['露水', 6], ['陽光', 12]]), pick(c, [['土息', 6], ['陽光', 12]]), { kind: 'build' }, pick(c, [['木枝', 15], ['月石', 15]])], c.id);
   });
   assert.ok(s.complete, report(s));
 });
@@ -96,7 +96,7 @@ test('第 3 章可在 40 分鐘內完成', () => {
       ctx.flower = place(s, 'flower', tilesNear(s, c, 4, 16, ['grass', 'meadow'], t => meadow.some(m => FG.hex.dist(m, t) <= 2)));
     }
     assign(s, [{ kind: 'farm' }, bps(s) ? { kind: 'build' } : pick(c, [['月光花', 3], ['木枝', 15], ['月石', 15]]), pick(c, [['月石', 15], ['木枝', 15]]),
-      count(s, 'anchor') >= 3 ? { kind: 'maintain', item: '結界晶' } : pick(c, [['陽光', 10]]), { kind: 'farm' }, bps(s) ? { kind: 'build' } : pick(c, [['木枝', 15]])], c.id);
+      count(s, 'anchor') >= 3 ? { kind: 'build' } : pick(c, [['陽光', 10]]), { kind: 'farm' }, bps(s) ? { kind: 'build' } : pick(c, [['木枝', 15]])], c.id);
     assign(s, [pick(lake, [['露水', 15]]), pick(lake, [['陽光', 15]])], lake.id);
   });
   assert.ok(s.complete, report(s));

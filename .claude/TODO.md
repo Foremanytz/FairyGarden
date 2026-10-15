@@ -27,7 +27,7 @@
 - [x] commit、推送、開新 PR
 
 ## Discovered Tasks
-- [ ] 選單頁「安全清空存檔」與 localStorage 說明欄位（使用者追加，已記入路線圖，之後再做；只刪除本遊戲的鍵，不可誤刪其他資料）
+- [x] 選單頁「安全清空存檔」與 localStorage 說明欄位（只刪除 fairygarden. 開頭的鍵，不呼叫 localStorage.clear()）
 - [ ] 繪圖效能優化（使用者追加，已記入路線圖）
 
 ## Notes

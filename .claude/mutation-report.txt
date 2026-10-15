@@ -79,3 +79,7 @@ SURVIVED " && " → " || " | if (t.t === 'meadow' && t.wild < WILD_MAX) { t.wt =
 SURVIVED " <= " → " < " | const dx = a.tx - f.x, dy = a.ty - f.y, d = Math.hypot(dx, dy), sp = SPEED * (f.energy <= 
 candidates 415, sampled 415, killed 336, survived 79
 GATE_RESULT: {"tool":"tests/mutation.mjs","mutants":415,"killed":336,"rate":0.81,"threshold":0.8,"pass":true}
+
+# 安全清空存檔（2026-10-15）
+全域抽樣 120：killed 98，rate 0.817，門檻 0.8，通過。
+針對新區段窮舉 11 個變異：殺死 10；存活 1 個為等價變異（迴圈 < 改 <=，多讀的 key(length) 回傳 null 被過濾）。

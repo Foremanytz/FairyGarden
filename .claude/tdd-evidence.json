@@ -156,6 +156,18 @@
       "impl": {
         "index.html": "dbae3de420b1199f6019e27485151d5964a787d1f1ade4f7baba67f11cc2016d"
       }
+    },
+    "stage-savedata": {
+      "recorded_at_utc": "2026-10-15T05:58:00+00:00",
+      "forced_rerecord": false,
+      "mode": "pre-impl",
+      "tests": {
+        "tests/savedata.test.mjs": "c8b1adf07d5d8b95223eb23b403343b235133772edcd19e5a1cd1a7f7e7f955c"
+      },
+      "impl": {
+        "index.html": "bfc304f20d5415adf05f59b17b64c7463e494c4e989ca71b044a57db86a1d57e"
+      },
+      "red_run": "5 fail / 0 pass"
     }
   }
 }

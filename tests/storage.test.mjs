@@ -55,6 +55,7 @@ test('擴建倉庫：扣資源、上限 +30、成本遞增；資源不足失敗'
   t.storage = { '月石': 30, '木枝': 30 };
   const c1 = FG.cmd.storageCost(t);
   assert.equal(FG.cmd.expandStorage(s, t.id).ok, true);
+  run(s, 6.1);
   assert.equal(t.cap, FG.STORAGE_BASE + FG.STORAGE_STEP);
   assert.equal(FG.STORAGE_STEP, 30);
   assert.equal(t.storage['月石'], 30 - c1['月石']);

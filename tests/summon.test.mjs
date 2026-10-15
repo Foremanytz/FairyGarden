@@ -6,18 +6,19 @@ const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
 test('召喚：按下就扣資源，施法 10 秒後精靈才出現', () => {
   assert.equal(FG.SUMMON_TIME, 10);
+  assert.equal(FG.CAST_TIME.summon, 10);
   const s = FG.newGame(1);
   idleAll(s); noBrew(s);
   const t = central(s);
   t.storage = { '花蜜': 10, '月光花': 10 };
   assert.equal(FG.cmd.summonFairy(s, t.id).ok, true);
   assert.equal(t.storage['花蜜'], 10 - FG.SUMMON_COST['花蜜']);
-  assert.ok(t.summon);
+  assert.equal(t.cast.kind, 'summon');
   run(s, 9);
   assert.equal(fairies(s).length, 2);
   run(s, 1.1);
   assert.equal(fairies(s).length, 3);
-  assert.equal(t.summon, null);
+  assert.equal(t.cast, null);
 });
 
 test('召喚：施法中不能再召喚，也不會再扣資源', () => {
@@ -78,7 +79,7 @@ test('待機點：待命或任務做不了時，精靈停在自己的待機點',
   run(s, 3);
   assert.ok(dist(f, FG.standbyXY(s, f)) < 0.05);
   assert.ok(dist(g, FG.standbyXY(s, g)) < 0.05);
-  assert.match(g.msg, /營造/);
+  assert.match(g.msg, /維護/);
 });
 
 test('待機點：要拿取或放下時會飛到花的中心處理', () => {

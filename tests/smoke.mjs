@@ -55,17 +55,40 @@ const pressWithRerender = async sel => {
   await page.waitForTimeout(300); await page.mouse.up();
   await page.waitForTimeout(300);
 };
-for (let i = 0; i < 3; i++) await pressWithRerender('#side button[data-act="expstore"]');
+for (let i = 0; i < 3; i++) {
+  await pressWithRerender('#side button[data-act="expstore"]');
+  assert.equal(await page.locator('#side .cast').count(), 1, 'storage cast progress shown');
+  await page.evaluate(() => FG.tick(FGUI.s, 6.5)); await page.waitForTimeout(300);
+}
 assert.equal(await page.evaluate(() => FG.centralOf(FGUI.s).cap), cap0 + 3 * 30, 'expand storage x3');
 // 召喚：開始施法，按鈕換成進度條；施法完成後精靈多一隻
 const n0 = await page.evaluate(() => Object.keys(FGUI.s.fairies).length);
 await pressWithRerender('#side button[data-act="summon"]');
-assert.ok(await page.evaluate(() => !!FG.centralOf(FGUI.s).summon), 'summon casting');
+assert.equal(await page.evaluate(() => FG.centralOf(FGUI.s).cast && FG.centralOf(FGUI.s).cast.kind), 'summon', 'summon casting');
 await page.waitForTimeout(300);
 assert.equal(await page.locator('#side .cast').count(), 1, 'cast progress shown');
 await page.screenshot({ path: out + '/1b-summon.png' });
 await page.evaluate(() => FG.tick(FGUI.s, 10.5));
 assert.equal(await page.evaluate(() => Object.keys(FGUI.s.fairies).length), n0 + 1, 'summoned');
+// 施工中的狀態文字、藍圖滑鼠提示
+const bpPos = await page.evaluate(() => {
+  const s = FGUI.s, t1 = s.tiles['3,1'], t2 = s.tiles['4,1']; FGUI.cam.x = 0; FGUI.cam.y = 0; FGUI.cam.z = 1;
+  for (const t of [t1, t2]) { t.t = 'grass'; for (const id of t.ents) delete s.ents[id]; t.ents = []; }
+  const ready = FG.cmd.placeBlueprint(s, 'farm', 3, 1); FG.ops.deliver(s, ready.id, '木枝', 2);
+  FG.cmd.placeBlueprint(s, 'farm', 4, 1);
+  FG.centralOf(s).storage['木枝'] = 0;
+  for (const f of Object.values(s.fairies)) FG.cmd.setTask(s, f.id, { kind: 'build' });
+  FGUI.collapse.roster = false; FGUI.rosterHtml = '';
+  const w = FG.hex.toXY(4, 1), z = FGUI.cam.z;
+  return [(w.x * 34 - FGUI.cam.x) * z + innerWidth / 2, (w.y * 34 - FGUI.cam.y) * z + innerHeight / 2 + 4];
+});
+await page.click('#speed button[data-speed="1"]');
+await page.waitForTimeout(2500);
+assert.ok((await page.textContent('#roster')).includes('建造花田中'), 'construct state text');
+await page.evaluate(() => { const bp = Object.values(FGUI.s.ents).find(e => e.type === 'blueprint' && e.q === 4 && e.r === 1); bp.have = {}; });
+await page.mouse.move(bpPos[0], bpPos[1]); await page.waitForTimeout(300);
+assert.match(await page.textContent('#tip'), /還差 木枝×2/, 'blueprint tooltip');
+await page.screenshot({ path: out + '/1c-dance.png' });
 // 音效開關
 const snd0 = await page.textContent('#btnSound');
 await page.click('#btnSound');

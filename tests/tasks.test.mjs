@@ -32,7 +32,7 @@ test('選了需要物品的動作，物品先留空，精靈待命並說明；�
   assert.ok((t.storage['木枝'] || 0) > before);
 });
 
-test('召喚的新精靈預設任務是營造', () => {
+test('召喚的新精靈預設任務是維護', () => {
   const s = FG.newGame(2);
   const t = central(s);
   t.storage = { '花蜜': 10, '月光花': 10 };
@@ -41,7 +41,7 @@ test('召喚的新精靈預設任務是營造', () => {
   run(s, 10.1);
   const id = Object.keys(s.fairies).find(k => !before.has(k));
   assert.equal(s.fairies[id].task.kind, 'build');
-  assert.equal(FG.TASKS.build.name, '營造');
+  assert.equal(FG.TASKS.build.name, '維護');
   assert.equal(FG.TASKS.maintain, undefined);
 });
 
@@ -103,7 +103,7 @@ test('種植：從家拿月光花播種、採收、送回家（每次收 4 朵�
   assert.equal(farm.planted, true);
 });
 
-test('營造：自己判斷藍圖缺什麼材料，分批搬過去並施工到完工', () => {
+test('維護：自己判斷藍圖缺什麼材料，分批搬過去並施工到完工', () => {
   const s = FG.newGame(2);
   idleAll(s);
   const t = central(s);
@@ -122,7 +122,7 @@ test('營造：自己判斷藍圖缺什麼材料，分批搬過去並施工到�
   assert.equal(t.storage['木枝'], 8);
 });
 
-test('營造：沒有藍圖時自動送滋養露給花田、結界晶給結界', () => {
+test('維護：沒有藍圖時自動送滋養露給花田、結界晶給結界', () => {
   const s = FG.newGame(2);
   idleAll(s); noBrew(s);
   const t = central(s);
@@ -163,7 +163,7 @@ test('做不了就待命：沒有藍圖時不動並說明，放了藍圖就開�
   FG.cmd.setTask(s, f.id, { kind: 'build' });
   run(s, 3);
   assert.ok(atHome(s, f));
-  assert.match(f.msg, /營造/);
+  assert.match(f.msg, /維護/);
   clearTile(s, 3, 0);
   const bp = FG.cmd.placeBlueprint(s, 'farm', 3, 0);
   run(s, 25);

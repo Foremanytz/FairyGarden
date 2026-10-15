@@ -78,6 +78,7 @@ button.link { background: none; border: 0; padding: 0; color: var(--gold); text-
 .card { width: 400px; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; }
 .card h2 { color: var(--gold); } .card p { color: var(--dim); line-height: 1.6; margin: 0; flex: 1; font-size: 14px; } .card .meta { color: var(--accent); font-size: 13px; }
 .card.locked { opacity: .5; }
+.wipe { justify-content: center; margin-top: 18px; }
 .help { margin-top: 30px; color: var(--dim); font-size: 14px; line-height: 1.8; text-align: center; }
 .dlg { width: 640px; padding: 26px 30px; } .dlg p { white-space: pre-line; line-height: 1.8; color: #dfe3f2; }
 
@@ -893,11 +894,32 @@ function load(str) {
   return s;
 }
 
+// ---------- 瀏覽器存放的資料 ----------
+// 本遊戲存在 localStorage 的鍵一律以這個前綴開頭；清空時只認這個前綴，絕不呼叫 localStorage.clear()
+const SAVE_PREFIX = 'fairygarden.';
+const SAVE_INFO = {
+  game: '花靈物語（Fairy Garden）網頁遊戲',
+  about: '這是網頁遊戲「花靈物語」的進度存檔。本遊戲在瀏覽器裡的資料鍵名都以 fairygarden. 開頭；刪除後只會讓本遊戲的進度歸零，不影響其他網站。遊戲選單頁的「清空存檔」按鈕會刪除這些資料。',
+  homepage: 'https://github.com/Foremanytz/FairyGarden',
+};
+function ownKeys(ls) {
+  const out = [];
+  for (let i = 0; i < ls.length; i++) { const k = ls.key(i); if (k !== null && k.startsWith(SAVE_PREFIX)) out.push(k); }
+  return out;
+}
+// 先收集鍵名再刪：邊走索引邊刪會讓後面的鍵位移而漏刪
+function clearOwnKeys(ls) {
+  const ks = ownKeys(ls);
+  for (const k of ks) ls.removeItem(k);
+  return ks;
+}
+function withSaveInfo(st) { return Object.assign({}, SAVE_INFO, st, SAVE_INFO); }
+
 globalThis.FG = {
   hex, ITEMS, RECIPES, DEVICES, BUILDS, TERRAIN, TASKS, LEVELS, CAP, CH_HOP, FERT_MAX, SUMMON_COST, DEFAULT_RADIUS, STORAGE_BASE, STORAGE_STEP,
   LAYER, BUILD_TIME, SUMMON_TIME, CAST_TIME, CAST_NAME, standbyXY, NOURISH_HARVESTS, CRYSTAL_UNITS, WILD_MAX, WILD_TIME, WILD_REGROW, HARVEST_YIELD, entOn, layerOf, tileRes, groundFree,
   newGame, tick, save, load, spawnBuilding, ops, cmd, goalProgress, channelPoints, channelLength,
-  costText, flowers, centralOf, posOf, room, fx,
+  costText, flowers, centralOf, posOf, room, fx, SAVE_PREFIX, SAVE_INFO, ownKeys, clearOwnKeys, withSaveInfo,
 };
 })();
 </script>
@@ -909,7 +931,7 @@ const FG = globalThis.FG, hex = FG.hex;
 const $ = q => document.querySelector(q);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const cv = $('#cv'), ctx = cv.getContext('2d');
-const VERSION_TIME = '2026-10-15 15:20';   // commit 前由腳本寫入
+const VERSION_TIME = '2026-10-15 15:23';   // commit 前由腳本寫入
 const S = 34;          // 一個座標單位 = 34px（縮放 1 時）
 const SKY = 120;       // 流動通道的高度（px，縮放 1 時）
 let W = 0, H = 0;
@@ -930,7 +952,7 @@ function saveGame(silent) {
   const st = store();
   st.saves[UI.s.level] = FG.save(UI.s);
   if (UI.s.complete) st.unlocked = Math.max(st.unlocked, UI.s.level + 1);
-  localStorage.setItem(KEY, JSON.stringify(st));
+  localStorage.setItem(KEY, JSON.stringify(FG.withSaveInfo(st)));
   UI.lastSave = performance.now();
   if (!silent) toast('已存檔', 'good');
 }
@@ -1661,11 +1683,21 @@ function showMenu() {
       n = +n; const locked = n > st.unlocked, sv = st.saves[n];
       return `<div class="card panel ${locked ? 'locked' : ''}"><h2>${L.title}</h2><div class="meta">${L.minutes}</div><p>${esc(L.intro.split('\n\n')[1] || L.intro)}</p>
         <div class="row">${locked ? '<span class="meta">🔒 完成上一章後解鎖</span>' : (sv ? `<button class="primary" data-go="cont" data-lv="${n}">繼續</button><button data-go="new" data-lv="${n}">重新開始</button>` : `<button class="primary" data-go="new" data-lv="${n}">開始</button>`)}</div></div>`;
-    }).join('') + `</div><div class="help">你是一位自然德魯伊，以中央魔法之花為據點。精靈住在花裡，依照你分派的指令單採集、搬運、維護與維護設施。<br>進度會自動存在瀏覽器（localStorage）。</div>`;
+    }).join('') + `</div><div class="help">你是一位自然德魯伊，以中央魔法之花為據點。精靈住在花裡，依照你分派的指令單採集、搬運、維護與維護設施。<br>進度會自動存在瀏覽器（localStorage）。</div><div class="row wipe"><button id="btnWipe" data-go="wipe">清空存檔</button></div>`;
   $('#menu').classList.remove('hidden');
+}
+// 只刪除本遊戲的鍵（fairygarden. 開頭），同一個瀏覽器裡其他網站的資料不動
+function wipeSaves() {
+  let ks; try { ks = FG.ownKeys(localStorage); } catch (e) { toast('無法讀取瀏覽器存放的資料：' + e.message, 'bad'); return; }
+  if (!ks.length) { toast('目前沒有本遊戲的存檔'); return; }
+  if (!confirm(`將刪除本遊戲在這個瀏覽器裡的 ${ks.length} 筆資料（各章進度、存檔備份、音效設定），所有章節回到未開始。其他網站的資料不受影響。確定嗎？`)) return;
+  try { FG.clearOwnKeys(localStorage); } catch (e) { toast('清空失敗：' + e.message, 'bad'); return; }
+  showMenu();
+  toast('已清空本遊戲的存檔', 'good');
 }
 $('#menu').addEventListener('click', e => {
   const b = e.target.closest('button[data-go]'); if (!b) return;
+  if (b.dataset.go === 'wipe') { wipeSaves(); return; }
   const lv = +b.dataset.lv;
   if (b.dataset.go === 'cont') {
     let s; try { s = FG.load(store().saves[lv]); } catch (err) { toast('存檔讀取失敗，改為重新開始：' + err.message, 'bad'); s = FG.newGame(lv); }

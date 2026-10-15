@@ -868,7 +868,7 @@ function goalProgress(s, g) {
   switch (g.kind) {
     case 'build': return [s.stats.built[g.type] || 0, n];
     case 'buildNear': {
-      const c = Object.values(s.ents).filter(e => e.type !== g.type && e.built &&
+      const c = Object.values(s.ents).filter(e => e.type === g.type && e.built &&
         Object.values(s.tiles).some(t => t.t === g.near && hex.dist(t, e) <= g.range)).length;
       return [c, n];
     }

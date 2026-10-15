@@ -28,6 +28,9 @@ assert.ok(await page.isVisible('#perf'), 'perf panel shown');
 assert.match(await page.textContent('#perf'), /FPS\s+\d/, 'perf panel numbers');
 await page.keyboard.press('p');
 assert.ok(!(await page.isVisible('#perf')), 'perf panel hidden');
+// 粒子產生量：每秒顆數與畫面更新率無關（30／60／144Hz 各模擬 200 秒）
+const perSec = await page.evaluate(() => [30, 60, 144].map(hz => { let n = 0; for (let i = 0; i < hz * 200; i++) n += FGUI.emitCount(36, 1 / hz); return n / 200; }));
+for (const v of perSec) assert.ok(Math.abs(v - 36) < 2, 'particles per second independent of frame rate: ' + perSec.join(', '));
 // 放農田藍圖，用列表分派任務
 await page.click('#tools button[data-tool="build:farm"]');
 for (const [dx, dy] of [[90, 60], [-90, 60], [0, 120]]) await page.mouse.click(960 + dx, 540 + dy);

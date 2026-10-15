@@ -931,7 +931,7 @@ const FG = globalThis.FG, hex = FG.hex;
 const $ = q => document.querySelector(q);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const cv = $('#cv'), ctx = cv.getContext('2d');
-const VERSION_TIME = '2026-10-15 16:13';   // commit 前由腳本寫入
+const VERSION_TIME = '2026-10-15 16:30';   // commit 前由腳本寫入
 const S = 34;          // 一個座標單位 = 34px（縮放 1 時）
 const SKY = 120;       // 流動通道的高度（px，縮放 1 時）
 let W = 0, H = 0;
@@ -1017,6 +1017,8 @@ const SND = {
 };
 
 // ---------- 粒子 ----------
+// 這一格要產生幾顆粒子：rate 是每秒幾顆，與畫面更新率無關（期望值 = rate × 這一格的秒數）
+function emitCount(rate, dt) { return Math.floor(rate * (dt === undefined ? UI.fdt || 0 : dt) + Math.random()); }
 function part(wx, wy, o) { if (UI.parts.length > 900) return; UI.parts.push(Object.assign({ x: wx, y: wy, lift: 0, vx: 0, vy: 0, vl: 0, life: 1, max: 1, size: 2, color: '#fff' }, o)); }
 function burst(wx, wy, color, n, lift) {
   for (let i = 0; i < n; i++) { const a = Math.random() * 7, v = 0.4 + Math.random() * 1.2;
@@ -1147,7 +1149,7 @@ function drawFlower(e, p, R, z) {
   petals(6, 24 * k * breathe, 8.5 * k, t * 0.05 + 0.4, '#ffffff', e.color);
   ctx.globalCompositeOperation = 'lighter'; glow(bx, by, 14 * k, '#fff3b0', 0.9); ctx.globalCompositeOperation = 'source-over';
   ctx.fillStyle = '#fff6c8'; ctx.beginPath(); ctx.arc(bx, by, 4.5 * k, 0, 7); ctx.fill();
-  if (Math.random() < 0.08) { const w = FG.posOf(e); part(w.x + (Math.random() - .5) * 0.6, w.y, { lift: 70 * (e.central ? 1.25 : 1), vl: 16, vx: (Math.random() - .5) * .3, life: 1.6, max: 1.6, size: 1.6, color: e.color }); }
+  for (let i = emitCount(4.8); i > 0; i--) { const w = FG.posOf(e); part(w.x + (Math.random() - .5) * 0.6, w.y, { lift: 70 * (e.central ? 1.25 : 1), vl: 16, vx: (Math.random() - .5) * .3, life: 1.6, max: 1.6, size: 1.6, color: e.color }); }
   if (z > 0.6 || (UI.sel && UI.sel.id === e.id)) label(e.name, x, y + 14 * z, '#fff3c8', 13);
 }
 function drawAnchor(e, p, R, z) {
@@ -1194,8 +1196,8 @@ function drawFairy(f) {
   if (f.hold) emoji(FG.ITEMS[f.hold.item].icon, p.x + 8 * z, p.y + 6 * z, 11 * z);
   if (f.bubble) label(f.bubble, p.x, p.y - 14 * z, f.bubble === '?' ? '#ffb0b0' : '#fff6c0', 13);
   if (UI.sel && UI.sel.kind === 'fairy' && UI.sel.id === f.id) { ctx.strokeStyle = '#ffd98a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, 11 * z, 0, 7); ctx.stroke(); label(f.name, p.x, p.y + 18 * z, '#ffd98a', 12); }
-  if (f.act && f.act.op === 'move' && Math.random() < 0.35) part(f.x, f.y, { lift: 18, vl: -4, life: 0.7, max: 0.7, size: 1.3, color: c });
-  if (f.act && f.act.op === 'construct' && Math.random() < 0.6) { const w = s2w(p.x, p.y + 30 * UI.cam.z); part(w.x, w.y, { lift: 30, vl: 12 + Math.random() * 18, vx: (Math.random() - .5) * .3, life: 1, max: 1, size: 1.8, color: Math.random() < 0.5 ? '#fff6c0' : c }); }
+  if (f.act && f.act.op === 'move') for (let i = emitCount(21); i > 0; i--) part(f.x, f.y, { lift: 18, vl: -4, life: 0.7, max: 0.7, size: 1.3, color: c });
+  if (f.act && f.act.op === 'construct') for (let i = emitCount(36); i > 0; i--) { const w = s2w(p.x, p.y + 30 * UI.cam.z); part(w.x, w.y, { lift: 30, vl: 12 + Math.random() * 18, vx: (Math.random() - .5) * .3, life: 1, max: 1, size: 1.8, color: Math.random() < 0.5 ? '#fff6c0' : c }); }
 }
 
 // ---------- 天空層：流動通道 ----------
@@ -1234,7 +1236,7 @@ function drawChannels(strong) {
       const f = Math.min(1, d / segs[i]), q = arcPoint(pts[i], pts[i + 1], f);
       const x = q.x, y = q.y, ic = FG.ITEMS[it.item].color;
       glow(x, y, 16 * z, ic, 0.9); glow(x, y, 5 * z, '#ffffff', 1);
-      if (Math.random() < 0.5) { const w = s2w(x, y + SKY * z); part(w.x, w.y, { lift: SKY + (Math.random() - .5) * 8, vl: (Math.random() - .5) * 10, vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .3, life: 0.9, max: 0.9, size: 1.6, color: ic }); }
+      for (let i = emitCount(30); i > 0; i--) { const w = s2w(x, y + SKY * z); part(w.x, w.y, { lift: SKY + (Math.random() - .5) * 8, vl: (Math.random() - .5) * 10, vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .3, life: 0.9, max: 0.9, size: 1.6, color: ic }); }
     }
   }
   ctx.globalCompositeOperation = 'source-over';
@@ -1759,7 +1761,7 @@ function frame(ts) {
   const gap = ts - last, t0 = performance.now();
   const dt = Math.min(0.1, (ts - last) / 1000); last = ts;
   if (UI.s && UI.playing) {
-    UI.t += dt;
+    UI.t += dt; UI.fdt = dt;
     if (UI.speed > 0) FG.tick(UI.s, dt * UI.speed);
     panKeys(dt); drainFx(); stepParts(dt); render();
     if (ts - UI.lastUi > 200) { UI.lastUi = ts; uiTick(); }
@@ -1780,6 +1782,7 @@ showMenu();
 requestAnimationFrame(frame);
 globalThis.FGUI = UI;
 UI.perf = Perf;
+UI.emitCount = emitCount;
 UI.sfx = Sfx;
 })();
 </script>

@@ -69,7 +69,7 @@ for (let i = 0; i < 3; i++) {
   assert.equal(await page.locator('#side .cast').count(), 1, 'storage cast progress shown');
   await page.evaluate(() => FG.tick(FGUI.s, 6.5)); await page.waitForTimeout(300);
 }
-assert.equal(await page.evaluate(() => FG.centralOf(FGUI.s).cap), cap0 + 3 * 30, 'expand storage x3');
+assert.equal(await page.evaluate(() => FG.centralOf(FGUI.s).cap), cap0 + 3 * await page.evaluate(() => FG.STORAGE_STEP), 'expand storage x3');
 // 召喚：開始施法，按鈕換成進度條；施法完成後精靈多一隻
 const n0 = await page.evaluate(() => Object.keys(FGUI.s.fairies).length);
 await pressWithRerender('#side button[data-act="summon"]');
@@ -224,8 +224,22 @@ await page.evaluate(() => { const c = FG.centralOf(FGUI.s); c.storage = { '木�
 await page.waitForTimeout(400);
 assert.equal(await page.locator('#resbar .res').count(), 2, 'resbar items');
 assert.equal(await page.locator('#resbar .res.full').count(), 1, 'resbar full item');
-await page.click('#resbar');
+await page.click('#resbar .lbl');
 assert.equal(await page.evaluate(() => FGUI.sel && FGUI.sel.id), await page.evaluate(() => FG.centralOf(FGUI.s).id), 'resbar selects central');
+// 物資列顯示「數量／保留量」；點物品跳出保留量小視窗
+assert.match(await page.textContent('#resbar .res[data-item="木枝"]'), /木枝\s*\d+\/0/, 'resbar shows reserve');
+await page.click('#resbar .res[data-item="木枝"]');
+assert.ok(await page.isVisible('#resEdit'), 'reserve editor shown');
+await page.fill('#resEdit input', '7'); await page.keyboard.press('Enter');
+assert.equal(await page.evaluate(() => FG.centralOf(FGUI.s).reserve['木枝']), 7, 'reserve set from resbar');
+assert.ok(!(await page.isVisible('#resEdit')), 'reserve editor closed');
+await page.waitForTimeout(400);
+assert.match(await page.textContent('#resbar .res[data-item="木枝"]'), /\/7/, 'resbar reserve updated');
+// 花的側欄：倉庫每項都有保留量欄位，設備沒有產量上限欄位
+assert.equal(await page.inputValue('#side input[data-act="reserve"][data-item="木枝"]'), '7', 'side reserve input');
+await page.fill('#side input[data-act="reserve"][data-item="木枝"]', '3'); await page.press('#side input[data-act="reserve"][data-item="木枝"]', 'Tab');
+assert.equal(await page.evaluate(() => FG.centralOf(FGUI.s).reserve['木枝']), 3, 'reserve set from side panel');
+assert.equal(await page.locator('#side input[data-act="limit"]').count(), 0, 'no device limit input');
 await page.click('#speed button[data-speed="2"]');
 await page.waitForTimeout(3000);
 await page.screenshot({ path: out + '/2-level3.png' });

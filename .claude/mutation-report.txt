@@ -1,6 +1,18 @@
-SURVIVED " > " → " >= " | if (Math.hypot(sp.x - f.x, sp.y - f.y) > 1e-6) f.act = { op: 'move', tx: sp.x, ty: sp.y, k
-SURVIVED " >= " → " > " | while (ch.transit.length && ch.transit[0].d >= len) store(dst, ch.transit.shift().item, 1)
-SURVIVED " > " → " >= " | while (dt > 1e-9) { const h = Math.min(0.1, dt); stepWorld(s, h); dt -= h; }
-candidates 429, sampled 120, killed 100, survived 20
-GATE_RESULT: {"tool":"tests/mutation.mjs","mutants":120,"killed":100,"rate":0.833,"threshold":0.8,"pass":true}
-
+SURVIVED " < " → " <= " | if (hex.dist({ q: 0, r: 0 }, { q, r }) > 3) { const x = R(); if (x < 0.05) t = 'forest'; e
+SURVIVED " < " → " <= " | if (f.energy < 15) { releaseClaim(s, f); f.act = { op: 'refuel', phase: 'go', t: 0 }; }
+SURVIVED " || " → " && " | if (e.type !== 'farm' || e.planted || !f.hold || !CROPS[f.hold.item]) return actFail(s, f,
+SURVIVED " >= " → " > " | if (t.t === 'meadow' && t.wild < WILD_MAX) { t.wt = (t.wt || 0) + h; if (t.wt >= WILD_REGR
+SURVIVED " && " → " || " | function releaseClaim(s, f) { if (f.claim && s.claims[f.claim] && s.claims[f.claim].f === 
+SURVIVED " || " → " && " | if (!d || !RECIPES[rid] || !s.recipes.includes(rid)) return no('無法使用這個配方');
+SURVIVED " <= " → " < " | if (d <= sp) { f.x = p.x; f.y = p.y; f.atKey = hex.key(home.q, home.r); a.phase = 'rest'; 
+SURVIVED " < " → " <= " | const isAtTile = (f, t) => { const p = hex.toXY(t.q, t.r); return f.atKey === hex.key(t.q,
+SURVIVED " >= " → " > " | if ((home.storage['花蜜'] || 0) >= 1) { home.storage['花蜜'] -= 1; a.phase = 'eat'; a.t = 0; f
+SURVIVED " === " → " !== " | if (f.hold && f.hold.item === crop && f.hold.n >= 3) return goHomeDrop(s, f);
+SURVIVED " > " → " >= " | const claimedByOther = (s, f, id) => { const c = s.claims[id]; return c && c.f !== f.id &&
+SURVIVED " < " → " <= " | for (const o of list) { const p = hex.toXY(o.q, o.r), d = (p.x - f.x) ** 2 + (p.y - f.y) *
+SURVIVED " && " → " || " | else if (c.kind === 'device' && t.devices[c.slot]) delete t.devices[c.slot].install;
+SURVIVED " || " → " && " | if (farm.type !== 'farm' || !farm.planted || farm.growth < 1) return 0;
+SURVIVED " || " → " && " | if (d.prog === 0 && (blocked || !ready)) { d.state = blocked || 'wait'; continue; }
+SURVIVED " && " → " || " | if (t.t === 'meadow' && t.wild < WILD_MAX) { t.wt = (t.wt || 0) + h; if (t.wt >= WILD_REGR
+candidates 437, sampled 120, killed 104, survived 16
+GATE_RESULT: {"tool":"tests/mutation.mjs","mutants":120,"killed":104,"rate":0.867,"threshold":0.8,"pass":true}

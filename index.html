@@ -50,7 +50,11 @@ button.link { background: none; border: 0; padding: 0; color: var(--gold); text-
 .lyr.ground { color: #9fdc8a; } .lyr.air { color: #8fd8ff; } .lyr.sky { color: #ffe08a; } .lyr.folk { color: #ff9df0; } .lyr.any { color: var(--dim); }
 #side { position: fixed; top: 96px; right: 12px; width: 430px; max-height: calc(100vh - 220px); overflow: auto; padding: 14px 16px; }
 #side .sub { color: var(--dim); font-size: 13px; } #side p { color: var(--dim); line-height: 1.6; margin: 6px 0; }
-.inv { display: flex; flex-wrap: wrap; gap: 6px; } .it { background: rgba(255,255,255,.06); border-radius: 8px; padding: 3px 8px; font-size: 14px; }
+.inv { display: flex; flex-wrap: wrap; gap: 6px; }
+.stock { display: grid; grid-template-columns: 1fr auto auto; gap: 4px 10px; align-items: center; font-size: 14px; }
+.stock b { color: var(--gold); text-align: right; } .stock b.full { color: var(--bad); } .stock label { color: var(--dim); font-size: 13px; } .stock input { width: 56px; }
+#resbar .res { cursor: pointer; } #resbar .res:hover { outline: 1px solid var(--accent); }
+#resEdit { position: fixed; top: 88px; padding: 10px 12px; display: flex; gap: 8px; align-items: center; z-index: 30; font-size: 14px; } #resEdit input { width: 64px; } .it { background: rgba(255,255,255,.06); border-radius: 8px; padding: 3px 8px; font-size: 14px; }
 .it b { color: var(--gold); margin-left: 4px; } .it.full { outline: 1px solid var(--bad); } .it.full b { color: var(--bad); }
 .slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .dev { background: rgba(201,167,255,.08); border: 1px solid rgba(201,167,255,.3); border-radius: 10px; padding: 8px; font-size: 13px; display: flex; flex-direction: column; gap: 5px; }
@@ -91,7 +95,8 @@ button.link { background: none; border: 0; padding: 0; color: var(--gold); text-
 <body>
 <canvas id="cv"></canvas>
 <div id="hud" class="hidden">
-  <div id="resbar" title="點一下選取中央魔法之花"></div>
+  <div id="resbar" title="點物品可以設定保留量；點最左邊的花名選取中央魔法之花"></div>
+  <div id="resEdit" class="panel hidden"></div>
   <div id="top">
     <div id="lvTitle"></div>
     <div class="grp" id="speed"><span>速度</span><button data-speed="0">⏸</button><button data-speed="1">1×</button><button data-speed="2">2×</button><button data-speed="4">4×</button></div>
@@ -145,7 +150,8 @@ const hex = {
 
 // ---------- 資料表 ----------
 const ITEMS = {
-  '月光花': { icon: '🌙', color: '#cfe0ff', desc: '花田的作物，也是種子；花海可採集野生的' },
+  '月光花': { icon: '🌙', color: '#cfe0ff', desc: '花田的作物，花海可採集野生的；可以釀花蜜、培育幼苗' },
+  '月光花幼苗': { icon: '🌱', color: '#a8f0a0', desc: '育苗室用木枝與月光花培育，種在花田長成月光花' },
   '花蜜':   { icon: '🍯', color: '#ffc94a', desc: '精靈的食物，回復活力' },
   '木枝':   { icon: '🪵', color: '#c08a55', desc: '在森林採集的建材' },
   '月石':   { icon: '🪨', color: '#c4c8e8', desc: '在岩地採集的建材' },
@@ -160,15 +166,22 @@ const ITEMS = {
 };
 const RECIPES = {
   nectar:   { name: '花蜜',   in: { '月光花': 2 }, out: { '花蜜': 1 }, time: 4 },
+  seedling: { name: '月光花幼苗', in: { '木枝': 1, '月光花': 1 }, out: { '月光花幼苗': 1 }, time: 8 },
   nourish:  { name: '滋養露', in: { '露水': 1, '土息': 1 }, out: { '滋養露': 2 }, time: 5 },
   crystal:  { name: '結界晶', in: { '月石': 1, '陽光': 2 }, out: { '結界晶': 1 }, time: 6 },
   stardust: { name: '星塵',   in: { '陽光': 1, '風語': 1, '花蜜': 1 }, out: { '星塵': 1 }, time: 8 },
   prism:    { name: '虹晶',   in: { '星塵': 2, '露水': 2, '結界晶': 1 }, out: { '虹晶': 1 }, time: 12 },
 };
 const DEVICES = {
-  brewer:     { name: '花蜜釀造台', cost: { '木枝': 3, '月光花': 2 }, recipes: ['nectar'], limit: 5, keep: 4 },
-  transmuter: { name: '元素轉化器', cost: { '月石': 3, '木枝': 3 }, recipes: ['nourish', 'crystal', 'stardust', 'prism'], limit: 10, keep: 0 },
+  brewer:     { name: '花蜜釀造台', cost: { '木枝': 3, '月光花': 2 }, recipes: ['nectar'] },
+  nursery:    { name: '育苗室',     cost: { '木枝': 3, '月光花': 2 }, recipes: ['seedling'] },
+  transmuter: { name: '元素轉化器', cost: { '月石': 3, '木枝': 3 }, recipes: ['nourish', 'crystal', 'stardust', 'prism'] },
 };
+// 作物：幼苗 → 長成後採收的物品
+const CROPS = { '月光花幼苗': '月光花' };
+const cropOf = farm => CROPS[farm.seed] || '月光花';
+// 每朵魔法之花的預設保留量：加工、運送、通道只動用超過保留量的部分
+const DEFAULT_RESERVE = { '花蜜': 4, '月光花': 2 };
 const SUMMON_COST = { '花蜜': 3, '月光花': 4 };
 const FAIRY_MAX = 16;
 const BUILDS = {
@@ -186,7 +199,7 @@ const BARRIER_ELEM = { grass: '陽光', meadow: '陽光', rock: '土息', forest
 const TASKS = {
   idle:     { name: '待命', items: null },
   collect:  { name: '收集', items: ['木枝', '月石', '露水', '月光花', '陽光', '風語', '土息'] },
-  farm:     { name: '種植', items: null },
+  farm:     { name: '農業', items: Object.keys(CROPS) },
   build:    { name: '維護', items: null },
   haul:     { name: '運送', items: Object.keys(ITEMS) },
 };
@@ -205,7 +218,7 @@ const CH_HOP = 7;
 const CH_SPEED = 4;
 const CH_INTERVAL = 1.5;
 const DEFAULT_RADIUS = 10;
-const STORAGE_BASE = 60, STORAGE_STEP = 30;
+const STORAGE_BASE = 30, STORAGE_STEP = 10;
 const CAST_TIME = { summon: 10, ether: 8, device: 5, storage: 6 };   // 魔法之花各種施法的秒數
 const SUMMON_TIME = CAST_TIME.summon;
 const CAST_NAME = { summon: '召喚精靈', ether: '擴充乙太空間', device: '安裝設備', storage: '擴建倉庫' };
@@ -218,15 +231,15 @@ const T = (kind, item) => ({ kind, item: item || null });
 const LEVELS = {
   1: {
     title: '第一章　中央魔法之花', minutes: '約 10 分鐘', seed: 11,
-    intro: '德魯伊在森林深處喚醒了沉睡的中央魔法之花。兩隻精靈從花中醒來，等著你分派第一份工作。\n\n本章學習：擺放藍圖讓精靈搬材料建造、種植與採收月光花、在乙太空間釀造花蜜（精靈的食物），以及用精靈列表分派任務。',
-    features: { fert: false }, unlocked: ['farm'], recipes: ['nectar'],
+    intro: '德魯伊在森林深處喚醒了沉睡的中央魔法之花。兩隻精靈從花中醒來，等著你分派第一份工作。\n\n本章學習：擺放藍圖讓精靈搬材料建造、在育苗室培育幼苗並種植採收月光花、在乙太空間釀造花蜜（精靈的食物），以及用精靈列表分派任務。',
+    features: { fert: false }, unlocked: ['farm'], recipes: ['nectar', 'seedling'],
     terrain: [['forest', 5, -2, 2], ['forest', -5, 5, 2], ['forest', -6, -1, 1], ['water', -2, -5, 2], ['rock', 7, 2, 1], ['meadow', 8, -7, 2], ['water', 10, 3, 2]],
-    flowers: [{ q: 0, r: 0, central: true, slots: 2, storage: { '月光花': 6, '花蜜': 4, '木枝': 4 }, devices: [['brewer', 'nectar']] }],
+    flowers: [{ q: 0, r: 0, central: true, slots: 2, storage: { '月光花': 6, '月光花幼苗': 3, '花蜜': 4, '木枝': 4 }, devices: [['brewer', 'nectar'], ['nursery', 'seedling']] }],
     fairies: [{ home: 0, task: T('build') }, { home: 0, task: T('build') }],
     goals: [
       { kind: 'build', type: 'farm', n: 3, text: '建造 3 塊花田', hint: '下方選「花田」，點花附近的草地放藍圖。精靈預設的任務是「維護」，會自己搬材料去施工。木枝不夠時，在左側精靈列表把一隻改成「收集 木枝」。' },
-      { kind: 'produce', item: '月光花', n: 15, text: '採收 15 朵月光花', hint: '把精靈的動作設為「種植」。花需要 30 秒長成；播種用掉 1 朵、採收得 4 朵，比在花海採野生月光花划算得多。' },
-      { kind: 'produce', item: '花蜜', n: 6, text: '釀造 6 份花蜜', hint: '點中央魔法之花，乙太空間裡的「花蜜釀造台」會自動用 2 朵月光花釀 1 份花蜜。調高它的產量上限；「保留原料」讓它留下月光花當種子。' },
+      { kind: 'produce', item: '月光花', n: 15, text: '採收 15 朵月光花', hint: '把精靈的動作設為「農業 月光花幼苗」。乙太空間的育苗室會用木枝 1 + 月光花 1 培育幼苗；種下 1 株幼苗，30 秒後採收得 4 朵月光花，比在花海採野生的划算得多。' },
+      { kind: 'produce', item: '花蜜', n: 6, text: '釀造 6 份花蜜', hint: '乙太空間裡的「花蜜釀造台」會自動用 2 朵月光花釀 1 份花蜜。設備只用超過「保留量」的原料：點上方物資列的物品可以調整保留量，保留的月光花留給育苗與召喚。' },
       { kind: 'fairies', n: 4, text: '精靈數量達到 4 隻', hint: '點中央魔法之花 →「召喚精靈」（花蜜 3、月光花 4）。精靈累了會回家吃花蜜。' },
       { kind: 'order', item: '花蜜', n: 8, who: '森林旅人', text: '訂單：森林旅人想要 8 份花蜜', hint: '倉庫的花蜜足夠時，在目標面板按「交付」。注意倉庫有容量上限，可以點花擴建倉庫。' },
     ],
@@ -234,11 +247,11 @@ const LEVELS = {
   2: {
     title: '第二章　擴充與維護', minutes: '約 15–20 分鐘', seed: 22,
     intro: '花園開始運轉，但土地會疲乏、精靈需要更多種類的魔法。\n\n本章學習：擴充乙太空間、安裝可選配方的元素轉化器、建造魔力收集結界（依地形產出陽光／風語／土息）、維護戶外設施（花田要滋養露、結界要結界晶），以及在湖邊種下第二朵魔法之花。',
-    features: { fert: true }, unlocked: ['farm', 'barrier', 'flower', 'expand', 'transmuter', 'brewer'], recipes: ['nectar', 'nourish', 'crystal'],
+    features: { fert: true }, unlocked: ['farm', 'barrier', 'flower', 'expand', 'transmuter', 'brewer'], recipes: ['nectar', 'seedling', 'nourish', 'crystal'],
     terrain: [['forest', -5, 1, 2], ['forest', 4, 3, 2], ['rock', -2, -5, 2], ['rock', 6, -1, 1], ['water', 9, -7, 2], ['water', -7, 8, 1], ['meadow', -9, 3, 2]],
-    flowers: [{ q: 0, r: 0, central: true, slots: 3, storage: { '月光花': 10, '花蜜': 8, '木枝': 12, '月石': 8 }, devices: [['brewer', 'nectar', 8]] }],
+    flowers: [{ q: 0, r: 0, central: true, slots: 3, storage: { '月光花': 10, '月光花幼苗': 3, '花蜜': 8, '木枝': 12, '月石': 8 }, devices: [['brewer', 'nectar'], ['nursery', 'seedling']] }],
     farms: [[2, -1], [1, -2], [3, -2]],
-    fairies: [{ home: 0, task: T('farm') }, { home: 0, task: T('collect', '木枝') }, { home: 0, task: T('idle') }, { home: 0, task: T('idle') }],
+    fairies: [{ home: 0, task: T('farm', '月光花幼苗') }, { home: 0, task: T('collect', '木枝') }, { home: 0, task: T('idle') }, { home: 0, task: T('idle') }],
     goals: [
       { kind: 'expand', n: 1, text: '擴充乙太空間 1 次', hint: '點中央魔法之花 →「擴充乙太空間」。每一格可以安裝一台設備。' },
       { kind: 'device', dev: 'transmuter', n: 1, text: '在乙太空間安裝元素轉化器', hint: '在空格按「安裝元素轉化器」，再選擇配方。' },
@@ -253,16 +266,16 @@ const LEVELS = {
     title: '第三章　流動通道', minutes: '約 20–30 分鐘', seed: 33,
     intro: '魔法之花之間的距離越來越遠，精靈來回搬運已經不夠快。在五層樓高的天空中，可以架起讓魔法元素自行流動的光之通道。\n\n本章學習：建造光之錨、從結界或魔法之花架設流動通道到另一朵花、在花海旁種下第三朵花，並組出星塵與虹晶的多段加工鏈。',
     features: { fert: true }, unlocked: ['farm', 'barrier', 'flower', 'anchor', 'channel', 'expand', 'transmuter', 'brewer'],
-    recipes: ['nectar', 'nourish', 'crystal', 'stardust', 'prism'],
+    recipes: ['nectar', 'seedling', 'nourish', 'crystal', 'stardust', 'prism'],
     terrain: [['forest', -4, 2, 2], ['rock', 3, 4, 2], ['rock', 12, -2, 1], ['water', 10, -6, 2], ['meadow', -8, 9, 3], ['forest', 6, -9, 2], ['meadow', -11, 1, 1]],
     flowers: [
-      { q: 0, r: 0, central: true, slots: 4, storage: { '月光花': 12, '花蜜': 10, '木枝': 14, '月石': 14, '結界晶': 3, '滋養露': 4 },
-        devices: [['brewer', 'nectar', 8], ['transmuter', 'nourish']] },
+      { q: 0, r: 0, central: true, slots: 4, storage: { '月光花': 12, '月光花幼苗': 3, '花蜜': 10, '木枝': 14, '月石': 14, '結界晶': 3, '滋養露': 4 },
+        devices: [['brewer', 'nectar'], ['nursery', 'seedling'], ['transmuter', 'nourish']] },
       { q: 9, r: -4, slots: 2, storage: { '花蜜': 4 }, devices: [['transmuter', 'crystal']] },
     ],
     farms: [[2, -1], [1, -2], [-1, -1]],
     barriers: [[3, 4], [11, -4], [-3, 3]],
-    fairies: [{ home: 0, task: T('farm') }, { home: 0, task: T('collect', '木枝') }, { home: 0, task: T('collect', '月石') },
+    fairies: [{ home: 0, task: T('farm', '月光花幼苗') }, { home: 0, task: T('collect', '木枝') }, { home: 0, task: T('collect', '月石') },
       { home: 1, task: T('collect', '露水') }, { home: 1, task: T('idle') }],
     goals: [
       { kind: 'build', type: 'anchor', n: 3, text: '建造 3 座光之錨', hint: '光之錨是通道的中繼點，相鄰節點不能超過 7 格。光之錨可以蓋在水面上。派精靈「維護」。' },
@@ -292,6 +305,8 @@ const tileRes = (s, t) => { const res = TERRAIN[t.t].res; if (!res || !groundFre
 const addStat = (s, item, n) => { s.stats.produced[item] = (s.stats.produced[item] || 0) + n; };
 // 倉庫上限：所有物品共用同一個上限值，但每種物品各自和上限比較（A 存滿不擋 B）
 const room = (t, item) => Math.max(0, t.cap - (t.storage[item] || 0));
+// 超過保留量、可以拿去加工或送出去的數量
+const spare = (t, item) => Math.max(0, (t.storage[item] || 0) - ((t.reserve || {})[item] || 0));
 // 存入倉庫：超過上限的部分消失，回傳實際存入的數量
 function store(t, item, n) {
   const k = Math.min(n, room(t, item));
@@ -307,7 +322,7 @@ function newGame(level) {
   const L = LEVELS[level];
   const R = rng(L.seed);
   const s = {
-    v: 5, level, time: 0, nextId: 1, tiles: {}, ents: {}, fairies: {}, channels: {}, claims: {},
+    v: 6, level, time: 0, nextId: 1, tiles: {}, ents: {}, fairies: {}, channels: {}, claims: {},
     features: Object.assign({}, L.features), unlocked: L.unlocked.slice(), recipes: L.recipes.slice(),
     stats: { built: {}, produced: {}, expanded: 0, orders: 0 },
     goals: L.goals.map((g, i) => Object.assign({ id: 'g' + i, done: false }, g)), complete: false, completeAt: null,
@@ -329,10 +344,7 @@ function newGame(level) {
   const fids = L.flowers.map(F => {
     s.tiles[hex.key(F.q, F.r)].t = 'grass';
     const id = spawnBuilding(s, 'flower', F.q, F.r, { central: !!F.central, slots: F.slots, storage: Object.assign({}, F.storage) });
-    F.devices.forEach(([type, rec, limit], i) => {
-      const t = s.ents[id];
-      t.devices[i] = newDevice(type); t.devices[i].recipe = rec; if (limit) t.devices[i].limit = limit;
-    });
+    F.devices.forEach(([type, rec], i) => { const t = s.ents[id]; t.devices[i] = newDevice(type); t.devices[i].recipe = rec; });
     return id;
   });
   for (const [q, r] of L.farms || []) { s.tiles[hex.key(q, r)].t = 'grass'; const id = spawnBuilding(s, 'farm', q, r); s.ents[id].fert = 2; }
@@ -349,7 +361,7 @@ function spawnBuilding(s, type, q, r, opts) {
   if (type === 'flower') {
     const n = flowers(s).length;
     Object.assign(e, { central: !!opts.central, name: opts.central ? FLOWER_NAMES[0] : FLOWER_NAMES[Math.min(n, 3)],
-      color: FLOWER_COLORS[n % FLOWER_COLORS.length], storage: opts.storage || {}, cap: STORAGE_BASE, capLevel: 0, slots: opts.slots || 2, devices: [], cast: null });
+      color: FLOWER_COLORS[n % FLOWER_COLORS.length], storage: opts.storage || {}, reserve: Object.assign({}, DEFAULT_RESERVE), cap: STORAGE_BASE, capLevel: 0, slots: opts.slots || 1, devices: [], cast: null });
     while (e.devices.length < e.slots) e.devices.push(null);
   } else if (type === 'farm') Object.assign(e, { planted: false, growth: 0, fert: FERT_MAX / 2 });
   else if (type === 'barrier') Object.assign(e, { elem: BARRIER_ELEM[tile.t] || '陽光', buf: 0, charge: 2, t: 0, fast: tile.t === 'meadow' });
@@ -358,7 +370,7 @@ function spawnBuilding(s, type, q, r, opts) {
   return id;
 }
 
-function newDevice(type) { return { type, recipe: DEVICES[type].recipes ? DEVICES[type].recipes[0] : null, prog: 0, limit: DEVICES[type].limit, keep: DEVICES[type].keep, state: 'idle' }; }
+function newDevice(type) { return { type, recipe: DEVICES[type].recipes ? DEVICES[type].recipes[0] : null, prog: 0, state: 'idle' }; }
 
 // 待機點：自家魔法之花周圍一圈，每隻精靈依編號用黃金角錯開
 function standbyXY(s, f) {
@@ -378,13 +390,15 @@ function newFairy(s, homeId) {
 
 // ---------- 設施操作 ----------
 const ops = {
-  plant(s, farm) { if (farm.type !== 'farm' || farm.planted) return false; farm.planted = true; farm.growth = 0; return true; },
+  plant(s, farm, seed) { seed = seed || '月光花幼苗'; if (farm.type !== 'farm' || farm.planted || !CROPS[seed]) return false; farm.planted = true; farm.seed = seed; farm.growth = 0; return true; },
+  // 回傳採收數量；採收的物品是 cropOf(farm)
   harvest(s, farm) {
     if (farm.type !== 'farm' || !farm.planted || farm.growth < 1) return 0;
+    const crop = cropOf(farm);
     farm.planted = false; farm.growth = 0;
     if (s.features.fert) farm.fert = Math.max(0, farm.fert - 1);
-    addStat(s, '月光花', HARVEST_YIELD);
-    const p = posOf(farm); emit('burst', p.x, p.y, { color: ITEMS['月光花'].color });
+    addStat(s, crop, HARVEST_YIELD);
+    const p = posOf(farm); emit('burst', p.x, p.y, { color: ITEMS[crop].color });
     return HARVEST_YIELD;
   },
   // 把物品交給設施，回傳對方收下的數量。魔法之花一律全收，超過倉庫上限的部分消失
@@ -545,8 +559,10 @@ const cmd = {
     const allow = DEVICES[d.type].recipes; if (allow && !allow.includes(rid)) return no('這台設備不能做這個配方');
     d.recipe = rid; d.prog = 0; return ok();
   },
-  setLimit(s, tid, slot, n) { const d = s.ents[tid].devices[slot]; if (!d) return no('空格'); d.limit = Math.max(0, Math.min(999, n | 0)); return ok(); },
-  setKeep(s, tid, slot, n) { const d = s.ents[tid].devices[slot]; if (!d) return no('空格'); d.keep = Math.max(0, Math.min(999, n | 0)); return ok(); },
+  setReserve(s, tid, item, n) {
+    const t = s.ents[tid]; if (!t || t.type !== 'flower') return no('不是魔法之花'); if (!ITEMS[item]) return no('沒有這種物品');
+    t.reserve[item] = Math.max(0, Math.min(999, Math.floor(+n) || 0)); return ok();
+  },
   assignHome(s, fid, tid) { const f = s.fairies[fid]; if (!s.ents[tid] || s.ents[tid].type !== 'flower') return no('不是魔法之花'); f.home = tid; return ok(); },
   buildChannel(s, nodes, item) {
     if (!s.unlocked.includes('channel')) return no('尚未解鎖');
@@ -619,7 +635,8 @@ function goTo(s, f, o, claim) {
 // 走到目標；已經在目標上就開始對它做事（act 帶著目標物件 id）
 function workAt(s, f, e, op, extra, claim) { if (!goTo(s, f, e, claim)) f.act = Object.assign({ op, t: 0, dur: 0.5, id: e.id }, extra || {}); }
 const goHomeDrop = (s, f) => workAt(s, f, s.ents[f.home], 'drop');
-const goHomeTake = (s, f, item, n) => workAt(s, f, s.ents[f.home], 'take', { item, n: Math.max(1, Math.min(CAP, n)) });
+// spareOnly：只拿超過保留量的部分（運送用）
+const goHomeTake = (s, f, item, n, spareOnly) => workAt(s, f, s.ents[f.home], 'take', { item, n: Math.max(1, Math.min(CAP, n)), spareOnly: !!spareOnly });
 
 const needsNourish = (s, e) => e.type === 'farm' && s.features.fert && e.fert <= FERT_MAX - NOURISH_HARVESTS;
 const needsCrystal = e => e.type === 'barrier' && e.charge < 1;
@@ -650,21 +667,24 @@ const PLAN = {
     goTo(s, f, src);
   },
 
+  // 農業：種下選定的幼苗、採收長成的作物
   farm(s, f) {
-    const home = s.ents[f.home];
-    if (f.hold && f.hold.item !== '月光花') return goHomeDrop(s, f);
-    if (f.hold && f.hold.n >= 3) return goHomeDrop(s, f);
-    const ripe = room(home, '月光花') > 0 ? nearest(s, f, entsWhere(s, f, e => e.type === 'farm' && e.planted && e.growth >= 1, true)) : null;
-    if (ripe && (!f.hold || f.hold.n + HARVEST_YIELD <= CAP)) return workAt(s, f, ripe, 'harvest', { dur: 1 }, true);
+    const home = s.ents[f.home], seed = f.task.item, crop = CROPS[seed];
+    if (!seed) { if (f.hold) return goHomeDrop(s, f); return idleAt(s, f, '請選擇物品'); }
+    if (f.hold && f.hold.item !== seed && f.hold.item !== crop) return goHomeDrop(s, f);
+    if (f.hold && f.hold.item === crop && f.hold.n >= 3) return goHomeDrop(s, f);
+    const ripe = room(home, crop) > 0 ? nearest(s, f, entsWhere(s, f, e => e.type === 'farm' && e.planted && e.growth >= 1 && cropOf(e) === crop, true)) : null;
+    if (ripe && (!f.hold || (f.hold.item === crop && f.hold.n + HARVEST_YIELD <= CAP))) return workAt(s, f, ripe, 'harvest', { dur: 1 }, true);
     const empty = nearest(s, f, entsWhere(s, f, e => e.type === 'farm' && !e.planted, true));
     if (empty) {
-      if (f.hold) return workAt(s, f, empty, 'plant', { dur: 1 }, true);
-      if ((home.storage['月光花'] || 0) > 0) return goHomeTake(s, f, '月光花', 1);
-      return idleAt(s, f, '家裡沒有月光花可以播種');
+      if (f.hold && f.hold.item === seed) return workAt(s, f, empty, 'plant', { dur: 1 }, true);
+      if (f.hold) return goHomeDrop(s, f);
+      if ((home.storage[seed] || 0) > 0) return goHomeTake(s, f, seed, 1);
+      return idleAt(s, f, '家裡沒有' + seed + '，請用育苗室培育');
     }
     if (f.hold) return goHomeDrop(s, f);
     const anyRipe = entsWhere(s, f, e => e.type === 'farm' && e.planted && e.growth >= 1).length;
-    if (anyRipe && room(home, '月光花') <= 0) return idleAt(s, f, '家裡的月光花已達倉庫上限，暫停採收');
+    if (anyRipe && room(home, crop) <= 0) return idleAt(s, f, '家裡的' + crop + '已達倉庫上限，暫停採收');
     const farms = entsWhere(s, f, e => e.type === 'farm').length;
     idleAt(s, f, farms ? '花田生長中，等待收成' : '範圍內沒有花田');
   },
@@ -696,7 +716,7 @@ const PLAN = {
       if ((home.storage[item] || 0) > 0 && entsWhere(s, f, pred, true).length) return goHomeTake(s, f, item, 1);
     }
     if (lacking.size) return idleAt(s, f, '家裡缺少藍圖需要的材料：' + [...lacking].join('、'));
-    idleAt(s, f, '範圍內沒有要維護或維護的工作');
+    idleAt(s, f, '範圍內沒有要建造或維護的工作');
   },
 
   haul(s, f) {
@@ -707,8 +727,8 @@ const PLAN = {
     if (f.hold && f.hold.item !== item) return goHomeDrop(s, f);
     if (f.hold) return workAt(s, f, dst, 'drop');
     if (room(dst, item) <= 0) return idleAt(s, f, dst.name + '的' + item + '已達倉庫上限');
-    if ((home.storage[item] || 0) <= 0) return idleAt(s, f, '家裡沒有' + item);
-    goHomeTake(s, f, item, CAP);
+    if (spare(home, item) <= 0) return idleAt(s, f, (home.storage[item] || 0) > 0 ? '家裡的' + item + '都是保留量，不能運走' : '家裡沒有' + item);
+    goHomeTake(s, f, item, CAP, true);
   },
 };
 
@@ -767,16 +787,16 @@ function doAct(s, f, h) {
   if (!e || !isAtTile(f, e)) return actFail(s, f, '目標不見了');
   switch (a.op) {
     case 'plant':
-      if (e.type !== 'farm' || e.planted || !f.hold || f.hold.item !== '月光花') return actFail(s, f, '無法播種');
-      f.hold.n--; if (!f.hold.n) f.hold = null; ops.plant(s, e); break;
+      if (e.type !== 'farm' || e.planted || !f.hold || !CROPS[f.hold.item]) return actFail(s, f, '無法播種');
+      ops.plant(s, e, f.hold.item); f.hold.n--; if (!f.hold.n) f.hold = null; break;
     case 'harvest': {
-      const y = ops.harvest(s, e);
+      const crop = cropOf(e), y = ops.harvest(s, e);
       if (!y) return actFail(s, f, '沒有可採收的花');
-      addHold(f, '月光花', y); break;
+      addHold(f, crop, y); break;
     }
     case 'take': {
       if (e.type !== 'flower') return actFail(s, f, '不在魔法之花');
-      const k = Math.min(a.n, e.storage[a.item] || 0, CAP - (f.hold ? f.hold.n : 0));
+      const k = Math.min(a.n, a.spareOnly ? spare(e, a.item) : e.storage[a.item] || 0, CAP - (f.hold ? f.hold.n : 0));
       if (k <= 0) return actFail(s, f, '家裡沒有' + a.item);
       e.storage[a.item] -= k; addHold(f, a.item, k); break;
     }
@@ -840,9 +860,9 @@ function stepFlower(s, t, h) {
   for (const d of t.devices) {
     if (!d || !d.recipe || d.install) continue;
     const R = RECIPES[d.recipe], outItem = Object.keys(R.out)[0];
-    // 產物達倉庫上限就暫停；保留原料：每種原料用掉後至少還要剩 keep 個
-    const blocked = room(t, outItem) <= 0 ? 'storefull' : (t.storage[outItem] || 0) >= d.limit ? 'full' : null;
-    const ready = Object.entries(R.in).every(([k, n]) => (t.storage[k] || 0) >= n + (d.keep || 0));
+    // 產物達倉庫上限就暫停；原料只用超過保留量的部分
+    const blocked = room(t, outItem) <= 0 ? 'storefull' : null;
+    const ready = Object.entries(R.in).every(([k, n]) => spare(t, k) >= n);
     if (d.prog === 0 && (blocked || !ready)) { d.state = blocked || 'wait'; continue; }
     d.prog += h; d.state = 'work';
     if (d.prog < R.time) continue;
@@ -866,7 +886,7 @@ function stepChannel(s, ch, h) {
   if (ch.timer >= CH_INTERVAL && room(dst, it0) > ch.transit.length) {
     let item = null;
     if (src.type === 'barrier' && src.buf >= 1) { src.buf--; item = src.elem; }
-    else if (src.type === 'flower' && (src.storage[ch.item] || 0) >= 1) { src.storage[ch.item]--; item = ch.item; }
+    else if (src.type === 'flower' && spare(src, ch.item) >= 1) { src.storage[ch.item]--; item = ch.item; }
     if (item) { ch.transit.push({ d: 0, item }); ch.timer = 0; }
   }
   const len = channelLength(channelPoints(s, ch));
@@ -900,13 +920,7 @@ function tick(s, dt) {
 function save(s) { return JSON.stringify(s); }
 function load(str) {
   const s = JSON.parse(str);
-  if (!s || s.v !== 5 || !s.tiles) throw new Error('舊版或格式不符的存檔（需要版本 5）');
-  // 舊存檔的「目標地點」已取消：運送的目的花改存在 to，其餘工作一律以家為中心
-  for (const f of Object.values(s.fairies || {})) if (f.task && 'at' in f.task) {
-    const a = f.task.at; delete f.task.at;
-    if (f.task.kind === 'haul' && !f.task.to && a && a.flower) f.task.to = a.flower;
-    if (!('to' in f.task)) f.task.to = null;
-  }
+  if (!s || s.v !== 6 || !s.tiles) throw new Error('舊版或格式不符的存檔（需要版本 6）');
   return s;
 }
 
@@ -932,7 +946,7 @@ function clearOwnKeys(ls) {
 function withSaveInfo(st) { return Object.assign({}, SAVE_INFO, st, SAVE_INFO); }
 
 globalThis.FG = {
-  hex, ITEMS, RECIPES, DEVICES, BUILDS, TERRAIN, TASKS, LEVELS, CAP, CH_HOP, FERT_MAX, SUMMON_COST, FAIRY_MAX, DEFAULT_RADIUS, STORAGE_BASE, STORAGE_STEP,
+  hex, ITEMS, RECIPES, DEVICES, CROPS, DEFAULT_RESERVE, spare, BUILDS, TERRAIN, TASKS, LEVELS, CAP, CH_HOP, FERT_MAX, SUMMON_COST, FAIRY_MAX, DEFAULT_RADIUS, STORAGE_BASE, STORAGE_STEP,
   LAYER, BUILD_TIME, SUMMON_TIME, CAST_TIME, CAST_NAME, standbyXY, NOURISH_HARVESTS, CRYSTAL_UNITS, WILD_MAX, WILD_TIME, WILD_REGROW, HARVEST_YIELD, entOn, layerOf, tileRes, groundFree,
   newGame, tick, save, load, spawnBuilding, ops, cmd, goalProgress, channelPoints, channelLength,
   costText, flowers, centralOf, posOf, room, fx, SAVE_PREFIX, SAVE_INFO, ownKeys, clearOwnKeys, withSaveInfo,
@@ -947,7 +961,7 @@ const FG = globalThis.FG, hex = FG.hex;
 const $ = q => document.querySelector(q);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const cv = $('#cv'), ctx = cv.getContext('2d');
-const VERSION_TIME = '2026-10-15 17:59';   // commit 前由腳本寫入
+const VERSION_TIME = '2026-10-15 19:03';   // commit 前由腳本寫入
 const S = 34;          // 一個座標單位 = 34px（縮放 1 時）
 const SKY = 120;       // 流動通道的高度（px，縮放 1 時）
 const AIR_LIFT = 7;    // 低空物件畫在地格上方幾 px（縮放 1 時）
@@ -1392,8 +1406,8 @@ function fairyState(f) {
   switch (a.op) {
     case 'construct': return tgt ? '建造' + FG.BUILDS[tgt.target].name + '中' : '施工中';
     case 'gather': return '採集' + a.item + '中';
-    case 'plant': return '播種月光花中';
-    case 'harvest': return '採收月光花中';
+    case 'plant': return '播種' + (hold || '幼苗') + '中';
+    case 'harvest': return '採收' + (FG.CROPS[f.task.item] || '作物') + '中';
     case 'collect': return '從結界收取' + (tgt ? tgt.elem : '元素') + '中';
     case 'take': return '從家裡拿取' + a.item;
     case 'drop':
@@ -1459,23 +1473,22 @@ function sideFor() {
   if (e.type === 'flower') {
     const fs = Object.values(s.fairies).filter(f => f.home === e.id);
     const slots = e.devices.map((d, i) => {
-      if (!d) return `<div class="dev empty">空格 ${i + 1}` + (e.cast ? '' : ['transmuter', 'brewer'].filter(k => s.unlocked.includes(k) || (k === 'brewer' && s.level === 1)).map(k => `<button data-act="adddev" data-type="${k}" data-slot="${i}">安裝${FG.DEVICES[k].name}<br><small>${FG.costText(FG.DEVICES[k].cost)}・施法 ${FG.CAST_TIME.device} 秒</small></button>`).join('')) + '</div>';
+      if (!d) return `<div class="dev empty">空格 ${i + 1}` + (e.cast ? '' : ['transmuter', 'brewer', 'nursery'].filter(k => s.unlocked.includes(k) || ((k === 'brewer' || k === 'nursery') && s.level === 1)).map(k => `<button data-act="adddev" data-type="${k}" data-slot="${i}">安裝${FG.DEVICES[k].name}<br><small>${FG.costText(FG.DEVICES[k].cost)}・施法 ${FG.CAST_TIME.device} 秒</small></button>`).join('')) + '</div>';
       const R = d.recipe && FG.RECIPES[d.recipe], allow = (FG.DEVICES[d.type].recipes || Object.keys(FG.RECIPES)).filter(r => s.recipes.includes(r));
-      const st = { work: '加工中', wait: '等待原料', full: '已達產量上限', storefull: '產物已達倉庫上限', idle: '閒置' }[d.state] || '';
+      const st = { work: '加工中', wait: '等待原料（只用超過保留量的部分）', storefull: '產物已達倉庫上限', idle: '閒置' }[d.state] || '';
       return `<div class="dev"><div class="devh">${FG.DEVICES[d.type].name}<button data-act="rmdev" data-slot="${i}" title="拆除並退回材料">✕</button></div>
         <select data-act="recipe" data-slot="${i}">${allow.map(r => `<option value="${r}" ${r === d.recipe ? 'selected' : ''}>${FG.RECIPES[r].name}</option>`).join('')}</select>
         ${R ? `<div class="formula">${recipeFormula(d.recipe)}</div>` : ''}
-        <label>產量上限 <input type="number" min="0" max="999" data-act="limit" data-slot="${i}" value="${d.limit}"></label>
-        <label title="每種原料至少留下這麼多，不拿去加工">保留原料 <input type="number" min="0" max="999" data-act="keep" data-slot="${i}" value="${d.keep || 0}"></label>
         ${d.install && e.cast ? `<div class="cast">✨ 安裝中 ${Math.floor(e.cast.t)} / ${e.cast.dur} 秒<div class="bar"><i style="width:${Math.round(e.cast.t / e.cast.dur * 20) * 5}%"></i></div></div>` :
         `<div class="bar"><i style="width:${R ? Math.round(d.prog / R.time * 20) * 5 : 0}%"></i></div><span class="st ${d.state === 'wait' || d.state === 'storefull' ? 'warn' : ''}">${st}</span>`}</div>`;
     }).join('');
-    const ks = Object.keys(e.storage).filter(k => e.storage[k] > 0);
-    const store = ks.length ? '<div class="inv">' + ks.map(k => `<span class="it ${e.storage[k] >= e.cap ? 'full' : ''}" title="${esc(FG.ITEMS[k].desc)}">${FG.ITEMS[k].icon} ${k}<b>${e.storage[k]}</b></span>`).join('') + '</div>' : '<p>（空）</p>';
+    // 倉庫：每種物品的數量與保留量；保留量以下的部分不拿去加工、運送或從通道送出
+    const ks = Object.keys(FG.ITEMS).filter(k => (e.storage[k] || 0) > 0 || (e.reserve[k] || 0) > 0);
+    const store = ks.length ? '<div class="stock">' + ks.map(k => `<span title="${esc(FG.ITEMS[k].desc)}">${FG.ITEMS[k].icon} ${k}</span><b class="${(e.storage[k] || 0) >= e.cap ? 'full' : ''}">${e.storage[k] || 0}</b><label>保留 <input type="number" min="0" max="999" data-act="reserve" data-item="${k}" value="${e.reserve[k] || 0}"></label>`).join('') + '</div>' : '<p>（空）</p>';
     const castBar = e.cast ? `<div class="cast">✨ ${FG.CAST_NAME[e.cast.kind]}施法中 ${Math.floor(e.cast.t)} / ${e.cast.dur} 秒<div class="bar"><i style="width:${Math.round(e.cast.t / e.cast.dur * 20) * 5}%"></i></div></div>` : '';
     return `<h2 style="color:${e.color}">🌷 ${esc(e.name)}</h2><div class="sub">${e.central ? '德魯伊的據點・' : ''}${fs.length} 隻精靈以此為家</div>
       ${castBar}
-      <h3>倉庫（每種物品上限 ${e.cap}）</h3>${store}
+      <h3>倉庫（每種物品上限 ${e.cap}）</h3><p class="sub">保留量以下的物品不會被設備加工、精靈運走或從通道送出，留給精靈吃、播種、召喚與建造。</p>${store}
       <div class="row">${e.cast ? '' : `<button data-act="expstore">擴建倉庫（上限 +${FG.STORAGE_STEP}）<br><small>${FG.costText(FG.cmd.storageCost(e))}・施法 ${FG.CAST_TIME.storage} 秒</small></button>`}</div>
       <h3>乙太空間（${e.devices.filter(Boolean).length}/${e.slots} 格）</h3><div class="slots">${slots}</div>
       <div class="row">${s.unlocked.includes('expand') && !e.cast ? `<button data-act="expand">擴充乙太空間<br><small>${FG.costText(FG.cmd.etherCost(e))}・施法 ${FG.CAST_TIME.ether} 秒</small></button>` : ''}
@@ -1484,7 +1497,7 @@ function sideFor() {
   }
   if (e.type === 'farm') return `<h2>🌱 花田</h2><div class="kv"><span>狀態</span><span>${!e.planted ? '空地，等待播種' : e.growth >= 1 ? '成熟，可以採收' : '生長中 ' + Math.floor(e.growth * 100) + '%'}</span>
     ${s.features.fert ? `<span>滋養</span><span>還能撐 ${e.fert} 次採收（上限 ${FG.FERT_MAX}）${e.fert <= 0 ? '　<b class="warn">土地疲乏：生長變慢 2.5 倍</b>' : ''}</span>` : ''}</div>
-    <p>播種要用掉精靈手上 1 朵月光花，30 秒後成熟，採收得 4 朵。${s.features.fert ? '每次採收消耗 1 點滋養；一瓶滋養露可撐 6 次採收。' : ''}</p>${demo}`;
+    <p>${e.planted ? '種的是' + (e.seed || '月光花幼苗') + '。' : ''}播種要用掉精靈手上 1 株月光花幼苗（育苗室用木枝 1 + 月光花 1 培育），30 秒後成熟，採收得 4 朵月光花。${s.features.fert ? '每次採收消耗 1 點滋養；一瓶滋養露可撐 6 次採收。' : ''}</p>${demo}`;
   if (e.type === 'barrier') return `<h2>🔮 魔力收集結界</h2><div class="kv"><span>產出</span><span>${FG.ITEMS[e.elem].icon} ${e.elem}${e.fast ? '（花海加速）' : ''}</span><span>累積</span><span>${e.buf} / 10</span>
     <span>能量</span><span>還能產出 ${Math.round(e.charge * FG.CRYSTAL_UNITS)} 單位${e.charge <= 0 ? '　<b class="warn">能量耗盡：產出慢 4 倍</b>' : ''}</span></div>
     <p>精靈用「收取」把累積的元素帶走，或架設流動通道自動送出。一顆結界晶可讓結界產出 40 單位；派精靈「維護」會自動補充。結界浮在低空，不擋地面。</p>${demo}`;
@@ -1544,8 +1557,7 @@ function act(name, el) {
 function change(name, el) {
   const s = UI.s, sel = UI.sel, slot = +el.dataset.slot;
   if (name === 'recipe') FG.cmd.setRecipe(s, sel.id, slot, el.value);
-  else if (name === 'limit') FG.cmd.setLimit(s, sel.id, slot, +el.value);
-  else if (name === 'keep') FG.cmd.setKeep(s, sel.id, slot, +el.value);
+  else if (name === 'reserve') { const r = FG.cmd.setReserve(s, sel.id, el.dataset.item, el.value); if (!r.ok) toast(r.reason, 'bad'); }
   else if (name === 'home') FG.cmd.assignHome(s, sel.id, el.value);
   else if (name === 'chitem') UI.chItem = el.value;
   el.blur(); UI.sideHtml = '';
@@ -1587,10 +1599,26 @@ syncSound();
 function syncPanelButtons() { $('#btnGoals').classList.toggle('on', !UI.collapse.goals); $('#btnRoster').classList.toggle('on', !UI.collapse.roster); }
 $('#btnGoals').onclick = () => { UI.collapse.goals = !UI.collapse.goals; UI.goalsHtml = ''; renderGoals(); syncPanelButtons(); };
 $('#btnRoster').onclick = () => { UI.collapse.roster = !UI.collapse.roster; UI.rosterHtml = ''; renderRoster(); syncPanelButtons(); };
-$('#resbar').addEventListener('pointerdown', () => { const c = FG.centralOf(UI.s); showLayer('ground'); UI.sel = { kind: 'ent', id: c.id }; UI.sideHtml = ''; });
+$('#resbar').addEventListener('pointerdown', e => {
+  const c = FG.centralOf(UI.s), it = e.target.closest('.res[data-item]');
+  if (it) return openResEdit(c, it.dataset.item, it.getBoundingClientRect().left);
+  showLayer('ground'); UI.sel = { kind: 'ent', id: c.id }; UI.sideHtml = '';
+});
+// 物資列的保留量小視窗
+function openResEdit(t, item, x) {
+  const el = $('#resEdit');
+  el.innerHTML = `<span>${FG.ITEMS[item].icon} ${item} 保留量</span><input type="number" min="0" max="999" value="${t.reserve[item] || 0}"><button data-ok="1" class="primary">確定</button><button data-cancel="1">取消</button>`;
+  el.style.left = Math.max(8, Math.min(innerWidth - 340, x)) + 'px'; el.classList.remove('hidden');
+  const inp = el.querySelector('input'); inp.focus(); inp.select();
+  const close = () => { el.classList.add('hidden'); el.innerHTML = ''; };
+  const apply = () => { const r = FG.cmd.setReserve(UI.s, t.id, item, inp.value); if (!r.ok) toast(r.reason, 'bad'); else toast(item + ' 保留量設為 ' + t.reserve[item], 'good'); UI.resHtml = ''; UI.sideHtml = ''; close(); };
+  el.querySelector('[data-ok]').onclick = apply; el.querySelector('[data-cancel]').onclick = close;
+  inp.onkeydown = ev => { ev.stopPropagation(); if (ev.key === 'Enter') apply(); if (ev.key === 'Escape') close(); };
+}
 function renderResbar() {
   const c = FG.centralOf(UI.s), ks = Object.keys(c.storage).filter(k => c.storage[k] > 0);
-  const html = `<span class="lbl">🌷 ${esc(c.name)}</span>` + (ks.length ? ks.map(k => `<span class="res ${c.storage[k] >= c.cap ? 'full' : ''}">${FG.ITEMS[k].icon} ${k}<b>${c.storage[k]}</b><small>/${c.cap}</small></span>`).join('') : '<span class="st">倉庫是空的</span>');
+  // 每項顯示「數量／保留量」；點物品可以改保留量
+  const html = `<span class="lbl" data-sel="1">🌷 ${esc(c.name)}</span>` + (ks.length ? ks.map(k => `<span class="res ${c.storage[k] >= c.cap ? 'full' : ''}" data-item="${k}" title="保留 ${c.reserve[k] || 0}：點一下設定">${FG.ITEMS[k].icon} ${k}<b>${c.storage[k]}</b><small>/${c.reserve[k] || 0}</small></span>`).join('') : '<span class="st">倉庫是空的</span>');
   if (html !== UI.resHtml) { $('#resbar').innerHTML = html; UI.resHtml = html; }
 }
 $('#btnMenu').onclick = () => { saveGame(true); showMenu(); };
@@ -1762,7 +1790,7 @@ function showMenu() {
       n = +n; const locked = n > st.unlocked, sv = st.saves[n];
       return `<div class="card panel ${locked ? 'locked' : ''}"><h2>${L.title}</h2><div class="meta">${L.minutes}</div><p>${esc(L.intro.split('\n\n')[1] || L.intro)}</p>
         <div class="row">${locked ? '<span class="meta">🔒 完成上一章後解鎖</span>' : (sv ? `<button class="primary" data-go="cont" data-lv="${n}">繼續</button><button data-go="new" data-lv="${n}">重新開始</button>` : `<button class="primary" data-go="new" data-lv="${n}">開始</button>`)}</div></div>`;
-    }).join('') + `</div><div class="help">你是一位自然德魯伊，以中央魔法之花為據點。精靈住在花裡，依照你分派的指令單採集、搬運、維護與維護設施。<br>進度會自動存在瀏覽器（localStorage）。</div><div class="row wipe"><button id="btnWipe" data-go="wipe">清空存檔</button></div>`;
+    }).join('') + `</div><div class="help">你是一位自然德魯伊，以中央魔法之花為據點。精靈住在花裡，依照你分派的指令單採集、搬運、建造與維護設施。<br>進度會自動存在瀏覽器（localStorage）。</div><div class="row wipe"><button id="btnWipe" data-go="wipe">清空存檔</button></div>`;
   $('#menu').classList.remove('hidden');
 }
 // 只刪除本遊戲的鍵（fairygarden. 開頭），同一個瀏覽器裡其他網站的資料不動

@@ -73,19 +73,58 @@ test('第 2 關：沒有滋養的花田長得較慢', () => {
   assert.equal(FG.ops.harvest(s, s.ents[id]), 0);
 });
 
-test('釀造台：2 月光花 → 1 花蜜，遵守產量上限與保留原料', () => {
+test('釀造台：2 月光花 → 1 花蜜；只用超過保留量的月光花，花蜜滿倉才停', () => {
   const s = FG.newGame(1);
   idleAll(s);
   const t = central(s);
-  const dev = t.devices.find(d => d && d.type === 'brewer');
-  dev.keep = 0; dev.limit = 2;
+  t.devices.forEach(d => { if (d && d.type !== 'brewer') d.recipe = null; });
+  FG.cmd.setReserve(s, t.id, '月光花', 0);
   t.storage['月光花'] = 20; t.storage['花蜜'] = 0;
-  run(s, 30);
-  assert.equal(t.storage['花蜜'], 2);
-  dev.keep = 10; dev.limit = 99;
+  run(s, 60);
+  assert.equal(t.storage['花蜜'], 10);
+  assert.equal(t.storage['月光花'], 0);
+  FG.cmd.setReserve(s, t.id, '月光花', 10);
   t.storage['月光花'] = 11;
   run(s, 30);
   assert.equal(t.storage['月光花'], 11);
+  t.storage['月光花'] = 20; t.storage['花蜜'] = t.cap - 1;
+  run(s, 30);
+  assert.equal(t.storage['花蜜'], t.cap);
+  assert.equal(t.storage['月光花'], 18);
+});
+
+test('育苗室：木枝 1 + 月光花 1 → 月光花幼苗 1（8 秒）；開局就裝在中央魔法之花', () => {
+  assert.deepEqual(FG.RECIPES.seedling, { name: '月光花幼苗', in: { '木枝': 1, '月光花': 1 }, out: { '月光花幼苗': 1 }, time: 8 });
+  for (const lv of [1, 2, 3]) {
+    const t = central(FG.newGame(lv));
+    assert.deepEqual(t.devices.slice(0, 2).map(d => d && d.type + ':' + d.recipe), ['brewer:nectar', 'nursery:seedling'], 'level ' + lv);
+  }
+  const s = FG.newGame(1);
+  idleAll(s);
+  const t = central(s);
+  t.devices.forEach(d => { if (d && d.type !== 'nursery') d.recipe = null; });
+  t.storage = { '木枝': 3, '月光花': 5 };
+  run(s, 7.5);
+  assert.equal(t.storage['月光花幼苗'] || 0, 0);
+  run(s, 1);
+  assert.equal(t.storage['月光花幼苗'], 1);
+  run(s, 60);
+  assert.deepEqual([t.storage['月光花幼苗'], t.storage['木枝'], t.storage['月光花']], [3, 0, 2]);
+});
+
+test('保留量：預設花蜜 4、月光花 2；可設定、不接受負數與不存在的物品', () => {
+  const s = FG.newGame(1), t = central(s);
+  assert.deepEqual(t.reserve, { '花蜜': 4, '月光花': 2 });
+  assert.equal(FG.cmd.setReserve(s, t.id, '木枝', 7.8).ok, true);
+  assert.equal(t.reserve['木枝'], 7);
+  FG.cmd.setReserve(s, t.id, '木枝', -3);
+  assert.equal(t.reserve['木枝'], 0);
+  assert.equal(FG.cmd.setReserve(s, t.id, '不存在', 3).ok, false);
+  assert.equal(FG.cmd.setReserve(s, 'e999', '木枝', 3).ok, false);
+  t.storage['木枝'] = 5; t.reserve['木枝'] = 2;
+  assert.equal(FG.spare(t, '木枝'), 3);
+  t.reserve['木枝'] = 9;
+  assert.equal(FG.spare(t, '木枝'), 0);
 });
 
 test('召喚精靈與擴充乙太空間會扣資源', () => {
@@ -166,26 +205,15 @@ test('訂單交付扣庫存；全部目標完成即過關', () => {
   assert.equal(s.complete, true);
 });
 
-test('存檔版本 5；讀檔後模擬結果一致；拒絕舊版存檔', () => {
+test('存檔版本 6；讀檔後模擬結果一致；拒絕舊版存檔', () => {
   const s = FG.newGame(1);
   clearTile(s, 1, 0, 'forest');
   const [f] = fairies(s);
   FG.cmd.setTask(s, f.id, { kind: 'collect', item: '木枝' });
   run(s, 7);
-  assert.equal(s.v, 5);
+  assert.equal(s.v, 6);
   const s2 = FG.load(FG.save(s));
   run(s, 20); run(s2, 20);
   assert.equal(FG.save(s), FG.save(s2));
-  assert.throws(() => FG.load(JSON.stringify({ v: 4, tiles: {} })));
-});
-
-test('讀舊存檔：目標地點移除，運送的目的花轉成「送往」', () => {
-  const s = FG.newGame(3);
-  const lake = FG.flowers(s).find(e => !e.central), [a, b] = Object.values(s.fairies);
-  const o = JSON.parse(FG.save(s));
-  o.fairies[a.id].task = { kind: 'haul', item: '月石', at: { flower: lake.id }, radius: 10 };
-  o.fairies[b.id].task = { kind: 'collect', item: '木枝', at: { q: 3, r: 1 }, radius: 10 };
-  const s2 = FG.load(JSON.stringify(o));
-  assert.deepEqual(s2.fairies[a.id].task, { kind: 'haul', item: '月石', to: lake.id, radius: 10 });
-  assert.deepEqual(s2.fairies[b.id].task, { kind: 'collect', item: '木枝', radius: 10, to: null });
+  assert.throws(() => FG.load(JSON.stringify({ v: 5, tiles: {} })));
 });

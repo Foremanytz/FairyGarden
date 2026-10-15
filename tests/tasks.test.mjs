@@ -89,19 +89,65 @@ test('範圍限制：範圍外的資源不去，待命並說明原因', () => {
   assert.ok((t.storage['木枝'] || 0) > before);
 });
 
-test('種植：從家拿月光花播種、採收、送回家（每次收 4 朵）', () => {
+test('農業：從家拿幼苗播種、採收、送回家（每次收 4 朵）', () => {
   const s = FG.newGame(1);
   idleAll(s); noBrew(s);
   const t = central(s);
-  t.storage = { '月光花': 6 };
+  t.storage = { '月光花': 6, '月光花幼苗': 2 };
   clearTile(s, 2, 0);
   const farm = s.ents[FG.spawnBuilding(s, 'farm', 2, 0)];
   const [f] = fairies(s);
-  FG.cmd.setTask(s, f.id, { kind: 'farm' });
+  FG.cmd.setTask(s, f.id, { kind: 'farm', item: '月光花幼苗' });
   run(s, 40);
   assert.ok((s.stats.produced['月光花'] || 0) >= 4);
-  assert.ok(t.storage['月光花'] >= 8);
+  assert.ok(t.storage['月光花'] >= 10);
+  assert.equal(t.storage['月光花幼苗'], 0);
   assert.equal(farm.planted, true);
+  assert.equal(farm.seed, '月光花幼苗');
+});
+
+test('農業：沒選幼苗時待命並說明；手上拿的是別的東西時先放回家', () => {
+  const s = FG.newGame(1);
+  idleAll(s); noBrew(s);
+  clearTile(s, 2, 0); FG.spawnBuilding(s, 'farm', 2, 0);
+  const t = central(s), [f] = fairies(s);
+  t.storage = { '月光花幼苗': 3 };
+  FG.cmd.setTask(s, f.id, { kind: 'farm' });
+  assert.equal(f.task.item, null);
+  run(s, 2);
+  assert.match(f.msg, /請選擇物品/);
+  f.hold = { item: '木枝', n: 2 };
+  FG.cmd.setTask(s, f.id, { kind: 'farm', item: '月光花幼苗' });
+  run(s, 0.1);
+  assert.equal(f.act.op, 'move');
+  assert.equal(f.act.key, FG.hex.key(0, 0));
+  assert.equal(FG.TASKS.farm.name, '農業');
+  assert.deepEqual(FG.TASKS.farm.items, ['月光花幼苗']);
+});
+
+test('保留量：運送只帶走超過保留量的部分；保留量以上沒有東西時說明', () => {
+  const s = FG.newGame(3);
+  idleAll(s); noBrew(s);
+  const c = central(s), lake = FG.flowers(s).find(e => !e.central), f = fairies(s).find(x => x.home === c.id);
+  c.storage = { '月石': 7 }; lake.storage = {};
+  FG.cmd.setReserve(s, c.id, '月石', 4);
+  FG.cmd.setTask(s, f.id, { kind: 'haul', item: '月石', to: lake.id });
+  run(s, 60);
+  assert.equal(c.storage['月石'], 4);
+  assert.equal(lake.storage['月石'], 3);
+  assert.match(f.msg, /保留量/);
+});
+
+test('保留量：精靈吃花蜜可以動用保留量', () => {
+  const s = FG.newGame(1);
+  idleAll(s); noBrew(s);
+  const t = central(s), [f] = fairies(s);
+  t.storage = { '花蜜': 2 };
+  assert.equal(t.reserve['花蜜'], 4);
+  f.energy = 5;
+  run(s, 10);
+  assert.equal(t.storage['花蜜'], 1);
+  assert.ok(f.energy > 50);
 });
 
 test('維護：自己判斷藍圖缺什麼材料，分批搬過去並施工到完工', () => {

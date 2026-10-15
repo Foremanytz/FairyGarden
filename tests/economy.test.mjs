@@ -71,12 +71,13 @@ test('收益：10 分鐘內 1 隻精靈顧 3 塊花田，月光花淨產量至�
     idleAll(s); noBrew(s);
     meadowOnly(s, [[6, -2], [6, -3], [7, -3], [7, -2], [5, -2], [6, -1]]);
     const t = central(s), [f] = fairies(s);
-    t.storage = { '花蜜': 30, '月光花': 3 }; t.cap = 999;
+    // 幼苗直接給足；每株幼苗育苗時要用掉 1 朵月光花，淨產量要扣回去
+    t.storage = { '花蜜': 30, '月光花': 3, '月光花幼苗': 60 }; t.cap = 999;
     setup(s, f);
     run(s, 600);
-    return t.storage['月光花'] - 3;
+    return t.storage['月光花'] - 3 - (60 - (t.storage['月光花幼苗'] || 0));
   };
-  const farmed = sim((s, f) => { for (const [q, r] of [[2, 0], [1, 1], [2, -1]]) { clearTile(s, q, r); FG.spawnBuilding(s, 'farm', q, r); } FG.cmd.setTask(s, f.id, { kind: 'farm' }); });
+  const farmed = sim((s, f) => { for (const [q, r] of [[2, 0], [1, 1], [2, -1]]) { clearTile(s, q, r); FG.spawnBuilding(s, 'farm', q, r); } FG.cmd.setTask(s, f.id, { kind: 'farm', item: '月光花幼苗' }); });
   const wild = sim((s, f) => FG.cmd.setTask(s, f.id, { kind: 'collect', item: '月光花' }));
   assert.ok(wild > 0, 'wild ' + wild);
   assert.ok(farmed >= 2 * wild, `farmed ${farmed} wild ${wild}`);

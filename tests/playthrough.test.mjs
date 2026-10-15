@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { FG, central, fairies } from './helpers.mjs';
 
 const LIMIT = 2400;
+const FARM = { kind: 'farm', item: '月光花幼苗' };
 const same = (a, b) => a.kind === b.kind && (a.item || null) === (b.item || null) && (a.to || null) === (b.to || null);
 function assign(s, roles, homeId) {
   const fs = fairies(s).filter(f => !homeId || f.home === homeId);
@@ -20,7 +21,8 @@ function common(s, maxFairies) {
   for (const g of s.goals) if (g.kind === 'order' && !g.done) FG.cmd.fulfillOrder(s, g.id);
   for (const t of FG.flowers(s)) {
     if (Object.values(t.storage).some(n => n >= t.cap - 5)) FG.cmd.expandStorage(s, t.id);
-    for (const d of t.devices) if (d) { if (d.type === 'brewer') { d.limit = 12; d.keep = 4; } else d.limit = 6; }
+    // 木枝要留著蓋藍圖，不讓育苗室全部拿去做幼苗
+    FG.cmd.setReserve(s, t.id, '木枝', 10);
   }
   const c = central(s);
   if (fairies(s).length < maxFairies && (c.storage['花蜜'] || 0) >= 6 && (c.storage['月光花'] || 0) >= 8) FG.cmd.summonFairy(s, c.id);
@@ -43,8 +45,8 @@ test('第 1 章可在 40 分鐘內完成', () => {
     const c = central(s);
     if (!ctx.init) { ctx.init = 1; for (let i = 0; i < 3; i++) place(s, 'farm', tilesNear(s, c, 2, 3, ['grass'])); }
     common(s, 4);
-    const wood = (c.storage['木枝'] || 0) > 15 ? { kind: 'farm' } : { kind: 'collect', item: '木枝' };
-    assign(s, bps(s) ? [{ kind: 'build' }, wood] : [{ kind: 'farm' }, wood, { kind: 'farm' }, { kind: 'collect', item: '木枝' }]);
+    const wood = (c.storage['木枝'] || 0) > 15 ? FARM : { kind: 'collect', item: '木枝' };
+    assign(s, bps(s) ? [{ kind: 'build' }, wood] : [FARM, wood, FARM, { kind: 'collect', item: '木枝' }]);
   });
   assert.ok(s.complete, report(s));
 });
@@ -65,7 +67,7 @@ test('第 2 章可在 40 分鐘內完成', () => {
       const water = Object.values(s.tiles).filter(t => t.t === 'water');
       ctx.flower = place(s, 'flower', tilesNear(s, c, 4, 12, ['grass'], t => water.some(w => FG.hex.dist(w, t) <= 3)));
     }
-    assign(s, [{ kind: 'farm' }, bps(s) ? { kind: 'build' } : pick(c, [['月光花', 3], ['陽光', 12], ['木枝', 15]]), pick(c, [['月石', 15], ['木枝', 15]]),
+    assign(s, [FARM, bps(s) ? { kind: 'build' } : pick(c, [['月光花', 3], ['陽光', 12], ['木枝', 15]]), pick(c, [['月石', 15], ['木枝', 15]]),
       pick(c, [['露水', 6], ['陽光', 12]]), pick(c, [['土息', 6], ['陽光', 12]]), { kind: 'build' }, pick(c, [['木枝', 15], ['月石', 15]])], c.id);
   });
   assert.ok(s.complete, report(s));
@@ -79,10 +81,12 @@ test('第 3 章可在 40 分鐘內完成', () => {
       for (const d of [3, 6]) { const p = FG.hex.line(c, lake)[d]; place(s, 'anchor', tilesNear(s, p, 0, 2, ['grass', 'rock', 'forest', 'meadow'])); }
       place(s, 'anchor', tilesNear(s, c, 3, 4, ['grass']));
       place(s, 'barrier', tilesNear(s, c, 2, 4, ['grass']));
-      c.devices[1].recipe = 'stardust';
+      c.devices[2].recipe = 'stardust';
     }
     common(s, 8);
-    if (c.slots < 5 && (c.storage['月光花'] || 0) >= 16) FG.cmd.expandEther(s, c.id);
+    // 想擴充乙太空間時，把月光花的保留量調高，免得被釀造台和育苗室用光
+    c.reserve['月光花'] = c.slots < 5 ? 10 : 2;
+    if (c.slots < 5 && (c.storage['月光花'] || 0) >= 8) FG.cmd.expandEther(s, c.id);
     // 一次只能施一道法，設備會分批裝好：每次挑還沒有的配方
     const want = ['crystal', 'prism', 'nourish'].filter(r => !c.devices.some(d => d && d.recipe === r));
     c.devices.forEach((d, i) => { if (!d && FG.cmd.addDevice(s, c.id, i, 'transmuter').ok) FG.cmd.setRecipe(s, c.id, i, want.shift() || 'crystal'); });
@@ -96,9 +100,10 @@ test('第 3 章可在 40 分鐘內完成', () => {
       const meadow = Object.values(s.tiles).filter(t => t.t === 'meadow');
       ctx.flower = place(s, 'flower', tilesNear(s, c, 4, 16, ['grass', 'meadow'], t => meadow.some(m => FG.hex.dist(m, t) <= 2)));
     }
-    assign(s, [{ kind: 'farm' }, bps(s) ? { kind: 'build' } : pick(c, [['月光花', 3], ['木枝', 15], ['月石', 15]]), pick(c, [['月石', 15], ['木枝', 15]]),
-      count(s, 'anchor') >= 3 ? { kind: 'build' } : pick(c, [['陽光', 10]]), { kind: 'farm' }, bps(s) ? { kind: 'build' } : pick(c, [['木枝', 15]])], c.id);
+    assign(s, [FARM, bps(s) ? { kind: 'build' } : pick(c, [['月光花', 3], ['木枝', 15], ['月石', 15]]), pick(c, [['月光花', 10], ['月石', 15], ['木枝', 15]]),
+      count(s, 'anchor') >= 3 ? pick(c, [['木枝', 20], ['月石', 15]]) : pick(c, [['陽光', 10]]), FARM, bps(s) ? { kind: 'build' } : pick(c, [['木枝', 15]])], c.id);
     assign(s, [pick(lake, [['露水', 15]]), pick(lake, [['陽光', 15]])], lake.id);
   });
+  if (!s.complete) console.log(JSON.stringify(FG.flowers(s).map(t => [t.name, t.storage, t.devices.map(d => d && d.recipe + ':' + d.state), t.cap])), JSON.stringify(Object.values(s.fairies).map(f=>[f.task.kind,f.task.item,f.msg])));
   assert.ok(s.complete, report(s));
 });
